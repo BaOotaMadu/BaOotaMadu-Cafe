@@ -1,0 +1,95 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 210 100% 20%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 25 100% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 210 100% 20%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 25 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 60% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 214 59% 30%;
+    --sidebar-ring: 25 100% 50%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-roboto;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-semibold;
+  }
+}
+
+@layer components {
+  .nav-item {
+    @apply flex items-center gap-2 px-4 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors;
+  }
+  
+  .nav-item.active {
+    @apply bg-sidebar-accent text-sidebar-primary;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px];
+  }
+
+  .animated-card {
+    @apply animate-fade-in;
+  }
+
+  .status-badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium text-white;
+  }
+
+  .status-available {
+    @apply bg-table-available;
+  }
+  
+  .status-occupied {
+    @apply bg-table-occupied;
+  }
+  
+  .status-service {
+    @apply bg-table-service;
+  }
+}
