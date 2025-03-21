@@ -33,9 +33,15 @@ exports.placeOrder = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("table_id", "table_number") // Get table number
-      .sort({ created_at: -1 });
+    const { restaurant_id } = req.params; // Extract from URL
+
+    if (!restaurant_id) {
+      return res.status(400).json({ message: "Restaurant ID is required." });
+    }
+
+    const orders = await Order.find({ restaurant_id })
+      .populate("table_id", "table_number") // Populate table details
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (error) {
@@ -44,10 +50,11 @@ exports.getAllOrders = async (req, res) => {
 };
 
 
+
 exports.getTableOrders = async (req, res) => {
   try {
-    const { table_id } = req.params;
-    const orders = await Order.find({ table_id }).sort({ created_at: -1 });
+    const { table_id, restaurant_id} = req.params;
+    const orders = await Order.find({ table_id , restaurant_id }).sort({ created_at: -1 });
 
     if (!orders.length) {
       return res.status(404).json({ message: "No orders found for this table." });
@@ -62,14 +69,14 @@ exports.getTableOrders = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { order_id } = req.params;
+    const { order_id , restaurant_id } = req.params;
     const { status } = req.body;
 
     if (!["pending", "preparing", "served", "completed"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    const order = await Order.findByIdAndUpdate(order_id, { status }, { new: true });
+    const order = await Order.findByIdAndUpdate(order_id, restaurant_id, { status }, { new: true });
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -83,9 +90,9 @@ exports.updateOrderStatus = async (req, res) => {
 
 exports.deleteOrder = async (req, res) => {
   try {
-    const { order_id } = req.params;
+    const { order_id , restaurant_id } = req.params;
 
-    const order = await Order.findByIdAndDelete(order_id);
+    const order = await Order.findByIdAndDelete({order_id, restaurant_id});
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });

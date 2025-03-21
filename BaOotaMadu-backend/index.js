@@ -13,6 +13,8 @@ app.use('/auth',require('./routes/authroutes.js'));
 app.use('/user',require('./routes/userRoutes.js'));
 app.use('/orders',require('./routes/orderRoutes.js'));
 app.use('/tableInfo',require('./routes/tableRoutes.js'));
+app.use("/menu", require("./routes/menuRoutes.js"));
+app.use("/insights", require("./routes/insightsRoutes"));
 app.listen(3000,()=>{
     console.log('Server is running on port 3000');
 })

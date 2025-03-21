@@ -6,7 +6,6 @@ const OrderSchema = new mongoose.Schema({
   customer_name: { type: String },
   order_items: [
     {
-      menu_id: { type: mongoose.Schema.Types.ObjectId, ref: "Menu", required: true },
       name: { type: String, required: true },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true } // Stores price at order time

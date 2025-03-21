@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:[true,"Answer is required"]
     },
+    restaurant_id: { type: mongoose.Schema.Types.ObjectId,
+         unique: true, default: () => new mongoose.Types.ObjectId() }
 },
 {timestamps:true})
 module.exports = mongoose.model("User",userSchema);
