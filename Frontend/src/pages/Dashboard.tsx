@@ -1,3 +1,4 @@
+
 import { BarChart3, ShoppingBag, TableProperties, Clock, DollarSign } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import TableCard from '@/components/TableCard';
@@ -9,14 +10,16 @@ const Dashboard = () => {
   const handleViewOrder = (tableId: number) => {
     toast({
       title: "Viewing Order",
-      description: `Opening order details for Table ${tableId}`,
+      description: `Opening order details for Table ₹
+{tableId}`,
     });
   };
 
   const handleGenerateQR = (tableId: number) => {
     toast({
       title: "QR Code Generated",
-      description: `QR code for Table ${tableId} has been generated`,
+      description: `QR code for Table ₹
+{tableId} has been generated`,
     });
   };
 
@@ -44,7 +47,8 @@ const Dashboard = () => {
         />
         <StatCard 
           title="Daily Revenue" 
-          value="$1,431" 
+          value="₹
+1,431" 
           icon={<DollarSign className="text-navy" />} 
           trend={{ value: "8%", positive: true }}
         />

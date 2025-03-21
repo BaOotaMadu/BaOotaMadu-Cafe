@@ -44,14 +44,16 @@ const Tables = () => {
   const handleViewOrder = (tableId: number) => {
     toast({
       title: "Viewing Order",
-      description: `Opening order details for Table ${tableId}`,
+      description: `Opening order details for Table ₹
+{tableId}`,
     });
   };
 
   const handleGenerateQR = (tableId: number) => {
     toast({
       title: "QR Code Generated",
-      description: `QR code for Table ${tableId} has been generated`,
+      description: `QR code for Table ₹
+{tableId} has been generated`,
     });
   };
 
@@ -72,7 +74,9 @@ const Tables = () => {
     
     toast({
       title: available ? "Table Available" : "Table Occupied",
-      description: `Table ${tableId} is now ${available ? 'available' : 'occupied'}`,
+      description: `Table ₹
+{tableId} is now ₹
+{available ? 'available' : 'occupied'}`,
     });
   };
 
@@ -81,7 +85,8 @@ const Tables = () => {
     
     toast({
       title: "Table Deleted",
-      description: `Table ${tableId} has been removed`,
+      description: `Table ₹
+{tableId} has been removed`,
       variant: "destructive",
     });
   };
@@ -102,7 +107,8 @@ const Tables = () => {
     if (tables.some(table => table.number === tableNumber)) {
       toast({
         title: "Table Already Exists",
-        description: `Table ${tableNumber} already exists`,
+        description: `Table ₹
+{tableNumber} already exists`,
         variant: "destructive",
       });
       return;
@@ -121,7 +127,8 @@ const Tables = () => {
     
     toast({
       title: "Table Added",
-      description: `Table ${tableNumber} has been added`,
+      description: `Table ₹
+{tableNumber} has been added`,
     });
   };
 

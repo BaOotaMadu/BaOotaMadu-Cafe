@@ -49,7 +49,8 @@ const MenuItemCard = ({
             <h3 className="font-semibold text-lg line-clamp-1">{name}</h3>
             <span className="text-xs text-gray-500 uppercase">{category}</span>
           </div>
-          <span className="text-lg font-semibold text-navy">${price.toFixed(2)}</span>
+          <span className="text-lg font-semibold text-navy">₹
+{price.toFixed(2)}</span>
         </div>
         
         <div className="mt-4 flex justify-between items-center">

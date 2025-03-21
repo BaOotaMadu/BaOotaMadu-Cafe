@@ -69,7 +69,8 @@ const Reports = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title="Total Revenue" 
-          value="$7,619.25" 
+          value="₹
+7,619.25" 
           icon={<BarChart3 className="text-navy" />} 
           trend={{ value: "8.2%", positive: true }}
         />
@@ -81,7 +82,8 @@ const Reports = () => {
         />
         <StatCard 
           title="Average Order" 
-          value="$20.32" 
+          value="₹
+20.32" 
           icon={<ArrowDownNarrowWide className="text-navy" />} 
           trend={{ value: "2.8%", positive: true }}
         />
@@ -129,8 +131,10 @@ const Reports = () => {
                     <TableRow key={day.date}>
                       <TableCell className="font-medium">{day.date}</TableCell>
                       <TableCell className="text-right">{day.orders}</TableCell>
-                      <TableCell className="text-right">${day.revenue.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">${day.avgOrder.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹
+{day.revenue.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹
+{day.avgOrder.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -155,7 +159,8 @@ const Reports = () => {
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell>{item.category}</TableCell>
                       <TableCell className="text-right">{item.orders}</TableCell>
-                      <TableCell className="text-right">${item.revenue.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹
+{item.revenue.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -45,7 +45,8 @@ const TableCard = ({
           <h3 className="text-lg font-semibold">Table {tableNumber}</h3>
           <span className={cn(
             "status-badge",
-            `status-${status}`
+            `status-₹
+{status}`
           )}>
             {statusToLabel[status]}
           </span>

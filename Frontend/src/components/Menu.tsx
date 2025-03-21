@@ -119,7 +119,8 @@ const Menu = () => {
   const handleEdit = (id: string) => {
     toast({
       title: "Edit Menu Item",
-      description: `Opening edit form for item ${id}`,
+      description: `Opening edit form for item ₹
+{id}`,
     });
   };
 
@@ -141,8 +142,10 @@ const Menu = () => {
     );
     
     toast({
-      title: `Item ${available ? 'Available' : 'Unavailable'}`,
-      description: `Item is now ${available ? 'available' : 'unavailable'}`,
+      title: `Item ₹
+{available ? 'Available' : 'Unavailable'}`,
+      description: `Item is now ₹
+{available ? 'available' : 'unavailable'}`,
     });
   };
 
@@ -177,7 +180,8 @@ const Menu = () => {
     
     toast({
       title: "Menu Item Added",
-      description: `${data.name} has been added to the menu`,
+      description: `₹
+{data.name} has been added to the menu`,
     });
   };
 
@@ -197,6 +201,10 @@ const Menu = () => {
         </div>
         <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
           <DialogTrigger asChild>
+            <Button className="bg-orange hover:bg-orange/90 text-white" onClick={handleAddMenuItem}>
+              <Plus size={16} className="mr-2" />
+              Add Item
+            </Button>
             <Button className="bg-orange hover:bg-orange/90 text-white" onClick={handleAddMenuItem}>
               <Plus size={16} className="mr-2" />
               Add Item
@@ -256,7 +264,8 @@ const Menu = () => {
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
+                      <FormLabel>Price (₹
+)</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
                       </FormControl>
@@ -274,12 +283,14 @@ const Menu = () => {
                         {placeholderImages.map((img, index) => (
                           <div 
                             key={index}
-                            className={`relative cursor-pointer rounded-md overflow-hidden h-20 ${field.value === img ? 'ring-2 ring-primary' : ''}`}
+                            className={`relative cursor-pointer rounded-md overflow-hidden h-20 ₹
+{field.value === img ? 'ring-2 ring-primary' : ''}`}
                             onClick={() => field.onChange(img)}
                           >
                             <img 
                               src={img} 
-                              alt={`Food ${index}`} 
+                              alt={`Food ₹
+{index}`} 
                               className="w-full h-full object-cover" 
                             />
                           </div>
