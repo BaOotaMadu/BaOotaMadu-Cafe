@@ -92,7 +92,7 @@ const Dashboard = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {tables.map((table) => (
-              <TableCard 
+              <TableCard
                 key={table.id}
                 tableNumber={table.number}
                 status={table.status}
