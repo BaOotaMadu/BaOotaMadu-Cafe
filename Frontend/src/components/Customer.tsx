@@ -22,7 +22,8 @@ const Customer = () => {
     tableEventManager.publish('occupyTable', tableNumber);
     toast({
       title: 'QR Code Scanned',
-      description: `Table ${tableNumber} is now occupied.`,
+      description: `Table ₹
+{tableNumber} is now occupied.`,
     });
   };
 
@@ -40,7 +41,8 @@ const Customer = () => {
     tableEventManager.publish('placeOrder', tableNumber);
     toast({
       title: 'Order Placed',
-      description: `Order placed for Table ${tableNumber}.`,
+      description: `Order placed for Table ₹
+{tableNumber}.`,
     });
   };
 
@@ -58,7 +60,8 @@ const Customer = () => {
     tableEventManager.publish('updateOrderStatus', { tableId: tableNumber, status: 'served' });
     toast({
       title: 'Order Served',
-      description: `Order for Table ${tableNumber} is now served.`,
+      description: `Order for Table ₹
+{tableNumber} is now served.`,
     });
   };
 

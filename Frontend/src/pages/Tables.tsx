@@ -38,7 +38,8 @@ const Tables = () => {
     if (tables.some((table) => table.number === tableNumber)) {
       toast({
         title: 'Table Already Exists',
-        description: `Table ${tableNumber} already exists`,
+        description: `Table ₹
+{tableNumber} already exists`,
         variant: 'destructive',
       });
       return;
@@ -50,7 +51,8 @@ const Tables = () => {
 
     toast({
       title: 'Table Added',
-      description: `Table ${tableNumber} has been added`,
+      description: `Table ₹
+{tableNumber} has been added`,
     });
   };
 
@@ -126,13 +128,16 @@ const Tables = () => {
                 isOccupied={table.isOccupied}
                 onViewOrder={() =>
                   toast({
-                    title: `Viewing Order for Table ${table.number}`,
-                    description: `Order Status: ${table.orderStatus || 'No order placed'}`,
+                    title: `Viewing Order for Table ₹
+{table.number}`,
+                    description: `Order Status: ₹
+{table.orderStatus || 'No order placed'}`,
                   })
                 }
                 onGenerateQR={() =>
                   toast({
-                    title: `QR Code Generated for Table ${table.number}`,
+                    title: `QR Code Generated for Table ₹
+{table.number}`,
                   })
                 }
                 onToggleAvailability={(available) => toggleAvailability(table.number, available)}
@@ -156,13 +161,16 @@ const Tables = () => {
                   isOccupied={table.isOccupied}
                   onViewOrder={() =>
                     toast({
-                      title: `Viewing Order for Table ${table.number}`,
-                      description: `Order Status: ${table.orderStatus || 'No order placed'}`,
+                      title: `Viewing Order for Table ₹
+{table.number}`,
+                      description: `Order Status: ₹
+{table.orderStatus || 'No order placed'}`,
                     })
                   }
                   onGenerateQR={() =>
                     toast({
-                      title: `QR Code Generated for Table ${table.number}`,
+                      title: `QR Code Generated for Table ₹
+{table.number}`,
                     })
                   }
                   onToggleAvailability={(available) => toggleAvailability(table.number, available)}
