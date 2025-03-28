@@ -14,7 +14,7 @@ import Customer from "@/components/Customer";
 import NotFound from "./pages/NotFound";
 
 // User Interface Pages
-import Index from "./pages/Index";
+import Index from "./pages/userPage/Index";
 
 
 // Context

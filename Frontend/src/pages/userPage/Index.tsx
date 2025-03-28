@@ -1,202 +1,94 @@
+import React, { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import Header from "@/components/userComp/layout/Header";
+import MenuMain from "@/components/userComp/menu/MenuMain";
+import { getTableNumber, initTableEventManager } from "@/services/tableService";
 
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import MenuList from '@/components/menu/MenuList';
-import Cart from '@/components/cart/Cart';
-import OrderStatus from '@/components/order/OrderStatus';
-import OrderConfirmation from '@/components/order/OrderConfirmation';
-import Bill from '@/components/bill/Bill';
-import { CartProvider } from '@/hooks/useCart';
-import { OrderProvider, useOrder } from '@/hooks/useOrder';
-import { getTableNumber, initTableEventManager, callStaff } from '@/services/tableService';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Receipt } from 'lucide-react';
-
-const TableInterface: React.FC<{ tableNumber: string }> = ({ tableNumber }) => {
+// TableHeader component
+const TableHeader: React.FC<{ tableNumber: string }> = ({ tableNumber }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isBillOpen, setIsBillOpen] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // Search term state
+  const [showSearch, setShowSearch] = useState(false); // Animation trigger
   const { toast } = useToast();
-  const { currentOrder, orderStatus } = useOrder();
+  const searchRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Simulate initial animation
-    const timer = setTimeout(() => {
-      setIsInitialLoad(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    // Animate search bar on page load
+    setTimeout(() => {
+      setShowSearch(true);
+      // Focus on search bar after animation
+      setTimeout(() => {
+        searchRef.current?.focus();
+      }, 500);
+    }, 300);
   }, []);
 
+  // Toggle Cart
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen);
   };
 
-  const handleOrderPlaced = () => {
-    setShowConfirmation(true);
-  };
-
+  // Notify staff
   const handleCallStaff = async () => {
-    await callStaff(tableNumber);
     toast({
       title: "Staff Notified",
       description: "A staff member will be with you shortly.",
     });
   };
 
-  // When a new order is placed, show confirmation
-  useEffect(() => {
-    if (currentOrder && currentOrder.status === 'pending') {
-      setShowConfirmation(true);
-    }
-  }, [currentOrder]);
-
   return (
-    <>
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header tableNumber={tableNumber} onCartClick={handleCartToggle} />
-        
-        <main className="flex-1 container px-4 pt-24 pb-20">
-          {isInitialLoad ? (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="h-full flex flex-col items-center justify-center"
-            >
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="text-5xl mb-4 font-bold tracking-tight"
-              >
-                Dine-In Symphony
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="text-lg text-muted-foreground mb-8"
-              >
-                Welcome to Table {tableNumber}
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin"
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {currentOrder && (
-                <OrderStatus 
-                  status={orderStatus || 'pending'} 
-                  orderNumber={currentOrder.id}
-                  estimatedTime={20}
-                />
-              )}
+    <div className="min-h-screen flex flex-col bg-white text-[#1B1F3B]">
+      {/* Header Section */}
+      <Header tableNumber={tableNumber} onCartClick={handleCartToggle} />
 
-              <MenuList />
-              
-              {currentOrder && orderStatus === 'served' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="fixed bottom-20 right-4 z-40"
-                >
-                  <Button 
-                    size="lg"
-                    className="shadow-lg"
-                    onClick={() => setIsBillOpen(true)}
-                  >
-                    <Receipt className="mr-2 h-5 w-5" />
-                    View Bill
-                  </Button>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </main>
-        
-        <Footer onCallStaff={handleCallStaff} />
-      </div>
-      
-      <Cart
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        tableNumber={tableNumber}
-      />
-      
-      {showConfirmation && currentOrder && (
-        <OrderConfirmation
-          orderNumber={currentOrder.id}
-          onClose={() => setShowConfirmation(false)}
-        />
-      )}
-      
-      {currentOrder && (
-        <Bill
-          isOpen={isBillOpen}
-          onClose={() => setIsBillOpen(false)}
-          orderItems={currentOrder.items}
-          tableNumber={tableNumber}
-          orderNumber={currentOrder.id}
-        />
-      )}
-    </>
+      {/* Search Bar Section with Animation */}
+      <div
+  className={`w-full flex justify-center mt-8 transition-all duration-700 ease-out transform ${
+    showSearch ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"
+  }`}
+>
+  <input
+    ref={searchRef}
+    type="text"
+    placeholder="🤔 What's on your mind?"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="w-full max-w-2xl p-4 text-lg border-2 border-orange-500 rounded-full focus:outline-none focus:border-orange-700 bg-white text-[#1B1F3B] shadow-lg transition duration-300 placeholder-gray-500 focus:shadow-[0_0_20px_#FFA500]"
+  />
+</div>
+
+      <MenuMain />
+    </div>
   );
 };
 
+// Main Index Component
 const Index: React.FC = () => {
-  const [tableNumber, setTableNumber] = useState<string>('');
-  
+  const [tableNumber, setTableNumber] = useState<string>("");
+
   useEffect(() => {
     // Initialize global event manager
     initTableEventManager();
-    
+
     // Get table number from URL or generate one for demo
     const table = getTableNumber();
     setTableNumber(table);
-    
-    // Set page title
+
+    // Set page title dynamically
     document.title = `Table ${table} - Dine-In Symphony`;
-    
-    // Add framer-motion
-    const addFramerMotion = async () => {
-      try {
-        await import('framer-motion');
-      } catch (error) {
-        console.error('Failed to load framer-motion:', error);
-      }
-    };
-    
-    addFramerMotion();
   }, []);
-  
+
+  // Loading state while fetching table number
   if (!tableNumber) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="w-16 h-16 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
       </div>
     );
   }
-  
-  return (
-    <CartProvider>
-      <OrderProvider tableNumber={tableNumber}>
-        <TableInterface tableNumber={tableNumber} />
-      </OrderProvider>
-    </CartProvider>
-  );
+
+  // Render TableHeader when table number is ready
+  return <TableHeader tableNumber={tableNumber} />;
 };
 
 export default Index;
