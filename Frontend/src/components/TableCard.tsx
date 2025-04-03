@@ -53,8 +53,7 @@ const TableCard = ({
     occupyTable(tableNumber);
     toast({
       title: 'QR Code Scanned',
-      description: `Table ₹
-{tableNumber} is now occupied.`,
+      description: `Table ${tableNumber} is now occupied.`,
     });
   };
 
@@ -63,8 +62,7 @@ const TableCard = ({
     placeOrder(tableNumber);
     toast({
       title: 'Order Placed',
-      description: `Order placed for Table ₹
-{tableNumber}.`,
+      description: `Order placed for Table ${tableNumber}.`,
     });
   };
 
@@ -72,11 +70,8 @@ const TableCard = ({
   const handleUpdateOrderStatus = (status: 'cooking' | 'served') => {
     updateOrderStatus(tableNumber, status);
     toast({
-      title: `Order ₹
-{status}`,
-      description: `Order for Table ₹
-{tableNumber} is now ₹
-{status}.`,
+      title: `Order ${status}`,
+      description: `Order for Table ${tableNumber} is now ${status}.`,
     });
   };
 
