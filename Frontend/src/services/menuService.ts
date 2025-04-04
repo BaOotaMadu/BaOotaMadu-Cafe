@@ -1,0 +1,148 @@
+
+import { MenuItem } from '@/types';
+
+// Mock menu data
+const mockMenuItems: MenuItem[] = [
+  {
+    id: '1',
+    name: 'Classic Caesar Salad',
+    description: 'Fresh romaine lettuce with our special Caesar dressing, parmesan cheese, and croutons.',
+    price: 8.99,
+    category: 'Starters',
+    image: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '2',
+    name: 'Crispy Calamari',
+    description: 'Tender calamari lightly fried to perfection, served with marinara sauce.',
+    price: 12.99,
+    category: 'Starters',
+    image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: false,
+    isSpicy: false,
+    customizable: false,
+  },
+  {
+    id: '3',
+    name: 'Bruschetta',
+    description: 'Grilled bread rubbed with garlic and topped with diced tomatoes, fresh basil, and olive oil.',
+    price: 7.99,
+    category: 'Starters',
+    image: 'https://images.unsplash.com/photo-1572695044427-254fa96e6c73?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: false,
+  },
+  {
+    id: '4',
+    name: 'Filet Mignon',
+    description: '8oz premium cut, grilled to your preference, served with mashed potatoes and seasonal vegetables.',
+    price: 32.99,
+    category: 'Main Course',
+    image: 'https://images.unsplash.com/photo-1558030006-450675393462?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: false,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '5',
+    name: 'Seafood Pasta',
+    description: 'Linguine tossed with a mix of fresh seafood in a light tomato sauce.',
+    price: 24.99,
+    category: 'Main Course',
+    image: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: false,
+    isSpicy: true,
+    customizable: true,
+  },
+  {
+    id: '6',
+    name: 'Mushroom Risotto',
+    description: 'Creamy Italian rice with wild mushrooms, parmesan cheese, and truffle oil.',
+    price: 18.99,
+    category: 'Main Course',
+    image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '7',
+    name: 'Chocolate Fondant',
+    description: 'Warm chocolate cake with a molten center, served with vanilla ice cream.',
+    price: 9.99,
+    category: 'Desserts',
+    image: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: false,
+  },
+  {
+    id: '8',
+    name: 'Tiramisu',
+    description: 'Classic Italian dessert made with layers of coffee-soaked ladyfingers and mascarpone cream.',
+    price: 8.99,
+    category: 'Desserts',
+    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: false,
+  },
+  {
+    id: '9',
+    name: 'Craft Beer',
+    description: 'Selection of local craft beers. Ask your server for today\'s options.',
+    price: 6.99,
+    category: 'Beverages',
+    image: 'https://images.unsplash.com/photo-1566633806327-68e152aaf26d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '10',
+    name: 'Wine by the Glass',
+    description: 'Premium wine selection. Ask your server for today\'s options.',
+    price: 8.99,
+    category: 'Beverages',
+    image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '11',
+    name: 'Fresh Juice',
+    description: 'Freshly squeezed juice. Choose from orange, apple, or watermelon.',
+    price: 4.99,
+    category: 'Beverages',
+    image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: true,
+    isSpicy: false,
+    customizable: true,
+  },
+  {
+    id: '12',
+    name: 'Spicy Buffalo Wings',
+    description: 'Crispy chicken wings tossed in our signature spicy buffalo sauce, served with blue cheese dip.',
+    price: 10.99,
+    category: 'Starters',
+    image: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+    isVegetarian: false,
+    isSpicy: true,
+    customizable: true,
+  },
+];
+
+// Simulate API call
+export const getMenu = async (): Promise<MenuItem[]> => {
+  // Simulate network delay
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(mockMenuItems);
+    }, 800);
+  });
+};
