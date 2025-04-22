@@ -12,7 +12,7 @@ import Menu from "./pages/Menu";
 import Reports from "./pages/Reports";
 import Customer from "@/components/Customer";
 import NotFound from "./pages/NotFound";
-
+import Settings from "./pages/settings";
 // User Interface Pages
 import Index from "./pages/userPage/Index";
 
@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/menu" element={<Layout><Menu /></Layout>} />
             <Route path="/reports" element={<Layout><Reports /></Layout>} />
             <Route path="/customer" element={<Layout><Customer /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
 
             {/* User Interface Routes */}
           <Route path="/user" element={<Index />} />

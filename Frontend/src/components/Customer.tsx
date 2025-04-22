@@ -8,7 +8,7 @@ import tableEventManager from '@/components/TableEventManager';
 const Customer = () => {
   const [tableNumber, setTableNumber] = useState<number | null>(null);
 
-  // Simulate scanning a QR code
+  //  scanning a QR code
   const handleScanQR = () => {
     if (!tableNumber) {
       toast({
@@ -27,7 +27,7 @@ const Customer = () => {
     });
   };
 
-  // Simulate placing an order
+  // placing an order
   const handlePlaceOrder = () => {
     if (!tableNumber) {
       toast({
@@ -46,7 +46,7 @@ const Customer = () => {
     });
   };
 
-  // Simulate updating the order status
+  //  updating the order status
   const handleUpdateOrderStatus = () => {
     if (!tableNumber) {
       toast({

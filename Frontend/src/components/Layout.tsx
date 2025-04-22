@@ -13,7 +13,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
 
-  // Don't render layout for 404 page
   if (pathname === '/404') {
     return <>{children}</>;
   }
