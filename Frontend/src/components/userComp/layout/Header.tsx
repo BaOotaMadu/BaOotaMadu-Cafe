@@ -1,57 +1,346 @@
-"use client";
-
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, ShoppingCart, HelpCircle, User, Briefcase, Percent } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Search,
+  ShoppingCart,
+  HelpCircle,
+  User,
+  Briefcase,
+  Percent,
+  Menu,
+  X,
+  LogOut,
+  Settings,
+  Bell,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/hooks/useCart";
 
 // Define the props interface
 interface HeaderProps {
   tableNumber: string;
   onCartClick: () => void;
+  onSearch?: (term: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick }) => {
+const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cartItems } = useCart();
+  
+  const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
+  };
+
+  const toggleSearch = () => {
+    setSearchVisible(!searchVisible);
+    if (searchVisible) {
+      setSearchTerm("");
+      if (onSearch) {
+        onSearch("");
+      }
+    }
+  };
+
   return (
-    <header className="bg-white shadow-md px-6 py-3 flex justify-between items-center">
-      {/* Left Section */}
-      <div className="flex items-center gap-4">
-        <img
-          src="/logo.png"
-          alt="Logo"
-          className="h-10 w-10"
-        />
-      </div>
+    <header
+      className={`sticky top-0 z-30 w-full transition-all duration-300 ${
+        isScrolled ? "bg-background shadow-md py-2" : "bg-background py-3"
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
+          {/* Logo and Table Number */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              className="relative"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">BM</span>
+              </div>
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="absolute -top-2 -right-2 bg-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md"
+              >
+                T{tableNumber}
+              </motion.div>
+            </motion.div>
+            <div className="hidden md:block">
+              <h1 className="font-bold text-primary text-xl">BaOotaMadu</h1>
+              <p className="text-xs text-muted-foreground">Digital Menu · Table {tableNumber}</p>
+            </div>
+          </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-6">
-        {/* Swiggy Corporate Button */}
-        <Button variant="ghost" className="flex items-center gap-2 text-gray-700 hover:text-green-600">
-          <Briefcase className="h-5 w-5" />
-          BaOotaMadu
-        </Button>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Search Input (conditionally visible) */}
+            <AnimatePresence>
+              {searchVisible && (
+                <motion.form
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  className="relative"
+                  onSubmit={handleSearchSubmit}
+                >
+                  <Input
+                    type="text"
+                    placeholder="Search menu..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-9 pr-8 focus-visible:ring-primary"
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    variant="ghost"
+                    className="absolute right-0 top-0 h-9 w-9 text-muted-foreground"
+                  >
+                    <Search size={16} />
+                  </Button>
+                </motion.form>
+              )}
+            </AnimatePresence>
 
-        {/* Offers Button */}
-        <Button variant="ghost" className="flex items-center gap-2 text-gray-700 hover:text-green-600">
-          <Percent className="h-5 w-5" />
-          Offers <span className="text-xs text-orange-500 font-semibold">NEW</span>
-        </Button>
+            {/* Search Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSearch}
+              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
+            >
+              {searchVisible ? <X size={18} /> : <Search size={18} />}
+            </Button>
 
-        {/* Help Button */}
-        <Button variant="ghost" className="flex items-center gap-2 text-gray-700 hover:text-green-600">
-          <HelpCircle className="h-5 w-5" />
-          Help
-        </Button>
+            {/* Navigation Items */}
+            <nav className="flex items-center gap-1 ml-2">
+              <Button
+                variant="ghost"
+                className="text-sm h-9 px-3 hover:bg-primary/10 hover:text-primary"
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                <span>Corporate</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="text-sm h-9 px-3 hover:bg-primary/10 hover:text-primary"
+              >
+                <Percent className="h-4 w-4 mr-2" />
+                <span>Offers</span>
+                <Badge variant="outline" className="ml-1 bg-orange/10 text-orange border-orange/20 text-xs px-1">
+                  NEW
+                </Badge>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="text-sm h-9 px-3 hover:bg-primary/10 hover:text-primary"
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                <span>Help</span>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full h-9 w-9 hover:bg-primary/10 hover:text-primary"
+                  >
+                    <User size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-3 py-2 text-sm font-medium">My Account</div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Bell className="mr-2 h-4 w-4" />
+                    <span>Notifications</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-        {/* Cart Button */}
-        <Button
-          variant="ghost"
-          onClick={onCartClick}
-          className="flex items-center gap-2 text-gray-700 hover:text-green-600"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          Cart <span className="text-xs text-gray-600">(0)</span>
-        </Button>
+              {/* Cart Button with Item Count */}
+              <Button
+                variant="ghost"
+                onClick={onCartClick}
+                className="relative rounded-full h-9 w-9 hover:bg-primary/10 hover:text-primary ml-1"
+              >
+                <ShoppingCart size={18} />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            </nav>
+          </div>
+
+          {/* Mobile Menu Toggle and Cart */}
+          <div className="flex md:hidden items-center gap-2">
+            {/* Mobile Search Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSearch}
+              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
+            >
+              <Search size={18} />
+            </Button>
+
+            {/* Cart Button for Mobile */}
+            <Button
+              variant="ghost"
+              onClick={onCartClick}
+              className="relative rounded-full h-9 w-9 hover:bg-primary/10 hover:text-primary"
+            >
+              <ShoppingCart size={18} />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Search (when visible) */}
+        <AnimatePresence>
+          {searchVisible && (
+            <motion.form
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-2 px-1"
+              onSubmit={handleSearchSubmit}
+            >
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search menu..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-10 pl-10 pr-4 w-full"
+                  autoFocus
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="ghost"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
+                >
+                  Search
+                </Button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden mt-2 pb-2 overflow-hidden"
+            >
+              <nav className="flex flex-col gap-1">
+                <Button
+                  variant="ghost"
+                  className="justify-start text-sm h-10 hover:bg-primary/10 hover:text-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User className="h-4 w-4 mr-3" />
+                  <span>My Account</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start text-sm h-10 hover:bg-primary/10 hover:text-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Briefcase className="h-4 w-4 mr-3" />
+                  <span>Corporate</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start text-sm h-10 hover:bg-primary/10 hover:text-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Percent className="h-4 w-4 mr-3" />
+                  <span>Offers</span>
+                  <Badge variant="outline" className="ml-1 bg-orange/10 text-orange border-orange/20 text-xs">
+                    NEW
+                  </Badge>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start text-sm h-10 hover:bg-primary/10 hover:text-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <HelpCircle className="h-4 w-4 mr-3" />
+                  <span>Help</span>
+                </Button>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );
