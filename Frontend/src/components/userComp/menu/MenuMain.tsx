@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MinusCircle, ShoppingCart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
 import Cart from "../cart/Cart";
 
@@ -55,6 +54,7 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const { addItem, cartItems } = useCart();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   // Initialize quantities with default values of 1
   useEffect(() => {
@@ -63,6 +63,22 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
       initialQuantities[item.id] = 1;
     });
     setQuantities(initialQuantities);
+  }, []);
+
+  // Check window size for responsive design
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -93,9 +109,6 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
     
     // Add the item to cart
     addItem(cartItem);
-    
-    // Optionally show some visual feedback
-    // You could add a toast notification here
   };
 
   const toggleCart = () => {
@@ -111,17 +124,17 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
     : foodItems[selectedCategory];
 
   return (
-    <div className="container mx-auto py-8 relative">
-      {/* Cart Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-40">
+    <div className="w-full mx-auto py-4 md:py-8 px-2 md:px-4 relative">
+      {/* Cart Toggle Button - Only visible on larger screens */}
+      <div className="fixed bottom-6 right-6 z-40 hidden md:block">
         <Button 
           onClick={toggleCart} 
-          className="h-16 w-16 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700"
+          className="h-14 w-14 md:h-16 md:w-16 rounded-full shadow-lg bg-primary hover:bg-primary/90"
         >
           <div className="relative">
-            <ShoppingCart size={24} />
+            <ShoppingCart size={isMobile ? 20 : 24} />
             {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {itemCount}
               </span>
             )}
@@ -139,17 +152,17 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
       {/* Only show category navigation when not searching */}
       {!searchTerm && (
         <>
-          {/* Category Navigation */}
-          <div className="flex justify-center mb-8 overflow-x-auto px-4 py-2">
-            <div className="bg-white rounded-full shadow-lg p-1 flex space-x-2">
+          {/* Category Navigation - Scrollable on mobile */}
+          <div className="mb-6 md:mb-8 overflow-x-auto no-scrollbar">
+            <div className="bg-card rounded-full shadow-lg p-1 flex space-x-1 md:space-x-2 min-w-max mx-auto max-w-max">
               {Object.keys(foodItems).map((category) => (
                 <button
                   key={category}
                   onClick={() => handleCategoryClick(category)}
-                  className={`px-6 py-3 rounded-full transition-all duration-300 ${
+                  className={`px-3 py-2 md:px-6 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base whitespace-nowrap ${
                     selectedCategory === category
-                      ? "bg-indigo-600 text-white font-medium"
-                      : "hover:bg-gray-100"
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "hover:bg-muted"
                   }`}
                 >
                   {category}
@@ -159,122 +172,118 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
           </div>
 
           {/* Category Title */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">{selectedCategory}</h2>
-            <div className="w-24 h-1 bg-indigo-600 mx-auto mt-2 rounded-full"></div>
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">{selectedCategory}</h2>
+            <div className="w-16 md:w-24 h-1 bg-primary mx-auto mt-2 rounded-full"></div>
           </div>
         </>
       )}
 
       {/* Search Results Title (only shown when searching) */}
       {searchTerm && (
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Search Results</h2>
-          <p className="text-gray-500 mt-2">
+        <div className="text-center mb-6 md:mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Search Results</h2>
+          <p className="text-muted-foreground mt-2 text-sm md:text-base">
             Showing results for "{searchTerm}"
           </p>
-          <div className="w-24 h-1 bg-indigo-600 mx-auto mt-2 rounded-full"></div>
+          <div className="w-16 md:w-24 h-1 bg-primary mx-auto mt-2 rounded-full"></div>
         </div>
       )}
 
-      {/* Food Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-        <AnimatePresence>
-          {allItems.map((item) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
+      {/* Food Items Grid - Responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        {allItems.map((item) => (
+          <div
+            key={item.id}
+            className="transition-all duration-300"
+          >
+            <Card
+              className="overflow-hidden transition-all duration-300 hover:shadow-xl border border-border hover:border-primary/20 h-full flex flex-col"
+              onMouseEnter={() => setHoveredItem(item.id)}
+              onMouseLeave={() => setHoveredItem(null)}
             >
-              <Card
-                className="overflow-hidden transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-indigo-200"
-                onMouseEnter={() => setHoveredItem(item.id)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <div className="relative">
-                  <CardHeader className="p-0">
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className={`w-full h-full object-cover transition-transform duration-700 ${
-                          hoveredItem === item.id ? "scale-110" : ""
-                        }`}
-                      />
-                    </div>
-                    <div className="absolute top-4 right-4 bg-white bg-opacity-90 px-3 py-1 rounded-full font-bold text-indigo-700">
+              <div className="flex flex-col h-full">
+                <CardHeader className="p-0">
+                  <div className="h-36 md:h-48 overflow-hidden relative">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className={`w-full h-full object-cover transition-transform duration-700 ${
+                        hoveredItem === item.id ? "scale-110" : ""
+                      }`}
+                    />
+                    <div className="absolute top-3 right-3 bg-background bg-opacity-90 px-2 py-1 rounded-full font-bold text-primary text-sm">
                       ${item.price.toFixed(2)}
                     </div>
-                  </CardHeader>
+                  </div>
+                </CardHeader>
 
-                  <CardContent className="pt-6">
-                    <CardTitle className="text-xl mb-2">{item.name}</CardTitle>
-                    <p className="text-gray-600 text-sm h-12 overflow-hidden">
-                      {item.description}
-                    </p>
-                  </CardContent>
+                <CardContent className="pt-4 md:pt-6 flex-grow">
+                  <CardTitle className="text-lg md:text-xl mb-1 md:mb-2">{item.name}</CardTitle>
+                  <p className="text-muted-foreground text-xs md:text-sm line-clamp-2">
+                    {item.description}
+                  </p>
+                </CardContent>
 
-                  <CardFooter className="flex flex-col space-y-4">
-                    {/* Quantity Controls - Now with default value of 1 */}
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-gray-700 font-medium">Quantity:</span>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="text-indigo-600 hover:text-indigo-800 transition-colors"
-                          onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) - 1)}
-                        >
-                          <MinusCircle size={20} />
-                        </button>
-                        <span className="w-8 text-center font-semibold">
-                          {quantities[item.id] || 1}
-                        </span>
-                        <button
-                          className="text-indigo-600 hover:text-indigo-800 transition-colors"
-                          onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) + 1)}
-                        >
-                          <PlusCircle size={20} />
-                        </button>
-                      </div>
+                <CardFooter className="flex flex-col space-y-3 md:space-y-4 pt-2">
+                  {/* Quantity Controls */}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-foreground text-sm md:text-base font-medium">Quantity:</span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className="text-primary hover:text-primary/80 transition-colors"
+                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) - 1)}
+                      >
+                        <MinusCircle size={isMobile ? 18 : 20} />
+                      </button>
+                      <span className="w-6 md:w-8 text-center font-semibold text-sm md:text-base">
+                        {quantities[item.id] || 1}
+                      </span>
+                      <button
+                        className="text-primary hover:text-primary/80 transition-colors"
+                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) + 1)}
+                      >
+                        <PlusCircle size={isMobile ? 18 : 20} />
+                      </button>
                     </div>
+                  </div>
 
-                    {/* Add to Cart Button - Always active */}
-                    <Button
-                      onClick={() => handleAddToCart(item)}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-300"
-                    >
-                      <ShoppingCart className="mr-2 h-5 w-5" />
-                      Add to Cart (${((quantities[item.id] || 1) * item.price).toFixed(2)})
-                    </Button>
-                  </CardFooter>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                  {/* Add to Cart Button */}
+                  <Button
+                    onClick={() => handleAddToCart(item)}
+                    className="w-full bg-primary hover:bg-primary/90 transition-all duration-300 h-9 md:h-10 text-xs md:text-sm"
+                  >
+                    <ShoppingCart className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
+                    Add to Cart (${((quantities[item.id] || 1) * item.price).toFixed(2)})
+                  </Button>
+                </CardFooter>
+              </div>
+            </Card>
+          </div>
+        ))}
       </div>
 
       {allItems.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
+        <div className="text-center py-8 md:py-12">
+          <p className="text-muted-foreground text-base md:text-lg">
             {searchTerm ? `No items matching "${searchTerm}" found.` : "No items found in this category."}
           </p>
         </div>
       )}
 
       <style jsx>{`
-        .pulse-animation {
-          animation: pulse 1.5s infinite;
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
         }
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>
