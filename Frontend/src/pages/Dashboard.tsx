@@ -1,70 +1,92 @@
-
-import { BarChart3, ShoppingBag, TableProperties, Clock, DollarSign } from 'lucide-react';
-import StatCard from '@/components/StatCard';
-import TableCard from '@/components/TableCard';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  BarChart3,
+  ShoppingBag,
+  TableProperties,
+  Clock,
+  DollarSign,
+} from "lucide-react";
+import StatCard from "@/components/StatCard";
+import TableCard from "@/components/TableCard";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const { toast } = useToast();
+  // const { restaurantId } = useParams();
+  const [totalOrdersToday, setTotalOrdersToday] = useState(0);
+  const [totalSalesToday, setTotalSalesToday] = useState(0);
+
+  useEffect(() => {
+    //if (!restaurantId) return;
+    fetch(`http://localhost:3000/insights/today/681f3a4888df8faae5bbd380`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch insights");
+        return res.json();
+      })
+      .then((data) => {
+        setTotalOrdersToday(data.totalOrdersToday || 0);
+        setTotalSalesToday(data.totalSalesToday || 0);
+      })
+      .catch((err) => console.error("API Error:", err));
+  }, []);
 
   const handleViewOrder = (tableId: number) => {
     toast({
       title: "Viewing Order",
-      description: `Opening order details for Table ₹
-{tableId}`,
+      description: `Opening order details for Table ${tableId}`,
     });
   };
 
   const handleGenerateQR = (tableId: number) => {
     toast({
       title: "QR Code Generated",
-      description: `QR code for Table ₹
-{tableId} has been generated`,
+      description: `QR code for Table ${tableId} has been generated`,
     });
   };
 
-  // Mock data
   const tables = [
-    { id: 1, number: 1, status: 'occupied' as const, items: 4, time: '32m' },
-    { id: 2, number: 2, status: 'service' as const, items: 2, time: '12m' },
-    { id: 3, number: 3, status: 'available' as const },
-    { id: 4, number: 4, status: 'occupied' as const, items: 6, time: '45m' },
+    { id: 1, number: 1, status: "occupied" as const, items: 4, time: "32m" },
+    { id: 2, number: 2, status: "service" as const, items: 2, time: "12m" },
+    { id: 3, number: 3, status: "available" as const },
+    { id: 4, number: 4, status: "occupied" as const, items: 6, time: "45m" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Welcome back, here's what's happening today.</p>
+        <p className="text-gray-500 mt-1">
+          Welcome back, here's what's happening today.
+        </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Orders" 
-          value="124" 
-          icon={<ShoppingBag className="text-navy" />} 
+        <StatCard
+          title="Total Orders"
+          value={String(totalOrdersToday)}
+          icon={<ShoppingBag className="text-navy" />}
           trend={{ value: "12%", positive: true }}
         />
-        <StatCard 
-          title="Daily Revenue" 
-          value="₹
-1,431" 
-          icon={<DollarSign className="text-navy" />} 
+        <StatCard
+          title="Daily Revenue"
+          value={`₹${totalSalesToday}`}
+          icon={<DollarSign className="text-navy" />}
           trend={{ value: "8%", positive: true }}
         />
-        <StatCard 
-          title="Active Tables" 
-          value="7/12" 
-          icon={<TableProperties className="text-navy" />} 
+        <StatCard
+          title="Active Tables"
+          value="7/12"
+          icon={<TableProperties className="text-navy" />}
         />
-        <StatCard 
-          title="Pending Orders" 
-          value="3" 
-          icon={<Clock className="text-navy" />} 
+        <StatCard
+          title="Pending Orders"
+          value="3"
+          icon={<Clock className="text-navy" />}
           trend={{ value: "2", positive: false }}
         />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -86,14 +108,14 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Table Status</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {tables.map((table) => (
-              <TableCard 
+              <TableCard
                 key={table.id}
                 tableNumber={table.number}
                 status={table.status}
@@ -106,7 +128,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      
+
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Revenue Overview</h2>
@@ -114,7 +136,9 @@ const Dashboard = () => {
         <div className="bg-white rounded-xl shadow-sm p-5 h-80 flex items-center justify-center">
           <div className="text-center">
             <BarChart3 size={48} className="mx-auto text-gray-300" />
-            <p className="mt-2 text-gray-500">Sales analytics will appear here</p>
+            <p className="mt-2 text-gray-500">
+              Sales analytics will appear here
+            </p>
           </div>
         </div>
       </div>

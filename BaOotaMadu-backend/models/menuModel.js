@@ -6,7 +6,7 @@ const MenuSchema = new mongoose.Schema({
  // description: { type: String },
   price: { type: Number, required: true },
   category: { type: String },
-  //image_url: { type: String },
+  image_url: { type: String },
   created_at: { type: Date, default: Date.now }
 });
 

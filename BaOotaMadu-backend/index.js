@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 const app = express();
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
@@ -6,6 +7,7 @@ const connectdb = require('./config/dbConnection.js');
 connectdb();
 const port = process.env.PORT || 3000;
 app.use(express.json());
+app.use(cors()); 
 app.get('/',(req,res)=>{
     res.send('Food App');
 })

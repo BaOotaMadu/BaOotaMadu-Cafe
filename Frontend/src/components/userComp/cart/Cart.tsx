@@ -1,12 +1,12 @@
-import React from 'react';
-import { X, ShoppingBag, Trash2, CreditCard } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCart, CartItem } from '@/hooks/useCart';
-import { useOrder } from '@/hooks/useOrder';
+import React from "react";
+import { X, ShoppingBag, Trash2, CreditCard } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCart, CartItem } from "@/hooks/useCart";
+import { useOrder } from "@/hooks/useOrder";
 
 interface CartProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -44,46 +44,54 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
       {/* Item Image */}
       <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
         {item.image ? (
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
             <ShoppingBag size={20} />
           </div>
         )}
       </div>
-      
+
       {/* Item Details */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
           <h4 className="font-medium text-sm truncate">{item.name}</h4>
-          <span className="font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</span>
+          <span className="font-medium text-sm">
+            ${(item.price * item.quantity).toFixed(2)}
+          </span>
         </div>
-        
+
         <p className="text-muted-foreground text-xs line-clamp-1 mb-2">
           ${item.price.toFixed(2)} each
         </p>
-        
+
         {/* Quantity Controls */}
         <div className="flex items-center">
           <div className="flex items-center border rounded-md">
-            <button 
+            <button
               onClick={handleDecrement}
               className="px-2 py-1 text-xs hover:bg-muted transition-colors"
             >
               -
             </button>
-            <span className="px-3 py-1 text-xs font-medium border-x">{item.quantity}</span>
-            <button 
+            <span className="px-3 py-1 text-xs font-medium border-x">
+              {item.quantity}
+            </span>
+            <button
               onClick={handleIncrement}
               className="px-2 py-1 text-xs hover:bg-muted transition-colors"
             >
               +
             </button>
           </div>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
+
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-7 w-7 ml-2 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => removeItem(item.id)}
           >
@@ -98,16 +106,46 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
 const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const { cartItems, clearCart, cartTotal } = useCart();
   const { placeOrder } = useOrder();
-  
+
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
-    
+
     try {
-      await placeOrder(tableNumber, cartItems);
+      const restaurantId = "681f3a4888df8faae5bbd380"; // replace with actual ID from context or props
+      const customerName = "Guest"; // or get from user input if needed
+
+      const orderData = {
+        restaurant_id: restaurantId,
+        table_id: "605c72d5f8f7e01320bcb842", // assuming tableNumber is the table ID
+        customer_name: customerName,
+        order_items: cartItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total_amount: cartTotal,
+      };
+
+      const res = await fetch(
+        "http://localhost:3000/orders/681f3a4888df8faae5bbd380/place",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to place order");
+      }
+      console.log(res);
+      await res.json(); // optional: you could use this for confirmation
       clearCart();
       onClose();
     } catch (error) {
-      console.error('Failed to place order:', error);
+      console.error("Failed to place order:", error);
     }
   };
 
@@ -115,7 +153,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const serviceCharge = cartTotal * 0.05; // 5% service charge
   const totalWithTax = cartTotal + taxAmount + serviceCharge;
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-  
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -129,14 +167,14 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             onClick={onClose}
           />
-          
+
           {/* Cart panel */}
           <motion.div
             key="cart"
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed top-0 right-0 w-full max-w-md h-full bg-background z-50 shadow-xl flex flex-col"
           >
             {/* Header */}
@@ -145,25 +183,34 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <ShoppingBag size={18} /> Your Order
                 </h2>
-                <p className="text-sm text-muted-foreground">Table {tableNumber}</p>
+                <p className="text-sm text-muted-foreground">
+                  Table {tableNumber}
+                </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="rounded-full"
+              >
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            
+
             {/* Cart Items */}
             <ScrollArea className="flex-1">
               <div className="p-4">
                 <AnimatePresence>
                   {cartItems.length === 0 ? (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="h-64 flex flex-col items-center justify-center text-center p-4"
                     >
                       <div className="text-6xl mb-4">🍽️</div>
-                      <h3 className="text-xl font-medium mb-2">Your cart is empty</h3>
+                      <h3 className="text-xl font-medium mb-2">
+                        Your cart is empty
+                      </h3>
                       <p className="text-muted-foreground mb-4">
                         Add some delicious items from the menu to get started.
                       </p>
@@ -175,20 +222,20 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <Badge variant="outline" className="px-2 py-1">
-                          {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                          {itemCount} {itemCount === 1 ? "item" : "items"}
                         </Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-xs h-8" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-8"
                           onClick={clearCart}
                         >
                           Clear all
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-1">
-                        {cartItems.map(item => (
+                        {cartItems.map((item) => (
                           <React.Fragment key={item.id}>
                             <CartItemComponent item={item} />
                             <Separator />
@@ -200,7 +247,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                 </AnimatePresence>
               </div>
             </ScrollArea>
-            
+
             {/* Summary and Checkout */}
             {cartItems.length > 0 && (
               <div className="border-t">
@@ -210,37 +257,42 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>${cartTotal.toFixed(2)}</span>
                     </div>
-                    
+
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Tax (8%)</span>
                       <span>${taxAmount.toFixed(2)}</span>
                     </div>
-                    
+
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Service Charge (5%)</span>
+                      <span className="text-muted-foreground">
+                        Service Charge (5%)
+                      </span>
                       <span>${serviceCharge.toFixed(2)}</span>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="flex justify-between pt-2 font-medium">
                       <span>Total</span>
-                      <span className="text-lg">${totalWithTax.toFixed(2)}</span>
+                      <span className="text-lg">
+                        ${totalWithTax.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-4">
-                  <Button 
+                  <Button
                     className="w-full h-12"
                     size="lg"
                     onClick={handlePlaceOrder}
                   >
                     <CreditCard className="mr-2 h-4 w-4" /> Place Order
                   </Button>
-                  
+
                   <p className="text-center text-xs text-muted-foreground mt-3">
-                    By placing your order, you agree to our Terms of Service and Privacy Policy
+                    By placing your order, you agree to our Terms of Service and
+                    Privacy Policy
                   </p>
                 </div>
               </div>

@@ -1,42 +1,54 @@
-const Order = require("../models/orderModel");
-const Table = require("../models/tableModel");
+const Order = require("../models/orderModel"); 
 const mongoose = require("mongoose");
 
-exports.getInsights = async (req, res) => {
+const getInsights = async (req, res) => {
   try {
+    //console.log("MongoDB connected:", mongoose.connection.host);
+    //console.log("Fetching insights for restaurantId:", req.params.restaurantId);
+
+    const restaurantId = req.params.restaurantId;
+    //console.log("restaurantId param:", restaurantId);
+
+    const allOrders = await Order.find({ restaurant_id: restaurantId });
+    //console.log("All orders:", allOrders);
+
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    console.log(`Fetching insights for restaurantId: ${req.params.restaurantId}`);
-    console.log(`Today's date (start of the day): ${today}`);
+    today.setHours(0, 0, 0, 0); // midnight today
 
-    // Fetch total orders for today
     const totalOrders = await Order.countDocuments({
-      restaurantId: req.params.restaurantId,
-      createdAt: { $gte: today }
+      restaurant_id: new mongoose.Types.ObjectId(restaurantId),
+      created_at: { $gte: today }
     });
-    
-    console.log(`Total Orders for today: ${totalOrders}`);
 
-    // Fetch total sales for today
+    // ✅ Total sales aggregation
     const totalSales = await Order.aggregate([
-      { 
-        $match: { 
-          restaurantId: req.params.restaurantId, 
-          createdAt: { $gte: today } 
-        } 
+      {
+        $match: {
+          restaurant_id: new mongoose.Types.ObjectId(restaurantId),
+          created_at: { $gte: today }
+        }
       },
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$total_amount" }
+        }
+      }
     ]);
 
-    console.log(`Total Sales Aggregation Result: `, totalSales);
+    console.log("Total Orders for today:", totalOrders);
+    console.log("Total Sales Aggregation Result: ", totalSales);
 
-    res.status(200).json({
-      totalOrders,
-      totalSales: totalSales[0]?.total || 0
+    res.json({
+      totalOrdersToday: totalOrders,
+      totalSalesToday: totalSales.length > 0 ? totalSales[0].total : 0,
+      allOrders: allOrders
     });
-  } catch (error) {
-    console.error("Error fetching today's insights:", error);
-    res.status(500).json({ error: error.message });
+
+  } catch (err) {
+    console.error("Error fetching insights:", err);
+    res.status(500).json({ message: "Error fetching insights", error: err.message });
   }
 };
+
+module.exports = { getInsights };
