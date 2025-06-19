@@ -1,4 +1,3 @@
-// This is a potential implementation - you should adapt it to match your existing hook
 import { createContext, useContext, useState, useEffect } from 'react';
 
 export interface CartItem {
@@ -13,23 +12,20 @@ export interface CartItem {
 interface CartContextType {
   cartItems: CartItem[];
   addItem: (item: CartItem) => void;
+  addItemToCart: (item: Omit<CartItem, 'quantity'>) => void; // New function
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
+  isItemInCart: (id: string) => boolean; // Helper function
+  getItemQuantity: (id: string) => number; // Helper function
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Use local storage to persist cart between page refreshes
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('cart');
-      return savedCart ? JSON.parse(savedCart) : [];
-    }
-    return [];
-  });
+  // Note: localStorage is not supported in Claude artifacts, using regular state
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Calculate cart total
   const cartTotal = cartItems.reduce(
@@ -37,14 +33,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     0
   );
 
-  // Save cart to local storage whenever it changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems]);
+  // Helper function to check if item is in cart
+  const isItemInCart = (id: string): boolean => {
+    return cartItems.some(item => item.id === id);
+  };
 
-  // Add item to cart (or update quantity if already exists)
+  // Helper function to get item quantity
+  const getItemQuantity = (id: string): number => {
+    const item = cartItems.find(item => item.id === id);
+    return item ? item.quantity : 0;
+  };
+
+  // Add item to cart with quantity 0 initially (for display purposes)
+  const addItemToCart = (item: Omit<CartItem, 'quantity'>) => {
+    setCartItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((i) => i.id === item.id);
+      
+      if (existingItemIndex >= 0) {
+        // Item already exists, don't add duplicate
+        return prevItems;
+      } else {
+        // Add new item with quantity 0
+        return [...prevItems, { ...item, quantity: 0 }];
+      }
+    });
+  };
+
+  // Legacy addItem function (kept for backward compatibility)
   const addItem = (item: CartItem) => {
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex((i) => i.id === item.id);
@@ -93,10 +108,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         cartItems,
         addItem,
+        addItemToCart,
         removeItem,
         updateItemQuantity,
         clearCart,
         cartTotal,
+        isItemInCart,
+        getItemQuantity,
       }}
     >
       {children}
