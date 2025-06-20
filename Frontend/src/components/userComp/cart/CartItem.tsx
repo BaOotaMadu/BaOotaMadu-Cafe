@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { X, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,13 +9,31 @@ interface CartItemProps {
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
-  const { addToCart, removeFromCart } = useCart();
+  // Use the correct function names from the fixed cart hook
+  const { updateItemQuantity, removeItem } = useCart();
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(item.id);
+      // Use removeItem instead of removeFromCart
+      removeItem(item.id);
     } else {
-      addToCart({ ...item, quantity: newQuantity });
+      // Use updateItemQuantity instead of addToCart
+      updateItemQuantity(item.id, newQuantity);
+    }
+  };
+
+  // Handle increment
+  const handleIncrement = () => {
+    updateItemQuantity(item.id, item.quantity + 1);
+  };
+
+  // Handle decrement
+  const handleDecrement = () => {
+    if (item.quantity > 1) {
+      updateItemQuantity(item.id, item.quantity - 1);
+    } else {
+      // Remove item when quantity becomes 0
+      removeItem(item.id);
     }
   };
 
@@ -45,11 +62,11 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             )}
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
-            onClick={() => removeFromCart(item.id)}
+            onClick={() => removeItem(item.id)}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -59,22 +76,22 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
           <div className="font-medium">${(item.price * item.quantity).toFixed(2)}</div>
           
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="h-6 w-6"
-              onClick={() => handleQuantityChange(item.quantity - 1)}
+              onClick={handleDecrement}
             >
               <Minus className="h-3 w-3" />
             </Button>
             
             <span className="text-sm w-4 text-center">{item.quantity}</span>
             
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="h-6 w-6"
-              onClick={() => handleQuantityChange(item.quantity + 1)}
+              onClick={handleIncrement}
             >
               <Plus className="h-3 w-3" />
             </Button>

@@ -56,11 +56,11 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
   const { addItem, cartItems } = useCart();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Initialize quantities with default values of 1
+  // Initialize quantities with default values of 0
   useEffect(() => {
     const initialQuantities: Record<string, number> = {};
     Object.values(foodItems).flat().forEach(item => {
-      initialQuantities[item.id] = 1;
+      initialQuantities[item.id] = 0;
     });
     setQuantities(initialQuantities);
   }, []);
@@ -90,25 +90,28 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
     setQuantities(prev => ({
       ...prev,
-      [itemId]: Math.max(1, newQuantity), // Ensure minimum quantity is 1
+      [itemId]: Math.max(0, newQuantity), // Ensure minimum quantity is 0
     }));
   };
 
   const handleAddToCart = (item: FoodItem) => {
-    const quantity = quantities[item.id] || 1;
+    const quantity = quantities[item.id] || 0;
     
-    // Create a proper cart item with all required properties
-    const cartItem = {
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      description: item.description,
-      quantity: quantity
-    };
-    
-    // Add the item to cart
-    addItem(cartItem);
+    // Only add to cart if quantity is greater than 0
+    if (quantity > 0) {
+      // Create a proper cart item with all required properties
+      const cartItem = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        description: item.description,
+        quantity: quantity
+      };
+      
+      // Add the item to cart
+      addItem(cartItem);
+    }
   };
 
   const toggleCart = () => {
@@ -231,16 +234,16 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
                     <div className="flex items-center h-6 border rounded-md overflow-hidden">
                       <button
                         className="text-primary hover:bg-primary/10 h-full px-1 flex items-center justify-center"
-                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) - 1)}
+                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 0) - 1)}
                       >
                         <MinusCircle size={14} />
                       </button>
                       <span className="w-6 text-center text-xs font-medium border-x">
-                        {quantities[item.id] || 1}
+                        {quantities[item.id] || 0}
                       </span>
                       <button
                         className="text-primary hover:bg-primary/10 h-full px-1 flex items-center justify-center"
-                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 1) + 1)}
+                        onClick={() => handleQuantityChange(item.id, (quantities[item.id] || 0) + 1)}
                       >
                         <PlusCircle size={14} />
                       </button>

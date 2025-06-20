@@ -72,6 +72,23 @@ const Menu = () => {
       );
   }, []);
 
+  // Add this after your existing fetch useEffect
+useEffect(() => {
+  // Ensure all newly fetched items are available by default
+  if (menuItems.length > 0) {
+    const hasUnavailableItems = menuItems.some(item => item.available === false || item.available === undefined);
+    
+    if (hasUnavailableItems) {
+      setMenuItems(prevItems => 
+        prevItems.map(item => ({
+          ...item,
+          available: item.available !== false // Set to true if undefined or false initially
+        }))
+      );
+    }
+  }
+}, [menuItems.length]); // Only run when items are first loaded
+
   const form = useForm<MenuItemForm>({
     defaultValues: {
       name: "",
@@ -228,6 +245,11 @@ const Menu = () => {
       item.category.toLowerCase() === categoryFilter.toLowerCase();
     return matchesSearch && matchesCategory;
   });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+  if (a.available === b.available) return 0;
+  return b.available - a.available; // Available (true) comes before unavailable (false)
+});
 
   return (
     <div className="space-y-6">
@@ -410,9 +432,9 @@ const Menu = () => {
           </Button>
         )}
       </div>
-      {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
+          {sortedItems.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {sortedItems.map((item) => (
             <MenuItemCard
               key={item._id}
               id={item._id}
