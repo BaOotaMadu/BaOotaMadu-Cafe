@@ -46,7 +46,7 @@ interface MenuItemForm {
   image: string;
 }
 
-const API_URL = "http://localhost:3000/menu"; // Change if your endpoint is different
+const API_URL = "http://localhost:3000/menu";
 
 const Menu = () => {
   const { toast } = useToast();
@@ -92,6 +92,48 @@ const Menu = () => {
       setOpenEditDialog(true);
     }
   };
+  // const handleUpdateItem = async () => {
+  //   if (!editingItem) return;
+
+  //   const updatedItem = {
+  //     name: form.getValues("name"),
+  //     category: form.getValues("category"),
+  //     price: parseFloat(form.getValues("price")),
+  //     image: form.getValues("image"),
+  //   };
+
+  //   try {
+  //     const res = await fetch(`http://localhost:3000/menu/${editingItem._id}`, {
+  //       method: "PUT", // or PATCH if your backend expects that
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(updatedItem),
+  //     });
+
+  //     if (!res.ok) throw new Error("Failed to update item");
+
+  //     const updatedData = await res.json();
+
+  //     // update state
+  //     setMenuItems((prev) =>
+  //       prev.map((item) => (item._id === editingItem._id ? updatedData : item))
+  //     );
+
+  //     setOpenEditDialog(false);
+  //     setEditingItem(null);
+  //     toast({
+  //       title: "Success",
+  //       description: "Menu item updated",
+  //     });
+  //   } catch (err) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Could not update item",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   const handleDelete = async (id: string) => {
     try {
@@ -172,51 +214,6 @@ const Menu = () => {
       toast({
         title: "Error",
         description: "Failed to add item",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveEdit = async (data: MenuItemForm) => {
-    const price = parseFloat(data.price);
-    if (isNaN(price) || price <= 0) {
-      toast({
-        title: "Invalid Price",
-        description: "Please enter a valid price",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!editingItem) return;
-
-    try {
-      const res = await fetch(`${API_URL}/${editingItem._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          category: data.category,
-          price,
-          available: editingItem.available,
-          image: data.image || editingItem.image,
-        }),
-      });
-      const updatedItem = await res.json();
-      setMenuItems((prev) =>
-        prev.map((item) => (item._id === updatedItem._id ? updatedItem : item))
-      );
-      form.reset();
-      setOpenEditDialog(false);
-      setEditingItem(null);
-      toast({
-        title: "Menu Item Updated",
-        description: `${updatedItem.name} has been updated`,
-      });
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to update item",
         variant: "destructive",
       });
     }
@@ -459,7 +456,7 @@ const Menu = () => {
           </DialogHeader>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleSaveEdit)}
+              onSubmit={form.handleSubmit(handleAddItem)}
               className="space-y-4"
             >
               <FormField
