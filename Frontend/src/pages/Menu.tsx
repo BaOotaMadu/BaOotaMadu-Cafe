@@ -111,48 +111,51 @@ const Menu = () => {
       setOpenEditDialog(true);
     }
   };
-  // const handleUpdateItem = async () => {
-  //   if (!editingItem) return;
+  const handleUpdateItem = async () => {
+    if (!editingItem) return;
 
-  //   const updatedItem = {
-  //     name: form.getValues("name"),
-  //     category: form.getValues("category"),
-  //     price: parseFloat(form.getValues("price")),
-  //     image: form.getValues("image"),
-  //   };
+    const updatedItem = {
+      name: form.getValues("name"),
+      category: form.getValues("category"),
+      price: parseFloat(form.getValues("price")),
+      image: form.getValues("image"),
+    };
 
-  //   try {
-  //     const res = await fetch(`http://localhost:3000/menu/${editingItem._id}`, {
-  //       method: "PUT", // or PATCH if your backend expects that
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(updatedItem),
-  //     });
+    try {
+      const res = await fetch(
+        `http://localhost:3000/menu/update/${editingItem._id}`,
+        {
+          method: "PUT", // or PATCH if your backend expects that
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedItem),
+        }
+      );
 
-  //     if (!res.ok) throw new Error("Failed to update item");
+      if (!res.ok) throw new Error("Failed to update item");
 
-  //     const updatedData = await res.json();
+      const updatedData = await res.json();
 
-  //     // update state
-  //     setMenuItems((prev) =>
-  //       prev.map((item) => (item._id === editingItem._id ? updatedData : item))
-  //     );
+      // update state
+      setMenuItems((prev) =>
+        prev.map((item) => (item._id === editingItem._id ? updatedData : item))
+      );
 
-  //     setOpenEditDialog(false);
-  //     setEditingItem(null);
-  //     toast({
-  //       title: "Success",
-  //       description: "Menu item updated",
-  //     });
-  //   } catch (err) {
-  //     toast({
-  //       title: "Error",
-  //       description: "Could not update item",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
+      setOpenEditDialog(false);
+      setEditingItem(null);
+      toast({
+        title: "Success",
+        description: "Menu item updated",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Could not update item",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -173,16 +176,45 @@ const Menu = () => {
   };
 
   // Function to toggle availability(To be fixed)
+  // const handleToggleAvailability = async (id: string, available: boolean) => {
+  //   try {
+  //     await fetch(`${API_URL}/${id}`, {
+  //       method: "PATCH",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ available }),
+  //     });
+  //     setMenuItems((prevItems) =>
+  //       prevItems.map((item) =>
+  //         item._id === id ? { ...item, available } : item
+  //       )
+  //     );
+  //     toast({
+  //       title: `Item ${available ? "Available" : "Unavailable"}`,
+  //       description: `Item is now ${available ? "available" : "unavailable"}`,
+  //     });
+  //   } catch {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to update availability",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
   const handleToggleAvailability = async (id: string, available: boolean) => {
     try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ available }),
-      });
+      const res = await fetch(
+        `http://localhost:3000/menu/updateAvailable/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ available }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to update availability");
+      const updatedItem = await res.json();
       setMenuItems((prevItems) =>
         prevItems.map((item) =>
-          item._id === id ? { ...item, available } : item
+          item._id === id ? { ...item, available: updatedItem.available } : item
         )
       );
       toast({
@@ -481,7 +513,7 @@ const Menu = () => {
           </DialogHeader>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleAddItem)}
+              onSubmit={form.handleSubmit(handleUpdateItem)}
               className="space-y-4"
             >
               <FormField

@@ -44,6 +44,21 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
+router.put("/updateAvailable/:id", async (req, res) => {
+  try {
+    const { available } = req.body;
+    const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, { available }, { new: true });
+
+    if (!updatedItem) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    res.status(200).json(updatedItem);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete Menu Item (Ensures handling for non-existent items)
 router.delete("/delete/:id", async (req, res) => {
   try {

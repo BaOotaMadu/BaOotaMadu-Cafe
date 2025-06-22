@@ -65,7 +65,6 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
         const firstCategory = Object.keys(categorized)[0];
         if (firstCategory) setSelectedCategory(firstCategory);
 
-        // Initialize quantities
         const initialQuantities: Record<string, number> = {};
         Object.values(categorized)
           .flat()

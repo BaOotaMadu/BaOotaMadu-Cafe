@@ -1,7 +1,7 @@
-import { Edit, Trash2 } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Edit, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface MenuItemCardProps {
   id: string;
@@ -26,16 +26,18 @@ const MenuItemCard = ({
   className,
   onToggleAvailability,
   onEdit,
-  onDelete
+  onDelete,
 }: MenuItemCardProps) => {
   return (
-    <div className={cn(
-      "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 animated-card transition-all duration-300",
-      !available && "opacity-50 bg-gray-50 border-gray-200",
-      className
-    )}>
+    <div
+      className={cn(
+        "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 animated-card transition-all duration-300",
+        !available && "opacity-50 bg-gray-50 border-gray-200",
+        className
+      )}
+    >
       <div className="h-48 overflow-hidden relative">
-        <img 
+        <img
           src={image}
           alt={name}
           className={cn(
@@ -51,45 +53,62 @@ const MenuItemCard = ({
           </div>
         )}
       </div>
-            
+
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className={cn(
-              "font-semibold text-lg line-clamp-1",
-              !available && "text-gray-500"
-            )}>
+            <h3
+              className={cn(
+                "font-semibold text-lg line-clamp-1",
+                !available && "text-gray-500"
+              )}
+            >
               {name}
             </h3>
-            <span className={cn(
-              "text-xs uppercase",
-              available ? "text-gray-500" : "text-gray-400"
-            )}>
+            <span
+              className={`text-xs px-2 py-1 rounded-full ${
+                available
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {available ? "Available" : "Unavailable"}
+            </span>
+            <span
+              className={cn(
+                "text-xs uppercase",
+                available ? "text-gray-500" : "text-gray-400"
+              )}
+            >
               {category}
             </span>
           </div>
-          <span className={cn(
-            "text-lg font-semibold",
-            available ? "text-navy" : "text-gray-400"
-          )}>
+          <span
+            className={cn(
+              "text-lg font-semibold",
+              available ? "text-navy" : "text-gray-400"
+            )}
+          >
             ₹ {price.toFixed(2)}
           </span>
         </div>
-                
+
         <div className="mt-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Switch 
+            <Switch
               checked={available}
               onCheckedChange={(checked) => onToggleAvailability(id, checked)}
             />
-            <span className={cn(
-              "text-sm font-medium",
-              available ? "text-green-600" : "text-red-500"
-            )}>
+            <span
+              className={cn(
+                "text-sm font-medium",
+                available ? "text-green-600" : "text-red-500"
+              )}
+            >
               {available ? "Available" : "Not Available"}
             </span>
           </div>
-                    
+
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={() => onEdit(id)}>
               <Edit size={16} />
