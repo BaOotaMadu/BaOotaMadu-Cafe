@@ -39,9 +39,12 @@ const getInsights = async (req, res) => {
     console.log("Total Orders for today:", totalOrders);
     console.log("Total Sales Aggregation Result: ", totalSales);
 
+    const pendingOrders = allOrders.filter(order => order.status === "pending");
+
     res.json({
       totalOrdersToday: totalOrders,
       totalSalesToday: totalSales.length > 0 ? totalSales[0].total : 0,
+      pendingOrders: pendingOrders.length,
       allOrders: allOrders
     });
 
