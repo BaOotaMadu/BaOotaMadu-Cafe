@@ -16,6 +16,7 @@ const Dashboard = () => {
   // const { restaurantId } = useParams();
   const [totalOrdersToday, setTotalOrdersToday] = useState(0);
   const [totalSalesToday, setTotalSalesToday] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState(0);
 
   useEffect(() => {
     //if (!restaurantId) return;
@@ -27,6 +28,7 @@ const Dashboard = () => {
       .then((data) => {
         setTotalOrdersToday(data.totalOrdersToday || 0);
         setTotalSalesToday(data.totalSalesToday || 0);
+        setPendingOrders(data.pendingOrders || 0);
       })
       .catch((err) => console.error("API Error:", err));
   }, []);
@@ -81,7 +83,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Pending Orders"
-          value="3"
+          value={String(pendingOrders)}
           icon={<Clock className="text-navy" />}
           trend={{ value: "2", positive: false }}
         />
