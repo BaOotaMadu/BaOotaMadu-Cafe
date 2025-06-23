@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import TableCard from '@/components/TableCard';
+import OrderDetailsDialog from '@/components/OrderDetailsDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
@@ -32,13 +33,15 @@ import QRCodeGenerator from '@/components/QRCodeGenerator';
 const Tables = () => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
-  const { tables } = useAppSelector(state => state.tables);
+  const { tables, orders } = useAppSelector(state => state.tables);
   
   const [activeTab, setActiveTab] = useState<string>('all');
   const [openAddDialog, setOpenAddDialog] = useState<boolean>(false);
   const [newTableNumber, setNewTableNumber] = useState<string>('');
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [selectedTableForOrder, setSelectedTableForOrder] = useState<number | null>(null);
 
   // Update table times every minute
   useEffect(() => {
@@ -113,10 +116,8 @@ const Tables = () => {
   }, [dispatch, tables, toast]);
 
   const handleViewOrder = (tableId: number) => {
-    toast({
-      title: "Viewing Order",
-      description: `Opening order details for Table ${tableId}`,
-    });
+    setSelectedTableForOrder(tableId);
+    setShowOrderDialog(true);
   };
 
   const handleGenerateQR = (tableId: number) => {
@@ -216,6 +217,11 @@ const Tables = () => {
 
   const filteredTables = filterTables(activeTab);
 
+  // Helper function to check if a table has an order
+  const getTableOrder = (tableNumber: number) => {
+    return orders.find(order => order.tableId === tableNumber);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -272,38 +278,46 @@ const Tables = () => {
         
         <TabsContent value="all" className="mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {tables.map((table) => (
-              <TableCard 
-                key={table.id}
-                tableNumber={table.number}
-                status={table.status}
-                orderItems={table.items}
-                timeElapsed={table.time}
-                onViewOrder={() => handleViewOrder(table.number)}
-                onGenerateQR={() => handleGenerateQR(table.number)}
-                onToggleAvailability={(available) => handleToggleAvailability(table.number, available)}
-                onDelete={() => handleDeleteTable(table.number)}
-              />
-            ))}
-          </div>
-        </TabsContent>
-        
-        {['available', 'occupied', 'service'].map((status) => (
-          <TabsContent key={status} value={status} className="mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filterTables(status).map((table) => (
+            {tables.map((table) => {
+              const tableOrder = getTableOrder(table.number);
+              return (
                 <TableCard 
                   key={table.id}
                   tableNumber={table.number}
                   status={table.status}
                   orderItems={table.items}
                   timeElapsed={table.time}
+                  hasOrder={!!tableOrder}
                   onViewOrder={() => handleViewOrder(table.number)}
                   onGenerateQR={() => handleGenerateQR(table.number)}
                   onToggleAvailability={(available) => handleToggleAvailability(table.number, available)}
                   onDelete={() => handleDeleteTable(table.number)}
                 />
-              ))}
+              );
+            })}
+          </div>
+        </TabsContent>
+        
+        {['available', 'occupied', 'service'].map((status) => (
+          <TabsContent key={status} value={status} className="mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filterTables(status).map((table) => {
+                const tableOrder = getTableOrder(table.number);
+                return (
+                  <TableCard 
+                    key={table.id}
+                    tableNumber={table.number}
+                    status={table.status}
+                    orderItems={table.items}
+                    timeElapsed={table.time}
+                    hasOrder={!!tableOrder}
+                    onViewOrder={() => handleViewOrder(table.number)}
+                    onGenerateQR={() => handleGenerateQR(table.number)}
+                    onToggleAvailability={(available) => handleToggleAvailability(table.number, available)}
+                    onDelete={() => handleDeleteTable(table.number)}
+                  />
+                );
+              })}
             </div>
           </TabsContent>
         ))}
@@ -330,6 +344,18 @@ const Tables = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Order Details Dialog */}
+      {showOrderDialog && selectedTableForOrder && (
+        <OrderDetailsDialog
+          open={showOrderDialog}
+          onClose={() => {
+            setShowOrderDialog(false);
+            setSelectedTableForOrder(null);
+          }}
+          tableNumber={selectedTableForOrder}
+        />
+      )}
     </div>
   );
 };

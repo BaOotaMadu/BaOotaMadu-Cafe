@@ -2,6 +2,14 @@ import { Utensils, QrCode, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import QRCodeGenerator from './QRCodeGenerator';
 
 type TableStatus = 'available' | 'occupied' | 'service';
 
@@ -11,6 +19,7 @@ interface TableCardProps {
   orderItems?: number;
   timeElapsed?: string;
   className?: string;
+  hasOrder?: boolean;
   onViewOrder?: () => void;
   onGenerateQR?: () => void;
   onToggleAvailability?: (available: boolean) => void;
@@ -23,40 +32,37 @@ const statusToLabel: Record<TableStatus, string> = {
   service: 'In Service'
 };
 
-const statusColors: Record<TableStatus, string> = {
-  available: 'bg-green-100 text-green-800',
-  occupied: 'bg-orange-100 text-orange-800',
-  service: 'bg-blue-100 text-blue-800'
-};
-
 const TableCard = ({
   tableNumber,
   status,
   orderItems = 0,
   timeElapsed,
   className,
+  hasOrder = false,
   onViewOrder,
   onGenerateQR,
   onToggleAvailability,
   onDelete
 }: TableCardProps) => {
+  const [openQRDialog, setOpenQRDialog] = useState(false);
+  
   return (
     <div className={cn(
-      "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100",
+      "bg-white rounded-xl shadow-sm overflow-hidden animated-card card-hover border border-gray-100",
       className
     )}>
       <div className="p-4 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Table {tableNumber}</h3>
           <span className={cn(
-            "px-2 py-1 rounded-full text-xs font-medium",
-            statusColors[status]
+            "status-badge",
+            `status-${status}`
           )}>
             {statusToLabel[status]}
           </span>
         </div>
       </div>
-      
+
       {status !== 'available' && (
         <div className="p-4">
           <div className="flex justify-between mb-3">
@@ -75,30 +81,41 @@ const TableCard = ({
       <div className="p-4 bg-gray-50 flex flex-col gap-3">
         <div className="flex gap-2">
           <Button 
-            variant="outline"
-            size="sm"
+            variant="outline" 
+            size="sm" 
             onClick={onViewOrder}
             className="flex-1 flex items-center gap-1"
-            disabled={status === 'available'}
           >
             <Utensils size={14} />
             <span>View Order</span>
           </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={onGenerateQR}
-            className="flex items-center gap-1"
-          >
-            <QrCode size={14} />
-          </Button>
+          
+          <Dialog open={openQRDialog} onOpenChange={setOpenQRDialog}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setOpenQRDialog(true);
+                if (onGenerateQR) onGenerateQR();
+              }}
+              className="flex items-center gap-1"
+            >
+              <QrCode size={14} />
+            </Button>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>QR Code for Table {tableNumber}</DialogTitle>
+              </DialogHeader>
+              <QRCodeGenerator tableId={tableNumber} />
+            </DialogContent>
+          </Dialog>
         </div>
         
         <div className="flex justify-between items-center">
           {onToggleAvailability && (
             <div className="flex items-center gap-2">
               <Switch 
-                checked={status === 'available'}
+                checked={status === 'available'} 
                 onCheckedChange={onToggleAvailability}
                 disabled={status === 'service'}
               />
@@ -107,9 +124,9 @@ const TableCard = ({
           )}
           
           {onDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
               onClick={onDelete}
             >
