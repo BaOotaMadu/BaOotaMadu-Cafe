@@ -127,7 +127,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
       };
 
       const res = await fetch(
-        "http://localhost:3000/orders/681f3a4888df8faae5bbd380/place",
+        "http://localhost:3001/orders/681f3a4888df8faae5bbd380/place",
         {
           method: "POST",
           headers: {

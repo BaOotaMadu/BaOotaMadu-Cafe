@@ -60,7 +60,7 @@ const Menu = () => {
   const restaurantId = "681f3a4888df8faae5bbd380";
   // Fetch menu items from backend
   useEffect(() => {
-    fetch(`http://localhost:3000/menu/681f3a4888df8faae5bbd380`)
+    fetch(`http://localhost:3001/menu/681f3a4888df8faae5bbd380`)
       .then((res) => res.json())
       .then((data) => setMenuItems(data))
       .catch(() =>
@@ -123,7 +123,7 @@ const Menu = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/menu/update/${editingItem._id}`,
+        `http://localhost:3001/menu/update/${editingItem._id}`,
         {
           method: "PUT", // or PATCH if your backend expects that
           headers: {

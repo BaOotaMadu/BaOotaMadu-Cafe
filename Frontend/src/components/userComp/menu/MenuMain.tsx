@@ -41,7 +41,7 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm = "" }) => {
     async function fetchFoodItems() {
       try {
         const res = await fetch(
-          "http://localhost:3000/menu/681f3a4888df8faae5bbd380"
+          "http://localhost:3001/menu/681f3a4888df8faae5bbd380"
         );
         const rawItems = await res.json();
 
