@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import {
   BarChart3,
   ShoppingBag,
@@ -11,16 +12,21 @@ import StatCard from "@/components/StatCard";
 import TableCard from "@/components/TableCard";
 import { useToast } from "@/hooks/use-toast";
 
+const socket = io("http://localhost:3001");
+
 const Dashboard = () => {
   const { toast } = useToast();
   // const { restaurantId } = useParams();
   const [totalOrdersToday, setTotalOrdersToday] = useState(0);
   const [totalSalesToday, setTotalSalesToday] = useState(0);
   const [pendingOrders, setPendingOrders] = useState(0);
+  const [recentMessages, setRecentMessages] = useState<
+    { message: string; time: string }[]
+  >([]);
 
+  // 1. Fetch dashboard stats (sales, orders, pending)
   useEffect(() => {
-    //if (!restaurantId) return;
-    fetch(`http://localhost:3000/insights/today/681f3a4888df8faae5bbd380`)
+    fetch(`http://localhost:3001/insights/today/681f3a4888df8faae5bbd380`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch insights");
         return res.json();
@@ -31,6 +37,27 @@ const Dashboard = () => {
         setPendingOrders(data.pendingOrders || 0);
       })
       .catch((err) => console.error("API Error:", err));
+  }, []);
+
+  // 2. Fetch recent activity from DB on mount
+  useEffect(() => {
+    fetch("http://localhost:3001/activities/681f3a4888df8faae5bbd380")
+      .then((res) => res.json())
+      .then((data) => {
+        setRecentMessages(data);
+      })
+      .catch((err) => console.error("Failed to fetch activities", err));
+  }, []);
+
+  // 3. Listen for new activity messages via socket
+  useEffect(() => {
+    socket.on("updateRecent", (newMessage) => {
+      setRecentMessages((prev) => [newMessage, ...prev.slice(0, 14)]);
+    });
+
+    return () => {
+      socket.off("updateRecent");
+    };
   }, []);
 
   const handleViewOrder = (tableId: number) => {
@@ -95,18 +122,27 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold">Recent Activity</h2>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-5 h-80 overflow-hidden">
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex gap-3 pb-4 border-b last:border-0">
-                  <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <ShoppingBag size={18} className="text-navy" />
+            <div className="space-y-4 overflow-y-auto h-full pr-2">
+              {recentMessages.length === 0 ? (
+                <p className="text-sm text-gray-400">No recent activity yet.</p>
+              ) : (
+                recentMessages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 pb-4 border-b last:border-0"
+                  >
+                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <ShoppingBag size={18} className="text-navy" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{msg.message}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(msg.time).toLocaleTimeString()}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">New order placed</p>
-                    <p className="text-sm text-gray-500">{i * 5} minutes ago</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

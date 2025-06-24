@@ -77,7 +77,10 @@ exports.deleteTable = async (req, res) => {
     if (!deletedTable) {
       return res.status(404).json({ message: "Table not found" });
     }
-
+    io.emit("updateRecent", {
+      message: `Table ${deletedTable.table_number} deleted`,
+      time: new Date().toISOString(),
+    });
     res.json({ message: "Table deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
