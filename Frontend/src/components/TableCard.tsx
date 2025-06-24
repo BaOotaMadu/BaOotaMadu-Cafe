@@ -69,12 +69,7 @@ const TableCard = ({
             <span className="text-gray-500 text-sm">Order Items:</span>
             <span className="font-medium">{orderItems}</span>
           </div>
-          {timeElapsed && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 text-sm">Time:</span>
-              <span className="font-medium">{timeElapsed}</span>
-            </div>
-          )}
+          {/* Removed time elapsed display - no automatic time tracking */}
         </div>
       )}
       

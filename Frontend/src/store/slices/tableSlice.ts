@@ -7,10 +7,10 @@ export interface Table {
   number: number;
   status: TableStatus;
   items?: number;
-  time?: string;
   orderId?: string;
   lastUpdate?: string;
   orderTotal?: number;
+  time?: string; // Keep this optional for compatibility with Dashboard
 }
 
 export interface Order {
@@ -34,6 +34,7 @@ interface TableState {
   error: string | null;
 }
 
+// All tables start as available
 const initialState: TableState = {
   tables: [
     { id: 1, number: 1, status: 'available' },
@@ -60,8 +61,10 @@ const tableSlice = createSlice({
         table.status = status;
         if (status === 'available') {
           table.items = undefined;
-          table.time = undefined;
           table.orderTotal = undefined;
+          table.orderId = undefined;
+          table.lastUpdate = undefined;
+          table.time = undefined;
         }
       }
     },
@@ -79,7 +82,6 @@ const tableSlice = createSlice({
       if (table) {
         table.status = 'occupied';
         table.items = action.payload.items.reduce((sum, item) => sum + item.quantity, 0);
-        table.time = '1m'; // Starting timer
         table.orderId = action.payload.id;
         table.lastUpdate = action.payload.createdAt;
         table.orderTotal = action.payload.total;
@@ -101,10 +103,10 @@ const tableSlice = createSlice({
             if (updates.status === 'completed') {
               table.status = 'available';
               table.items = undefined;
-              table.time = undefined;
               table.orderId = undefined;
               table.lastUpdate = undefined;
               table.orderTotal = undefined;
+              table.time = undefined;
             } else if (updates.status === 'delivered' || updates.status === 'preparing') {
               table.status = 'service';
             }
@@ -125,23 +127,12 @@ const tableSlice = createSlice({
         if (table) {
           table.status = 'available';
           table.items = undefined;
-          table.time = undefined;
           table.orderId = undefined;
           table.lastUpdate = undefined;
           table.orderTotal = undefined;
+          table.time = undefined;
         }
       }
-    },
-    updateTableTime: (state) => {
-      // This can be called every minute to update the elapsed time
-      state.tables.forEach(table => {
-        if (table.time) {
-          const currentMinutes = parseInt(table.time);
-          if (!isNaN(currentMinutes)) {
-            table.time = `${currentMinutes + 1}m`;
-          }
-        }
-      });
     }
   }
 });
@@ -153,8 +144,7 @@ export const {
   removeTable, 
   addOrder, 
   updateOrder, 
-  completeOrder,
-  updateTableTime
+  completeOrder
 } = tableSlice.actions;
 
 export default tableSlice.reducer;
