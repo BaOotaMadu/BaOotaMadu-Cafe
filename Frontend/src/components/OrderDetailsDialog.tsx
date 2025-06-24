@@ -41,57 +41,303 @@ const OrderDetailsDialog = ({ open, onClose, tableNumber }: OrderDetailsDialogPr
   }
 
   const handlePrintBill = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Bill - Table ${tableNumber}</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .bill-container { max-width: 400px; margin: 0 auto; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .order-item { display: flex; justify-content: space-between; margin: 5px 0; }
-              .total { font-weight: bold; border-top: 1px solid #ccc; padding-top: 10px; margin-top: 10px; }
-              .separator { border-bottom: 1px dashed #ccc; margin: 10px 0; }
-            </style>
-          </head>
-          <body>
-            <div class="bill-container">
-              <div class="header">
-                <h2>Restaurant Bill</h2>
-                <p>Table ${tableNumber}</p>
-                <p>Order ID: ${tableOrder.id}</p>
-                <p>Date: ${new Date(tableOrder.createdAt).toLocaleDateString()}</p>
-                <p>Time: ${new Date(tableOrder.createdAt).toLocaleTimeString()}</p>
-              </div>
-              <div class="separator"></div>
-              <div class="items">
-                ${tableOrder.items.map(item => `
-                  <div class="order-item">
-                    <span>${item.name} x ${item.quantity}</span>
-                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                `).join('')}
-              </div>
-              <div class="separator"></div>
-              <div class="total">
-                <div class="order-item">
-                  <span>Total:</span>
-                  <span>$${tableOrder.total.toFixed(2)}</span>
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Bill - Table ${tableNumber}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            body { 
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+              color: #2d3748;
+            }
+            
+            .bill-container { 
+              background: white;
+              max-width: 420px;
+              width: 100%;
+              border-radius: 16px;
+              box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+              overflow: hidden;
+              position: relative;
+            }
+            
+            .bill-container::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 4px;
+              background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+            }
+            
+            .header { 
+              text-align: center;
+              padding: 32px 24px 24px;
+              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+              border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .restaurant-name {
+              font-size: 28px;
+              font-weight: 700;
+              color: #1a202c;
+              margin-bottom: 8px;
+              letter-spacing: -0.5px;
+            }
+            
+            .bill-title {
+              font-size: 16px;
+              color: #64748b;
+              font-weight: 500;
+              margin-bottom: 20px;
+            }
+            
+            .order-details {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-top: 16px;
+            }
+            
+            .detail-item {
+              text-align: center;
+              padding: 12px;
+              background: white;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            
+            .detail-label {
+              font-size: 12px;
+              color: #64748b;
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 4px;
+            }
+            
+            .detail-value {
+              font-size: 14px;
+              color: #1a202c;
+              font-weight: 600;
+            }
+            
+            .items-section {
+              padding: 24px;
+            }
+            
+            .section-title {
+              font-size: 18px;
+              font-weight: 600;
+              color: #1a202c;
+              margin-bottom: 16px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            
+            .section-title::before {
+              content: '🍽️';
+              font-size: 20px;
+            }
+            
+            .order-item { 
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin: 12px 0;
+              padding: 12px 0;
+              border-bottom: 1px solid #f1f5f9;
+            }
+            
+            .order-item:last-child {
+              border-bottom: none;
+            }
+            
+            .item-details {
+              flex: 1;
+            }
+            
+            .item-name {
+              font-size: 15px;
+              font-weight: 500;
+              color: #1a202c;
+              margin-bottom: 2px;
+            }
+            
+            .item-quantity {
+              font-size: 13px;
+              color: #64748b;
+              font-weight: 400;
+            }
+            
+            .item-price {
+              font-size: 15px;
+              font-weight: 600;
+              color: #059669;
+              white-space: nowrap;
+            }
+            
+            .separator { 
+              height: 1px;
+              background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+              margin: 20px 24px;
+            }
+            
+            .total-section {
+              padding: 0 24px 24px;
+            }
+            
+            .subtotal-item {
+              display: flex;
+              justify-content: space-between;
+              margin: 8px 0;
+              font-size: 14px;
+              color: #64748b;
+            }
+            
+            .total { 
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-weight: 700;
+              font-size: 20px;
+              color: #1a202c;
+              padding: 16px;
+              background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              border-radius: 12px;
+              margin-top: 16px;
+              border: 2px solid #0ea5e9;
+            }
+            
+            .footer { 
+              text-align: center;
+              padding: 24px;
+              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+              border-top: 1px solid #e2e8f0;
+            }
+            
+            .thank-you {
+              font-size: 16px;
+              color: #1a202c;
+              font-weight: 600;
+              margin-bottom: 8px;
+            }
+            
+            .footer-message {
+              font-size: 14px;
+              color: #64748b;
+              line-height: 1.5;
+            }
+            
+            .decorative-element {
+              text-align: center;
+              margin: 16px 0;
+              font-size: 24px;
+              opacity: 0.3;
+            }
+            
+            @media print {
+              body {
+                background: white !important;
+                padding: 0 !important;
+              }
+              
+              .bill-container {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-width: none !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="bill-container">
+            <div class="header">
+              <h1 class="restaurant-name">Bella Vista</h1>
+              <p class="bill-title">Restaurant Bill</p>
+              <div class="order-details">
+                <div class="detail-item">
+                  <div class="detail-label">Table</div>
+                  <div class="detail-value">${tableNumber}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Order ID</div>
+                  <div class="detail-value">#${tableOrder.id}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Date</div>
+                  <div class="detail-value">${new Date(tableOrder.createdAt).toLocaleDateString()}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Time</div>
+                  <div class="detail-value">${new Date(tableOrder.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                 </div>
               </div>
-              <div style="text-align: center; margin-top: 20px;">
-                <p>Thank you for dining with us!</p>
+            </div>
+            
+            <div class="items-section">
+              <h2 class="section-title">Order Items</h2>
+              ${tableOrder.items.map(item => `
+                <div class="order-item">
+                  <div class="item-details">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-quantity">Qty: ${item.quantity} × $${item.price.toFixed(2)}</div>
+                  </div>
+                  <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div class="total-section">
+              <div class="subtotal-item">
+                <span>Subtotal:</span>
+                <span>$${(tableOrder.total * 0.9).toFixed(2)}</span>
+              </div>
+              <div class="subtotal-item">
+                <span>Tax (10%):</span>
+                <span>$${(tableOrder.total * 0.1).toFixed(2)}</span>
+              </div>
+              
+              <div class="total">
+                <span>Total Amount:</span>
+                <span>$${tableOrder.total.toFixed(2)}</span>
               </div>
             </div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
-  };
+            
+            <div class="decorative-element">✨ ◆ ✨</div>
+            
+            <div class="footer">
+              <p class="thank-you">Thank you for dining with us!</p>
+              <p class="footer-message">We hope you enjoyed your meal and look forward to serving you again soon.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  }
+};
 
   return (
     <>
