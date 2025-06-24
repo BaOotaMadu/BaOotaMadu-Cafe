@@ -95,6 +95,7 @@ const getTableOrders = async (req, res) => {
     }
 
     res.json(orders);
+    console.log(table_id, restaurant_id)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
