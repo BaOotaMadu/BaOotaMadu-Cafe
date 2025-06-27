@@ -21,6 +21,11 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors()); 
 
+require('./models/restaurantModel.js');
+require('./models/tableModel.js');
+require('./models/orderModel.js');
+require('./models/activityModel.js');
+
 app.get('/', (req, res) => {
   res.send('Food App');
 });
@@ -28,7 +33,7 @@ app.get('/', (req, res) => {
 app.use('/auth', require('./routes/authroutes.js'));
 app.use('/user', require('./routes/userRoutes.js'));
 app.use('/orders', require('./routes/orderRoutes.js')(io)); // pass io
-app.use('/tableInfo', require('./routes/tableRoutes.js'));
+app.use('/tables', require('./routes/tableRoutes.js'));
 app.use('/menu', require('./routes/menuRoutes.js'));
 app.use('/insights', require('./routes/insightsRoutes'));
 app.use("/activities", require("./routes/activityRoutes"));
