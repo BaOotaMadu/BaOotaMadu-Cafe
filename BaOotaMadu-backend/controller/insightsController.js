@@ -1,30 +1,26 @@
-const Order = require("../models/orderModel"); 
+const Order = require("../models/orderModel");
 const mongoose = require("mongoose");
 
 const getInsights = async (req, res) => {
   try {
-    //console.log("MongoDB connected:", mongoose.connection.host);
-    //console.log("Fetching insights for restaurantId:", req.params.restaurantId);
-
     const restaurantId = req.params.restaurantId;
-    //console.log("restaurantId param:", restaurantId);
+    const restaurantObjectId = new mongoose.Types.ObjectId(restaurantId);
 
-    const allOrders = await Order.find({ restaurant_id: restaurantId });
-    //console.log("All orders:", allOrders);
-
+    // Start of today
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // midnight today
+    today.setHours(0, 0, 0, 0);
 
-    const totalOrders = await Order.countDocuments({
-      restaurant_id: new mongoose.Types.ObjectId(restaurantId),
+    // Total orders today
+    const totalOrdersToday = await Order.countDocuments({
+      restaurant_id: restaurantObjectId,
       created_at: { $gte: today }
     });
 
-    // ✅ Total sales aggregation
-    const totalSales = await Order.aggregate([
+    // Total sales today
+    const totalSalesResult = await Order.aggregate([
       {
         $match: {
-          restaurant_id: new mongoose.Types.ObjectId(restaurantId),
+          restaurant_id: restaurantObjectId,
           created_at: { $gte: today }
         }
       },
@@ -36,21 +32,26 @@ const getInsights = async (req, res) => {
       }
     ]);
 
-    console.log("Total Orders for today:", totalOrders);
-    console.log("Total Sales Aggregation Result: ", totalSales);
+    // Pending orders today
+    const pendingOrdersToday = await Order.countDocuments({
+      restaurant_id: restaurantObjectId,
+      status: "pending",
+      created_at: { $gte: today }
+    });
 
-    const pendingOrders = allOrders.filter(order => order.status === "pending");
-
+    // Final response
     res.json({
-      totalOrdersToday: totalOrders,
-      totalSalesToday: totalSales.length > 0 ? totalSales[0].total : 0,
-      pendingOrders: pendingOrders.length,
-      allOrders: allOrders
+      totalOrdersToday,
+      totalSalesToday: totalSalesResult.length > 0 ? totalSalesResult[0].total : 0,
+      pendingOrdersToday
     });
 
   } catch (err) {
     console.error("Error fetching insights:", err);
-    res.status(500).json({ message: "Error fetching insights", error: err.message });
+    res.status(500).json({
+      message: "Error fetching insights",
+      error: err.message
+    });
   }
 };
 

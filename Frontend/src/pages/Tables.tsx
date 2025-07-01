@@ -1,170 +1,225 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import TableCard from '@/components/TableCard';
-import OrderDetailsDialog from '@/components/OrderDetailsDialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { 
-  addTable, 
-  removeTable, 
-  updateTableStatus, 
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import TableCard from "@/components/TableCard";
+import OrderDetailsDialog from "@/components/OrderDetailsDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Plus } from "lucide-react";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  addTable,
+  removeTable,
+  updateTableStatus,
   addOrder,
-  type Order
-} from '@/store/slices/tableSlice';
-import { addActivity, updateStats } from '@/store/slices/dashboardSlice';
-import QRCodeGenerator from '@/components/QRCodeGenerator';
+  setTables,
+  type Order,
+} from "@/store/slices/tableSlice";
+import { addActivity, updateStats } from "@/store/slices/dashboardSlice";
+import QRCodeGenerator from "@/components/QRCodeGenerator";
+
+const API_BASE = "http://localhost:3001";
+const restaurantId = "681f3a4888df8faae5bbd380";
 
 // Backend integration functions - replace these with actual API calls
 const tableBackendActions = {
-  // Function to mark table as occupied (when customer scans QR)
-  occupyTable: async (tableId: number) => {
-    console.log(`Backend: Table ${tableId} occupied`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}/occupy`, { method: 'POST' });
-    return true;
+  occupyTable: async (tableId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/tables/occupy/${tableId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to occupy table");
+      }
+
+      return data; // contains { message, table }
+    } catch (error) {
+      console.error(`Error occupying table ${tableId}:`, error);
+      throw error; // Let the UI handle it
+    }
   },
 
-  // Function to mark table as in service (when order is placed)
-  serviceTable: async (tableId: number, orderData: any) => {
-    console.log(`Backend: Table ${tableId} in service with order:`, orderData);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}/service`, { 
-    //   method: 'POST', 
-    //   body: JSON.stringify(orderData) 
-    // });
-    return true;
-  },
+  // // Function to mark table as in service (when order is placed)
+  // serviceTable: async (tableId: number, orderData: any) => {
+  //   console.log(`Backend: Table ${tableId} in service with order:`, orderData);
+  //   // TODO: Replace with actual API call
+  //   // await fetch(`/api/tables/${tableId}/service`, {
+  //   //   method: 'POST',
+  //   //   body: JSON.stringify(orderData)
+  //   // });
+  //   return true;
+  // },
 
-  // Function to mark table as available (when bill is paid/table is cleared)
-  clearTable: async (tableId: number) => {
-    console.log(`Backend: Table ${tableId} cleared and available`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}/clear`, { method: 'POST' });
-    return true;
+  // // Function to mark table as available (when bill is paid/table is cleared)
+  clearTable: async (tableId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/tables/clear/${tableId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to clear table");
+      }
+
+      const data = await response.json();
+      return data; // Contains message, table, etc.
+    } catch (error) {
+      console.error(`Error clearing table ${tableId}:`, error);
+      throw error; // Let caller handle error
+    }
   },
 
   // Function to add new table
-  createTable: async (tableNumber: number) => {
-    console.log(`Backend: Creating table ${tableNumber}`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables`, { 
-    //   method: 'POST', 
-    //   body: JSON.stringify({ number: tableNumber }) 
-    // });
-    return true;
+  createTable: async (restaurantId: string, tableNumber: number) => {
+    const res = await fetch(`${API_BASE}/tables`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        restaurant_id: restaurantId,
+        table_number: tableNumber,
+      }),
+    });
+
+    if (!res.ok) throw new Error("Failed to create table");
+
+    return await res.json();
   },
 
-  // Function to delete table
-  deleteTable: async (tableId: number) => {
-    console.log(`Backend: Deleting table ${tableId}`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}`, { method: 'DELETE' });
-    return true;
+  deleteTable: async (tableId: string) => {
+    const res = await fetch(`${API_BASE}/tables/${tableId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "Failed to delete table");
+      throw new Error(errorText);
+    }
+
+    // If no body (e.g. 204), return nothing
+    if (res.status === 204) return {};
+
+    // Else parse body
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
   },
 
   // Function to generate QR code
-  generateQRCode: async (tableId: number) => {
-    console.log(`Backend: Generating QR code for table ${tableId}`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}/qr`, { method: 'POST' });
-    return true;
-  }
+  // generateQRCode: async (tableId: number) => {
+  //   console.log(`Backend: Generating QR code for table ${tableId}`);
+  //   // TODO: Replace with actual API call
+  //   // await fetch(`/api/tables/${tableId}/qr`, { method: 'POST' });
+  //   return true;
+  // },
 };
 
 const Tables = () => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
-  const { tables, orders } = useAppSelector(state => state.tables);
-  
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const { tables, orders } = useAppSelector((state) => state.tables);
+
+  const [activeTab, setActiveTab] = useState<string>("all");
   const [openAddDialog, setOpenAddDialog] = useState<boolean>(false);
-  const [newTableNumber, setNewTableNumber] = useState<string>('');
+  const [newTableNumber, setNewTableNumber] = useState<string>("");
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
-  const [selectedTableForOrder, setSelectedTableForOrder] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedTableForOrder, setSelectedTableForOrder] = useState<
+    number | null
+  >(null);
 
   // Add sample orders on component mount for demonstration
-  useEffect(() => {
-    const sampleOrders: Order[] = [
-      {
-        id: 'order-001',
-        tableId: 1,
-        items: [
-          { id: 1, name: 'Margherita Pizza', price: 15.99, quantity: 1 },
-          { id: 2, name: 'Caesar Salad', price: 9.99, quantity: 2 },
-          { id: 3, name: 'Coca Cola', price: 2.99, quantity: 3 }
-        ],
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        total: 34.95
-      },
-      {
-        id: 'order-002',
-        tableId: 2,
-        items: [
-          { id: 4, name: 'Beef Burger', price: 12.99, quantity: 2 },
-          { id: 5, name: 'French Fries', price: 5.99, quantity: 1 }
-        ],
-        status: 'preparing',
-        createdAt: new Date().toISOString(),
-        total: 31.97
-      }
-    ];
+  const fetchTables = async () => {
+    try {
+      console.log("Fetching tables...");
+      const res = await fetch(
+        `${API_BASE}/tables?restaurant_id=${restaurantId}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch tables");
 
-    // Add sample orders if they don't exist
-    sampleOrders.forEach(order => {
-      const existingOrder = orders.find(o => o.id === order.id);
-      if (!existingOrder) {
-        dispatch(addOrder(order));
-      }
-    });
-  }, [dispatch, orders]);
+      const data = await res.json();
+      console.log("Fetched tables:", data);
+
+      dispatch(
+        setTables(
+          data.map((table: any) => ({
+            id: table._id,
+            number: table.table_number,
+            status: table.status || "available",
+          }))
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Could not load tables",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchTables();
+  }, [dispatch]);
 
   const handleViewOrder = (tableId: number) => {
     setSelectedTableForOrder(tableId);
     setShowOrderDialog(true);
   };
 
-  const handleGenerateQR = async (tableId: number) => {
-    try {
-      await tableBackendActions.generateQRCode(tableId);
-      setSelectedTableId(tableId);
-      setShowQRDialog(true);
-      
-      dispatch(addActivity({
-        type: 'other',
-        message: `QR code generated for Table ${tableId}`,
-        timestamp: 'Just now'
-      }));
+  // const handleGenerateQR = async (tableId: number) => {
+  //   try {
+  //     await tableBackendActions.generateQRCode(tableId);
+  //     setSelectedTableId(tableId);
+  //     setShowQRDialog(true);
 
-      toast({
-        title: "QR Code Generated",
-        description: `QR code for Table ${tableId} has been generated`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate QR code",
-        variant: "destructive",
-      });
-    }
-  };
+  //     dispatch(
+  //       addActivity({
+  //         type: "other",
+  //         message: `QR code generated for Table ${tableId}`,
+  //         timestamp: "Just now",
+  //       })
+  //     );
 
-  const handleToggleAvailability = async (tableId: number, available: boolean) => {
+  //     toast({
+  //       title: "QR Code Generated",
+  //       description: `QR code for Table ${tableId} has been generated`,
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to generate QR code",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
+  const handleToggleAvailability = async (
+    tableId: string,
+    available: boolean
+  ) => {
     try {
       if (available) {
         await tableBackendActions.clearTable(tableId);
@@ -172,23 +227,31 @@ const Tables = () => {
         await tableBackendActions.occupyTable(tableId);
       }
 
-      dispatch(updateTableStatus({
-        tableId,
-        status: available ? 'available' : 'occupied'
-      }));
-      
+      dispatch(
+        updateTableStatus({
+          tableId,
+          status: available ? "available" : "occupied",
+        })
+      );
+
       toast({
         title: available ? "Table Available" : "Table Occupied",
-        description: `Table ${tableId} is now ${available ? 'available' : 'occupied'}`,
+        description: `Table ${tableId} is now ${
+          available ? "available" : "occupied"
+        }`,
       });
-      
+
       // Update dashboard stats
-      const activeTables = tables.filter(t => t.status !== 'available').length;
+      const activeTables = tables.filter(
+        (t) => t.status !== "available"
+      ).length;
       const newActiveCount = available ? activeTables - 1 : activeTables + 1;
-      
-      dispatch(updateStats({
-        activeTables: `${newActiveCount}/${tables.length}`
-      }));
+
+      dispatch(
+        updateStats({
+          activeTables: `${newActiveCount}/${tables.length}`,
+        })
+      );
     } catch (error) {
       toast({
         title: "Error",
@@ -198,23 +261,19 @@ const Tables = () => {
     }
   };
 
-  const handleDeleteTable = async (tableId: number) => {
+  const handleDeleteTable = async (tableId: string) => {
     try {
       await tableBackendActions.deleteTable(tableId);
-      
-      dispatch(removeTable(tableId));
-      
+
       toast({
         title: "Table Deleted",
-        description: `Table ${tableId} has been removed`,
-        variant: "destructive",
+        description: "Table deleted successfully",
       });
-      
-      // Update dashboard stats
-      dispatch(updateStats({
-        activeTables: `${tables.filter(t => t.status !== 'available').length - 1}/${tables.length - 1}`
-      }));
+
+      // Refresh fresh table list
+      await fetchTables();
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to delete table",
@@ -225,7 +284,7 @@ const Tables = () => {
 
   const handleAddTable = async () => {
     const tableNumber = parseInt(newTableNumber);
-    
+
     if (isNaN(tableNumber) || tableNumber <= 0) {
       toast({
         title: "Invalid Table Number",
@@ -234,9 +293,9 @@ const Tables = () => {
       });
       return;
     }
-    
+
     // Check if table number already exists
-    if (tables.some(table => table.number === tableNumber)) {
+    if (tables.some((table) => table.number === tableNumber)) {
       toast({
         title: "Table Already Exists",
         description: `Table ${tableNumber} already exists`,
@@ -244,30 +303,37 @@ const Tables = () => {
       });
       return;
     }
-    
+
     try {
-      await tableBackendActions.createTable(tableNumber);
-      
+      const createdTable = await tableBackendActions.createTable(
+        restaurantId,
+        tableNumber
+      );
+
       // Add new table - always starts as available
       const newTable = {
-        id: Date.now(),
-        number: tableNumber,
-        status: 'available' as const
+        id: createdTable._id,
+        number: createdTable.table_number,
+        status: createdTable.status || "available",
       };
-      
+
       dispatch(addTable(newTable));
-      setNewTableNumber('');
+      setNewTableNumber("");
       setOpenAddDialog(false);
-      
+
       toast({
         title: "Table Added",
         description: `Table ${tableNumber} has been added`,
       });
-      
+
       // Update dashboard stats
-      dispatch(updateStats({
-        activeTables: `${tables.filter(t => t.status !== 'available').length}/${tables.length + 1}`
-      }));
+      dispatch(
+        updateStats({
+          activeTables: `${
+            tables.filter((t) => t.status !== "available").length
+          }/${tables.length + 1}`,
+        })
+      );
     } catch (error) {
       toast({
         title: "Error",
@@ -278,38 +344,40 @@ const Tables = () => {
   };
 
   // Function to manually set table to service (when order is placed)
-  const handleSetTableToService = async (tableId: number, orderData: any) => {
-    try {
-      await tableBackendActions.serviceTable(tableId, orderData);
-      
-      dispatch(updateTableStatus({
-        tableId,
-        status: 'service'
-      }));
-      
-      toast({
-        title: "Table In Service",
-        description: `Table ${tableId} is now in service`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to set table to service",
-        variant: "destructive",
-      });
-    }
-  };
+  // const handleSetTableToService = async (tableId: number, orderData: any) => {
+  //   try {
+  //     await tableBackendActions.serviceTable(tableId, orderData);
+
+  //     dispatch(
+  //       updateTableStatus({
+  //         tableId,
+  //         status: "service",
+  //       })
+  //     );
+
+  //     toast({
+  //       title: "Table In Service",
+  //       description: `Table ${tableId} is now in service`,
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to set table to service",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   const filterTables = (status: string) => {
-    if (status === 'all') return tables;
-    return tables.filter(t => t.status === status);
+    if (status === "all") return tables;
+    return tables.filter((t) => t.status === status);
   };
 
   const filteredTables = filterTables(activeTab);
 
   // Helper function to check if a table has an order
-  const getTableOrder = (tableNumber: number) => {
-    return orders.find(order => order.tableId === tableNumber);
+  const getTableOrder = (tableId: string) => {
+    // return orders.find((order) => order.table_id === tableId);
   };
 
   return (
@@ -317,7 +385,9 @@ const Tables = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Tables & Orders</h1>
-          <p className="text-gray-500 mt-1">Manage your restaurant tables and active orders</p>
+          <p className="text-gray-500 mt-1">
+            Manage your restaurant tables and active orders
+          </p>
         </div>
         <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
           <DialogTrigger asChild>
@@ -345,14 +415,12 @@ const Tables = () => {
               <Button variant="outline" onClick={() => setOpenAddDialog(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddTable}>
-                Add Table
-              </Button>
+              <Button onClick={handleAddTable}>Add Table</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <Tabs defaultValue="all" onValueChange={setActiveTab}>
         <div className="flex justify-between items-center">
           <TabsList>
@@ -362,49 +430,54 @@ const Tables = () => {
             <TabsTrigger value="service">In Service</TabsTrigger>
           </TabsList>
           <div className="text-sm text-gray-500">
-            {filteredTables.length} table{filteredTables.length !== 1 ? 's' : ''}
+            {filteredTables.length} table
+            {filteredTables.length !== 1 ? "s" : ""}
           </div>
         </div>
-        
+
         <TabsContent value="all" className="mt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {tables.map((table) => {
-              const tableOrder = getTableOrder(table.number);
+              //const tableOrder = getTableOrder(table.id);
               return (
-                <TableCard 
+                <TableCard
                   key={table.id}
                   tableNumber={table.number}
                   status={table.status}
                   orderItems={table.items || 0}
                   timeElapsed={undefined} // Removed automatic time tracking
-                  hasOrder={!!tableOrder}
+                  // hasOrder={!!tableOrder}
                   onViewOrder={() => handleViewOrder(table.number)}
-                  onGenerateQR={() => handleGenerateQR(table.number)}
-                  onToggleAvailability={(available) => handleToggleAvailability(table.number, available)}
-                  onDelete={() => handleDeleteTable(table.number)}
+                  // onGenerateQR={() => handleGenerateQR(table.number)}
+                  onToggleAvailability={(available) =>
+                    handleToggleAvailability(table.id, available)
+                  }
+                  onDelete={() => handleDeleteTable(table.id)}
                 />
               );
             })}
           </div>
         </TabsContent>
-        
-        {['available', 'occupied', 'service'].map((status) => (
+
+        {["available", "occupied", "service"].map((status) => (
           <TabsContent key={status} value={status} className="mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filterTables(status).map((table) => {
-                const tableOrder = getTableOrder(table.number);
+                const tableOrder = getTableOrder(table.id);
                 return (
-                  <TableCard 
+                  <TableCard
                     key={table.id}
                     tableNumber={table.number}
                     status={table.status}
                     orderItems={table.items || 0}
                     timeElapsed={undefined} // Removed automatic time tracking
-                    hasOrder={!!tableOrder}
+                    //hasOrder={!!tableOrder}
                     onViewOrder={() => handleViewOrder(table.number)}
-                    onGenerateQR={() => handleGenerateQR(table.number)}
-                    onToggleAvailability={(available) => handleToggleAvailability(table.number, available)}
-                    onDelete={() => handleDeleteTable(table.number)}
+                    //onGenerateQR={() => handleGenerateQR(table.number)}
+                    onToggleAvailability={(available) =>
+                      handleToggleAvailability(table.id, available)
+                    }
+                    onDelete={() => handleDeleteTable(table.id)}
                   />
                 );
               })}
@@ -412,7 +485,7 @@ const Tables = () => {
           </TabsContent>
         ))}
       </Tabs>
-      
+
       {/* QR Code Generation Dialog */}
       <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
         <DialogContent className="sm:max-w-md">
@@ -422,11 +495,9 @@ const Tables = () => {
               Scan this QR code to access the table.
             </DialogDescription>
           </DialogHeader>
-          
-          {selectedTableId && (
-            <QRCodeGenerator tableId={selectedTableId} />
-          )}
-          
+
+          {selectedTableId && <QRCodeGenerator tableId={selectedTableId} />}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowQRDialog(false)}>
               Close

@@ -57,8 +57,9 @@ exports.getAllTables = async (req, res) => {
 
 exports.clearTable = async (req, res) => {
   try {
-    const { tableId } = req.params;
-
+    //const { tableId } = req.params;
+    const tableId = "685c19cb8e1c72ac877beeb2";
+    // Update table status
     const updatedTable = await Table.findByIdAndUpdate(
       tableId,
       { status: "available" },
@@ -69,39 +70,55 @@ exports.clearTable = async (req, res) => {
       return res.status(404).json({ message: "Table not found" });
     }
 
+    // Mark linked orders as cleared
+    const result = await Order.updateMany(
+      { table_id: tableId, status: { $ne: "cleared" } },
+      { status: "cleared", payment_status: "cleared" }
+    );
+
     res.status(200).json({
-      message: `Table ${tableId} marked as available`,
+      message: `Table ${tableId} marked as available, and ${result.modifiedCount} linked orders cleared`,
       table: updatedTable,
     });
+
   } catch (error) {
     console.error("Error in clearTable:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
+
 exports.occupyTable = async (req, res) => {
   try {
-    const { tableId } = req.params;
-
-    const updatedTable = await Table.findByIdAndUpdate(
-      tableId,
-      { status: "occupied" },
-      { new: true }
-    );
-
-    if (!updatedTable) {
+    //const { tableId } = req.params;  // Use dynamic tableId
+    tableId = "685c19cb8e1c72ac877beeb2";
+    // Check current table status
+    const table = await Table.findById(tableId);
+    if (!table) {
       return res.status(404).json({ message: "Table not found" });
     }
 
+    if (table.status === "occupied") {
+      return res.status(400).json({ message: "Table is already occupied" });
+    }
+
+    // ✅ Removed the uncleared orders check
+
+    // Mark as occupied
+    table.status = "occupied";
+    await table.save();
+
     res.status(200).json({
       message: `Table ${tableId} marked as occupied`,
-      table: updatedTable,
+      table,
     });
   } catch (error) {
     console.error("Error in occupyTable:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 exports.getTableById = async (req, res) => {
   try {

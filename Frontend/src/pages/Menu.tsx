@@ -203,7 +203,7 @@ const Menu = () => {
   const handleToggleAvailability = async (id: string, available: boolean) => {
     try {
       const res = await fetch(
-        `http://localhost:3000/menu/updateAvailable/${id}`,
+        `http://localhost:3001/menu/updateAvailable/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -242,7 +242,7 @@ const Menu = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/menu/add", {
+      const res = await fetch("http://localhost:3001/menu/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

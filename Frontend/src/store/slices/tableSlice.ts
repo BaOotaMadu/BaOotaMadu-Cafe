@@ -3,19 +3,19 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export type TableStatus = 'available' | 'occupied' | 'service';
 
 export interface Table {
-  id: number;
+  id: string;  // MongoDB _id
   number: number;
   status: TableStatus;
   items?: number;
   orderId?: string;
   lastUpdate?: string;
   orderTotal?: number;
-  time?: string; // Keep this optional for compatibility with Dashboard
+  time?: string; 
 }
 
 export interface Order {
-  id: string;
-  tableId: number;
+  id: string; 
+  tableId: string;  // matches MongoDB table id
   items: {
     id: number;
     name: string;
@@ -34,14 +34,9 @@ interface TableState {
   error: string | null;
 }
 
-// All tables start as available
+// No initial tables — tables will be fetched
 const initialState: TableState = {
-  tables: [
-    { id: 1, number: 1, status: 'available' },
-    { id: 2, number: 2, status: 'available' },
-    { id: 3, number: 3, status: 'available' },
-    { id: 4, number: 4, status: 'available' },
-  ],
+  tables: [],
   orders: [],
   loading: false,
   error: null,
@@ -54,9 +49,10 @@ const tableSlice = createSlice({
     setTables: (state, action: PayloadAction<Table[]>) => {
       state.tables = action.payload;
     },
-    updateTableStatus: (state, action: PayloadAction<{ tableId: number; status: TableStatus }>) => {
+
+    updateTableStatus: (state, action: PayloadAction<{ tableId: string; status: TableStatus }>) => {
       const { tableId, status } = action.payload;
-      const table = state.tables.find(t => t.number === tableId);
+      const table = state.tables.find(t => t.id === tableId);
       if (table) {
         table.status = status;
         if (status === 'available') {
@@ -68,17 +64,20 @@ const tableSlice = createSlice({
         }
       }
     },
+
     addTable: (state, action: PayloadAction<Table>) => {
       state.tables.push(action.payload);
     },
-    removeTable: (state, action: PayloadAction<number>) => {
-      state.tables = state.tables.filter(table => table.number !== action.payload);
+
+    removeTable: (state, action: PayloadAction<string>) => {
+      state.tables = state.tables.filter(table => table.id !== action.payload);
     },
+
+
     addOrder: (state, action: PayloadAction<Order>) => {
       state.orders.push(action.payload);
       
-      // Update the corresponding table
-      const table = state.tables.find(t => t.number === action.payload.tableId);
+      const table = state.tables.find(t => t.id === action.payload.tableId);
       if (table) {
         table.status = 'occupied';
         table.items = action.payload.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -87,6 +86,7 @@ const tableSlice = createSlice({
         table.orderTotal = action.payload.total;
       }
     },
+
     updateOrder: (state, action: PayloadAction<Partial<Order> & { id: string }>) => {
       const { id, ...updates } = action.payload;
       const orderIndex = state.orders.findIndex(order => order.id === id);
@@ -94,10 +94,9 @@ const tableSlice = createSlice({
       if (orderIndex !== -1) {
         state.orders[orderIndex] = { ...state.orders[orderIndex], ...updates };
         
-        // If order status is updated, update the table as well
         if (updates.status) {
           const tableId = state.orders[orderIndex].tableId;
-          const table = state.tables.find(t => t.number === tableId);
+          const table = state.tables.find(t => t.id === tableId);
           
           if (table) {
             if (updates.status === 'completed') {
@@ -114,6 +113,7 @@ const tableSlice = createSlice({
         }
       }
     },
+
     completeOrder: (state, action: PayloadAction<string>) => {
       const orderId = action.payload;
       const orderIndex = state.orders.findIndex(order => order.id === orderId);
@@ -122,8 +122,7 @@ const tableSlice = createSlice({
         const tableId = state.orders[orderIndex].tableId;
         state.orders[orderIndex].status = 'completed';
         
-        // Free up the table
-        const table = state.tables.find(t => t.number === tableId);
+        const table = state.tables.find(t => t.id === tableId);
         if (table) {
           table.status = 'available';
           table.items = undefined;
@@ -133,7 +132,7 @@ const tableSlice = createSlice({
           table.time = undefined;
         }
       }
-    }
+    },
   }
 });
 
