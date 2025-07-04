@@ -113,12 +113,12 @@ const tableBackendActions = {
   },
 
   // Function to generate QR code
-  // generateQRCode: async (tableId: number) => {
-  //   console.log(`Backend: Generating QR code for table ${tableId}`);
-  //   // TODO: Replace with actual API call
-  //   // await fetch(`/api/tables/${tableId}/qr`, { method: 'POST' });
-  //   return true;
-  // },
+  generateQRCode: async (tableId: string) => {
+    console.log(`Backend: Generating QR code for table ${tableId}`);
+    // TODO: Replace with actual API call
+    // await fetch(`/api/tables/${tableId}/qr`, { method: 'POST' });
+    return true;
+  },
 };
 
 const Tables = () => {
@@ -130,7 +130,7 @@ const Tables = () => {
   const [openAddDialog, setOpenAddDialog] = useState<boolean>(false);
   const [newTableNumber, setNewTableNumber] = useState<string>("");
   const [showQRDialog, setShowQRDialog] = useState(false);
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedTableForOrder, setSelectedTableForOrder] = useState<
@@ -178,32 +178,32 @@ const Tables = () => {
     setShowOrderDialog(true);
   };
 
-  // const handleGenerateQR = async (tableId: number) => {
-  //   try {
-  //     await tableBackendActions.generateQRCode(tableId);
-  //     setSelectedTableId(tableId);
-  //     setShowQRDialog(true);
+  const handleGenerateQR = async (tableId: string) => {
+    try {
+      await tableBackendActions.generateQRCode(tableId);
+      setSelectedTableId(tableId);
+      setShowQRDialog(true);
 
-  //     dispatch(
-  //       addActivity({
-  //         type: "other",
-  //         message: `QR code generated for Table ${tableId}`,
-  //         timestamp: "Just now",
-  //       })
-  //     );
+      dispatch(
+        addActivity({
+          type: "other",
+          message: `QR code generated for Table ${tableId}`,
+          timestamp: "Just now",
+        })
+      );
 
-  //     toast({
-  //       title: "QR Code Generated",
-  //       description: `QR code for Table ${tableId} has been generated`,
-  //     });
-  //   } catch (error) {
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to generate QR code",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
+      toast({
+        title: "QR Code Generated",
+        description: `QR code for Table ${tableId} has been generated`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleToggleAvailability = async (
     tableId: string,
@@ -366,7 +366,7 @@ const Tables = () => {
 
   // Helper function to check if a table has an order
   const getTableOrder = (tableId: string) => {
-    // return orders.find((order) => order.table_id === tableId);
+    return orders.find((order) => order.tableId === tableId);
   };
 
   return (
