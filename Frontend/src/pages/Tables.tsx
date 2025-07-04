@@ -27,6 +27,7 @@ import {
 } from "@/store/slices/tableSlice";
 import { addActivity, updateStats } from "@/store/slices/dashboardSlice";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
+import mongoose from "mongoose";
 
 const API_BASE = "http://localhost:3001";
 const restaurantId = "681f3a4888df8faae5bbd380";
@@ -41,7 +42,6 @@ const tableBackendActions = {
           "Content-Type": "application/json",
         },
       });
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -54,17 +54,6 @@ const tableBackendActions = {
       throw error; // Let the UI handle it
     }
   },
-
-  // // Function to mark table as in service (when order is placed)
-  // serviceTable: async (tableId: number, orderData: any) => {
-  //   console.log(`Backend: Table ${tableId} in service with order:`, orderData);
-  //   // TODO: Replace with actual API call
-  //   // await fetch(`/api/tables/${tableId}/service`, {
-  //   //   method: 'POST',
-  //   //   body: JSON.stringify(orderData)
-  //   // });
-  //   return true;
-  // },
 
   // // Function to mark table as available (when bill is paid/table is cleared)
   clearTable: async (tableId: string) => {
@@ -145,7 +134,7 @@ const Tables = () => {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedTableForOrder, setSelectedTableForOrder] = useState<
-    number | null
+    string | null
   >(null);
 
   // Add sample orders on component mount for demonstration
@@ -184,7 +173,7 @@ const Tables = () => {
     fetchTables();
   }, [dispatch]);
 
-  const handleViewOrder = (tableId: number) => {
+  const handleViewOrder = (tableId: string) => {
     setSelectedTableForOrder(tableId);
     setShowOrderDialog(true);
   };
@@ -447,7 +436,7 @@ const Tables = () => {
                   orderItems={table.items || 0}
                   timeElapsed={undefined} // Removed automatic time tracking
                   // hasOrder={!!tableOrder}
-                  onViewOrder={() => handleViewOrder(table.number)}
+                  onViewOrder={() => handleViewOrder(table.id)}
                   // onGenerateQR={() => handleGenerateQR(table.number)}
                   onToggleAvailability={(available) =>
                     handleToggleAvailability(table.id, available)
