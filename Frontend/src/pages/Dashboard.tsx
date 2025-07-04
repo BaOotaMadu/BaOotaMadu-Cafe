@@ -34,7 +34,7 @@ const Dashboard = () => {
       .then((data) => {
         setTotalOrdersToday(data.totalOrdersToday || 0);
         setTotalSalesToday(data.totalSalesToday || 0);
-        setPendingOrders(data.pendingOrders || 0);
+        setPendingOrders(data.pendingOrdersToday || 0);
       })
       .catch((err) => console.error("API Error:", err));
   }, []);

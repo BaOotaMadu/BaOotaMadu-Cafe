@@ -59,7 +59,6 @@ exports.getAllTables = async (req, res) => {
 exports.clearTable = async (req, res) => {
   try {
     const { table_id } = req.params;
-    //const tableId = "685c19cb8e1c72ac877beeb2";
     // Update table status
     const updatedTable = await Table.findByIdAndUpdate(
       table_id,
@@ -92,7 +91,6 @@ exports.clearTable = async (req, res) => {
 exports.occupyTable = async (req, res) => {
   try {
     const { table_id } = req.params;  // Use dynamic tableId
-    //tableId = "685c19cb8e1c72ac877beeb2";
     // Check current table status
  const { status } = req.body;
  const table = await Table.findByIdAndUpdate(table_id, { status }, { new: true });

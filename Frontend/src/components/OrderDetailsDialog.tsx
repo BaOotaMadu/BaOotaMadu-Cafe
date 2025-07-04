@@ -1,34 +1,64 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Download, Eye } from 'lucide-react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { Order } from '@/store/slices/tableSlice';
-import BillComponent from '@/components/BillComponent';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Download, Eye } from "lucide-react";
+import BillComponent from "@/components/BillComponent";
 
 interface OrderDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  tableNumber: number;
+  tableNumber: string;
 }
 
-const OrderDetailsDialog = ({ open, onClose, tableNumber }: OrderDetailsDialogProps) => {
-  const { orders } = useAppSelector(state => state.tables);
-  const [showBill, setShowBill] = useState(false);
-  
-  // Find the order for this table
-  const tableOrder = orders.find(order => order.tableId === tableNumber);
-  
+const OrderDetailsDialog = ({
+  open,
+  onClose,
+  tableNumber,
+}: OrderDetailsDialogProps) => {
+  const [tableOrder, setTableOrder] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const restaurantId = "681f3a4888df8faae5bbd380";
+
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      fetch(`http://localhost:3001/orders/${restaurantId}/table/${tableNumber}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Fetched order:", data);
+          setTableOrder(data);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch order", err);
+          setTableOrder(null);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [open, tableNumber]);
+
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Table {tableNumber} - Order Details</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center text-gray-500">Loading...</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   if (!tableOrder) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Table {tableNumber} - Order Details</DialogTitle>
           </DialogHeader>
@@ -41,9 +71,9 @@ const OrderDetailsDialog = ({ open, onClose, tableNumber }: OrderDetailsDialogPr
   }
 
   const handlePrintBill = () => {
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(`
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
       <html>
         <head>
           <title>Bill - Table ${tableNumber}</title>
@@ -284,26 +314,41 @@ const OrderDetailsDialog = ({ open, onClose, tableNumber }: OrderDetailsDialogPr
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">Date</div>
-                  <div class="detail-value">${new Date(tableOrder.createdAt).toLocaleDateString()}</div>
+                  <div class="detail-value">${new Date(
+                    tableOrder.createdAt
+                  ).toLocaleDateString()}</div>
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">Time</div>
-                  <div class="detail-value">${new Date(tableOrder.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                  <div class="detail-value">${new Date(
+                    tableOrder.createdAt
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}</div>
                 </div>
               </div>
             </div>
             
             <div class="items-section">
               <h2 class="section-title">Order Items</h2>
-              ${tableOrder.items.map(item => `
+              ${tableOrder.items
+                .map(
+                  (item) => `
                 <div class="order-item">
                   <div class="item-details">
                     <div class="item-name">${item.name}</div>
-                    <div class="item-quantity">Qty: ${item.quantity} × $${item.price.toFixed(2)}</div>
+                    <div class="item-quantity">Qty: ${
+                      item.quantity
+                    } × $${item.price.toFixed(2)}</div>
                   </div>
-                  <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                  <div class="item-price">$${(
+                    item.price * item.quantity
+                  ).toFixed(2)}</div>
                 </div>
-              `).join('')}
+              `
+                )
+                .join("")}
             </div>
             
             <div class="separator"></div>
@@ -334,86 +379,37 @@ const OrderDetailsDialog = ({ open, onClose, tableNumber }: OrderDetailsDialogPr
         </body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.print();
-  }
-};
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
 
   return (
     <>
-      <Dialog open={open && !showBill} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Table {tableNumber} - Order Details</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Order ID:</span>
-                <span>{tableOrder.id}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Status:</span>
-                <span className="capitalize">{tableOrder.status}</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Time:</span>
-                <span>{new Date(tableOrder.createdAt).toLocaleTimeString()}</span>
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-3">
-              <h4 className="font-medium">Order Items:</h4>
-              {tableOrder.items.map((item, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <div className="flex-1">
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-gray-500 ml-2">x {item.quantity}</span>
-                  </div>
-                  <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-            
-            <Separator />
-            
-            <div className="flex justify-between items-center font-bold text-lg">
-              <span>Total:</span>
-              <span>${tableOrder.total.toFixed(2)}</span>
-            </div>
-            
-            <div className="flex gap-2 mt-6">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => setShowBill(true)}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                View Bill
-              </Button>
-              <Button 
-                className="flex-1"
-                onClick={handlePrintBill}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Print Bill
-              </Button>
-            </div>
+          {/* your order details UI here */}
+          <div className="flex gap-2 mt-6">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                /* show bill */
+              }}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              View Bill
+            </Button>
+            <Button className="flex-1" onClick={handlePrintBill}>
+              <Download className="mr-2 h-4 w-4" />
+              Print Bill
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-      
-      {showBill && (
-        <BillComponent
-          order={tableOrder}
-          tableNumber={tableNumber}
-          onClose={() => setShowBill(false)}
-          onPrint={handlePrintBill}
-        />
-      )}
     </>
   );
 };
