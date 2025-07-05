@@ -5,7 +5,7 @@ import { Printer, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface QRCodeGeneratorProps {
-  tableId: number;
+  tableId: string;
 }
 
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {

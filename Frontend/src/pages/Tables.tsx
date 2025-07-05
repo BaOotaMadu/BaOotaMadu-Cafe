@@ -27,7 +27,6 @@ import {
 } from "@/store/slices/tableSlice";
 import { addActivity, updateStats } from "@/store/slices/dashboardSlice";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
-import mongoose from "mongoose";
 
 const API_BASE = "http://localhost:3001";
 const restaurantId = "681f3a4888df8faae5bbd380";
@@ -437,7 +436,7 @@ const Tables = () => {
                   timeElapsed={undefined} // Removed automatic time tracking
                   // hasOrder={!!tableOrder}
                   onViewOrder={() => handleViewOrder(table.id)}
-                  // onGenerateQR={() => handleGenerateQR(table.number)}
+                  onGenerateQR={() => handleGenerateQR(table.id)}
                   onToggleAvailability={(available) =>
                     handleToggleAvailability(table.id, available)
                   }
@@ -461,7 +460,7 @@ const Tables = () => {
                     orderItems={table.items || 0}
                     timeElapsed={undefined} // Removed automatic time tracking
                     //hasOrder={!!tableOrder}
-                    onViewOrder={() => handleViewOrder(table.number)}
+                    onViewOrder={() => handleViewOrder(table.id)}
                     //onGenerateQR={() => handleGenerateQR(table.number)}
                     onToggleAvailability={(available) =>
                       handleToggleAvailability(table.id, available)

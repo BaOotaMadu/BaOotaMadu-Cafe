@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCart, CartItem } from "@/hooks/useCart";
 import { useOrder } from "@/hooks/useOrder";
-
+import { useSearchParams } from "react-router-dom";
+//import { useRouter } from "next/router";
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
@@ -106,42 +107,46 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
 const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const { cartItems, clearCart, cartTotal } = useCart();
   const { placeOrder } = useOrder();
-
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramTableId = urlParams.get("table");
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
 
     try {
-      const restaurantId = "681f3a4888df8faae5bbd380"; // replace with actual ID from context or props
-      const customerName = "Guest"; // or get from user input if needed
+      const restaurantId = "681f3a4888df8faae5bbd380";
+      const customerName = "hello";
 
       const orderData = {
         restaurant_id: restaurantId,
-        table_id: "605c72d5f8f7e01320bcb842", // assuming tableNumber is the table ID
+        //table_id: tableNumber, // Make sure tableNumber is set correctly!
+        table_id: paramTableId, // Use paramTableId if available
         customer_name: customerName,
         order_items: cartItems.map((item) => ({
           name: item.name,
-          quantity: item.quantity,
           price: item.price,
+          quantity: item.quantity,
         })),
-        total_amount: cartTotal,
       };
 
+      console.log("Order payload", orderData);
+
       const res = await fetch(
-        "http://localhost:3001/orders/681f3a4888df8faae5bbd380/place",
+        `http://localhost:3001/orders/${restaurantId}/place`, // if this is your API route
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(orderData),
         }
       );
 
       if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Backend error:", errorText);
         throw new Error("Failed to place order");
       }
-      console.log(res);
-      await res.json(); // optional: you could use this for confirmation
+
+      const json = await res.json();
+      console.log("Order placed successfully:", json);
       clearCart();
       onClose();
     } catch (error) {
