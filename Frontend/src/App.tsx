@@ -16,15 +16,14 @@ import Customer from "@/components/Customer";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import CustomerView from './components/CustomerView'
+import ChefPanel from "./pages/ChefPanel";
 
-// import TableManagement from "./pages/TableManagement"; // New Redux-powered page
+
 
 // User Interface Pages
 import Index from "./pages/userPage/Index";
 
-// Context
-// Note: We're keeping TableContext for backward compatibility
-// but can gradually migrate all components to Redux
+
 import { TableProvider } from "./contexts/TableContext";
 
 const queryClient = new QueryClient();
@@ -47,6 +46,7 @@ const App = () => (
               <Route path="/customer" element={<Layout><Customer /></Layout>} />
               <Route path="/settings" element={<Layout><Settings /></Layout>} />
               <Route path="/customer1" element={<CustomerView />} />
+              <Route path="/chief" element={<ChefPanel />} />
 
               
               {/* New Redux-powered Table Management Page */}
