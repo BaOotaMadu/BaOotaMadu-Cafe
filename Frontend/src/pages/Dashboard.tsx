@@ -190,7 +190,6 @@
 // };
 
 // export default Dashboard;
-
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import {
@@ -202,6 +201,7 @@ import {
 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import TableCard from "@/components/TableCard";
+import OrderDetailsDialog from "@/components/OrderDetailsDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const socket = io("http://localhost:3001");
@@ -226,6 +226,9 @@ const Dashboard = () => {
     { message: string; time: string }[]
   >([]);
   const [activeTableList, setActiveTableList] = useState<Table[]>([]);
+
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
   const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with useParams() if dynamic
 
@@ -285,10 +288,8 @@ const Dashboard = () => {
   }, []);
 
   const handleViewOrder = (tableId: string) => {
-    toast({
-      title: "Viewing Order",
-      description: `Opening order details for Table ${tableId}`,
-    });
+    setSelectedTableId(tableId);
+    setShowOrderDialog(true);
   };
 
   const handleGenerateQR = (tableId: string) => {
@@ -405,6 +406,18 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Order Details Dialog */}
+      {showOrderDialog && selectedTableId && (
+        <OrderDetailsDialog
+          open={showOrderDialog}
+          onClose={() => {
+            setShowOrderDialog(false);
+            setSelectedTableId(null);
+          }}
+          tableId={selectedTableId}
+        />
+      )}
     </div>
   );
 };
