@@ -1,455 +1,429 @@
-import { useState } from 'react';
-import { Clock, CheckCircle, AlertTriangle, Users, DollarSign, Bell } from 'lucide-react';
+// import { useEffect, useState } from "react";
+// import { toast } from "react-hot-toast";
+// import { CheckCircle, Clock, Utensils, AlertCircle } from "lucide-react";
+// import axios from "axios";
 
-// Mock data for testing
-const mockOrders = [
-  {
-    id: 'order-001',
-    tableId: 5,
-    status: 'pending',
-    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
-    total: 47.50,
-    items: [
-      {
-        id: 'item-001',
-        name: 'Margherita Pizza',
-        quantity: 2,
-        price: 16.50,
-        status: 'pending',
-        specialInstructions: 'Extra cheese, no basil'
-      },
-      {
-        id: 'item-002',
-        name: 'Caesar Salad',
-        quantity: 1,
-        price: 14.50,
-        status: 'pending',
-        specialInstructions: 'Dressing on the side'
-      }
-    ]
-  },
-  {
-    id: 'order-002',
-    tableId: 3,
-    status: 'preparing',
-    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
-    total: 82.75,
-    items: [
-      {
-        id: 'item-003',
-        name: 'Grilled Salmon',
-        quantity: 1,
-        price: 28.50,
-        status: 'preparing'
-      },
-      {
-        id: 'item-004',
-        name: 'Ribeye Steak',
-        quantity: 1,
-        price: 35.00,
-        status: 'preparing',
-        specialInstructions: 'Medium rare'
-      },
-      {
-        id: 'item-005',
-        name: 'Garlic Mashed Potatoes',
-        quantity: 2,
-        price: 9.75,
-        status: 'preparing'
-      }
-    ]
-  },
-  {
-    id: 'order-003',
-    tableId: 8,
-    status: 'ready',
-    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(), // 25 minutes ago
-    total: 65.25,
-    items: [
-      {
-        id: 'item-006',
-        name: 'Chicken Parmesan',
-        quantity: 1,
-        price: 22.50,
-        status: 'ready'
-      },
-      {
-        id: 'item-007',
-        name: 'Spaghetti Carbonara',
-        quantity: 1,
-        price: 19.75,
-        status: 'ready'
-      },
-      {
-        id: 'item-008',
-        name: 'Tiramisu',
-        quantity: 2,
-        price: 11.50,
-        status: 'ready'
-      }
-    ]
-  },
-  {
-    id: 'order-004',
-    tableId: 5,
-    status: 'pending',
-    createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
-    total: 23.50,
-    items: [
-      {
-        id: 'item-009',
-        name: 'Bruschetta',
-        quantity: 1,
-        price: 12.50,
-        status: 'pending'
-      },
-      {
-        id: 'item-010',
-        name: 'Minestrone Soup',
-        quantity: 1,
-        price: 11.00,
-        status: 'pending',
-        specialInstructions: 'No beans'
-      }
-    ]
-  },
-  {
-    id: 'order-005',
-    tableId: 12,
-    status: 'preparing',
-    createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(), // 8 minutes ago
-    total: 94.00,
-    items: [
-      {
-        id: 'item-011',
-        name: 'Lobster Thermidor',
-        quantity: 1,
-        price: 45.00,
-        status: 'preparing'
-      },
-      {
-        id: 'item-012',
-        name: 'Filet Mignon',
-        quantity: 1,
-        price: 38.00,
-        status: 'preparing',
-        specialInstructions: 'Rare, no sauce'
-      },
-      {
-        id: 'item-013',
-        name: 'Wine - Cabernet Sauvignon',
-        quantity: 1,
-        price: 11.00,
-        status: 'ready'
-      }
-    ]
-  }
-];
+// interface OrderItem {
+//   name: string;
+//   quantity: number;
+//   price: number;
+// }
+
+// interface Order {
+//   _id: string;
+//   created_at: string;
+//   customer_name: string;
+//   order_items: OrderItem[];
+//   payment_status: string;
+//   status: string;
+//   total_amount: number;
+// }
+// const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with your actual restaurant ID
+
+// const ChefPanel = () => {
+//   const [orders, setOrders] = useState<Order[]>([]);
+
+//   const fetchOrders = async () => {
+//     try {
+//       const response = await axios.get(
+//         `http://localhost:3001/orders/${restaurantId}`
+//       ); // Replace with your endpoint
+//       const today = new Date().toISOString().split("T")[0];
+
+//       const todayOrders = response.data.filter((order: Order) =>
+//         order.created_at.startsWith(today)
+//       );
+
+//       setOrders(todayOrders);
+//     } catch (error) {
+//       toast.error("Failed to fetch orders");
+//       console.error(error);
+//     }
+//   };
+
+//   const updateStatus = async (orderId: string, newStatus: string) => {
+//     try {
+//       await axios.put(
+//         `http://localhost:3001/orders/${restaurantId}/${orderId}/status`,
+//         {
+//           status: newStatus,
+//         }
+//       );
+
+//       toast.success("Order status updated");
+//       fetchOrders(); // refresh list
+//     } catch (error) {
+//       toast.error("Failed to update status");
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchOrders();
+//   }, []);
+
+//   return (
+//     <div className="p-6 bg-gray-50 min-h-screen">
+//       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+//         <Utensils className="w-7 h-7 text-green-600" /> Chef Dashboard
+//       </h1>
+
+//       {orders.length === 0 ? (
+//         <div className="flex flex-col items-center justify-center text-gray-600 mt-20">
+//           <AlertCircle className="w-10 h-10 mb-2" />
+//           <p>No orders for today</p>
+//         </div>
+//       ) : (
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//           {orders.map((order) => (
+//             <div
+//               key={order._id}
+//               className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
+//             >
+//               <div className="flex justify-between items-center mb-2">
+//                 <div>
+//                   <p className="font-semibold text-lg">
+//                     Order #{order._id.slice(-5)}
+//                   </p>
+//                   <p className="text-sm text-gray-500">
+//                     {new Date(order.created_at).toLocaleString()}
+//                   </p>
+//                 </div>
+//                 <div
+//                   className={`px-3 py-1 text-sm rounded-full ${
+//                     order.status === "completed"
+//                       ? "bg-green-100 text-green-700"
+//                       : "bg-yellow-100 text-yellow-700"
+//                   }`}
+//                 >
+//                   {order.status}
+//                 </div>
+//               </div>
+
+//               <div className="mb-3">
+//                 <p className="text-sm font-medium text-gray-700">
+//                   Customer: {order.customer_name}
+//                 </p>
+//               </div>
+
+//               <div className="mb-3">
+//                 <p className="font-semibold text-gray-700">Items:</p>
+//                 <ul className="ml-4 mt-1 list-disc text-sm text-gray-600">
+//                   {order.order_items.map((item, index) => (
+//                     <li key={index}>
+//                       {item.name} x {item.quantity} — ₹
+//                       {item.price * item.quantity}
+//                     </li>
+//                   ))}
+//                 </ul>
+//               </div>
+
+//               <p className="font-semibold mt-2">Total: ₹{order.total_amount}</p>
+
+//               <div className="flex justify-end mt-4 gap-3">
+//                 {order.status !== "completed" && (
+//                   <button
+//                     onClick={() => updateStatus(order._id, "completed")}
+//                     className="bg-green-600 text-white px-4 py-1.5 rounded-md hover:bg-green-700 transition"
+//                   >
+//                     Mark as Completed
+//                   </button>
+//                 )}
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default ChefPanel;
+
+// import { useEffect, useState } from "react";
+// import {
+//   Clock,
+//   CheckCircle,
+//   List,
+//   RefreshCcw,
+//   XCircle,
+//   CookingPot,
+// } from "lucide-react";
+// import { toast } from "react-hot-toast";
+// import axios from "axios";
+
+// const ChefPanel = () => {
+//   const [orders, setOrders] = useState([]);
+//   const [filterStatus, setFilterStatus] = useState<"pending" | "completed">(
+//     "pending"
+//   );
+//   const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with your actual restaurant ID
+
+//   useEffect(() => {
+//     fetchOrders();
+//   }, []);
+
+//   const fetchOrders = async () => {
+//     try {
+//       const res = await axios.get(
+//         "http://localhost:3001/orders/681f3a4888df8faae5bbd380"
+//       );
+//       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+//       const todayOrders = res.data.filter(
+//         (order: any) => order.created_at.slice(0, 10) === today
+//       );
+//       setOrders(todayOrders);
+//     } catch (error) {
+//       toast.error("Failed to fetch orders");
+//       console.error(error);
+//     }
+//   };
+
+//   const updateOrderStatus = async (id: string, newStatus: string) => {
+//     try {
+//       await axios.put(
+//         `http://localhost:3001/orders/${restaurantId}/${orderId}/status`,
+//         { status: newStatus }
+//       );
+//       setOrders((prev) =>
+//         prev.map((order) =>
+//           order._id === id ? { ...order, status: newStatus } : order
+//         )
+//       );
+//       toast.success(`Order marked as ${newStatus}`);
+//     } catch (err) {
+//       toast.error("Failed to update status");
+//     }
+//   };
+
+//   return (
+//     <div className="p-6 bg-gray-100 min-h-screen">
+//       <div className="flex items-center justify-between mb-4">
+//         <h1 className="text-2xl font-bold flex items-center gap-2">
+//           <CookingPot className="text-orange-600" />
+//           Chef Dashboard
+//         </h1>
+//         <div className="space-x-2">
+//           <button
+//             onClick={() => setFilterStatus("pending")}
+//             className={`px-4 py-1 rounded-full font-medium border ${
+//               filterStatus === "pending"
+//                 ? "bg-orange-500 text-white"
+//                 : "bg-white text-orange-500 border-orange-500"
+//             }`}
+//           >
+//             Pending
+//           </button>
+//           <button
+//             onClick={() => setFilterStatus("completed")}
+//             className={`px-4 py-1 rounded-full font-medium border ${
+//               filterStatus === "completed"
+//                 ? "bg-green-600 text-white"
+//                 : "bg-white text-green-600 border-green-600"
+//             }`}
+//           >
+//             Completed
+//           </button>
+//         </div>
+//       </div>
+
+//       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+//         {orders
+//           .filter((o) => o.status === filterStatus)
+//           .map((order, idx) => (
+//             <div
+//               key={idx}
+//               className="bg-white p-4 rounded-xl shadow hover:shadow-md transition"
+//             >
+//               <div className="flex items-center justify-between">
+//                 <h2 className="font-semibold text-lg">
+//                   Order #{order._id.slice(-4)}
+//                 </h2>
+//                 <span
+//                   className={`text-xs px-2 py-1 rounded-full ${
+//                     order.status === "pending"
+//                       ? "bg-yellow-100 text-yellow-700"
+//                       : "bg-green-100 text-green-700"
+//                   }`}
+//                 >
+//                   {order.status}
+//                 </span>
+//               </div>
+//               <p className="text-sm text-gray-600">
+//                 {new Date(order.created_at).toLocaleTimeString()}
+//               </p>
+
+//               <div className="mt-3">
+//                 <p className="text-sm font-medium">Items:</p>
+//                 <ul className="list-disc pl-5 text-sm text-gray-700">
+//                   {order.order_items.map((item: any, i: number) => (
+//                     <li key={i}>
+//                       {item.name} × {item.quantity}
+//                     </li>
+//                   ))}
+//                 </ul>
+//               </div>
+
+//               <div className="mt-2">
+//                 <p className="text-sm">
+//                   <strong>Customer:</strong> {order.customer_name}
+//                 </p>
+//                 <p className="text-sm">
+//                   <strong>Total:</strong> ₹{order.total_amount}
+//                 </p>
+//               </div>
+
+//               {order.status === "pending" && (
+//                 <button
+//                   onClick={() => updateOrderStatus(order._id, "completed")}
+//                   className="mt-3 bg-green-600 text-white text-sm px-3 py-1 rounded hover:bg-green-700 transition"
+//                 >
+//                   Mark as Completed
+//                 </button>
+//               )}
+//             </div>
+//           ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ChefPanel;
+
+// src/pages/ChefPanel.tsx
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { CheckCircle, Clock, XCircle, Utensils } from "lucide-react";
+import { format } from "date-fns";
+import classNames from "classnames";
+const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with your actual restaurant ID
+const API_URL = `http://localhost:3001/orders/${restaurantId}`; // Replace with your actual URL
 
 const ChefPanel = () => {
-  const [orders, setOrders] = useState(mockOrders);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  
-  // Get active orders (not completed)
-  const activeOrders = orders.filter(order => 
-    order.status !== 'completed' && order.status !== 'delivered'
-  );
-  
-  // Group orders by table
-  const ordersByTable = activeOrders.reduce((acc, order) => {
-    const existing = acc.find(item => item.tableId === order.tableId);
-    if (existing) {
-      existing.orders.push(order);
-    } else {
-      acc.push({
-        tableId: order.tableId,
-        orders: [order]
+  const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState<"pending" | "completed">("pending");
+
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      const today = new Date().toISOString().split("T")[0];
+      const todaysOrders = res.data.filter((order: any) => {
+        const orderDate = order.created_at.split("T")[0];
+        return orderDate === today;
       });
+      setOrders(todaysOrders);
+    } catch (err) {
+      toast.error("Failed to load orders");
     }
-    return acc;
+  };
+
+  const updateStatus = async (id: string) => {
+    try {
+      await axios.put(`${API_URL}/${id}/status`, {
+        status: "completed",
+      });
+      toast.success("Order marked as completed");
+      fetchOrders(); // Refresh list
+    } catch (err) {
+      toast.error("Failed to update order");
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
-  const showNotification = (title, description) => {
-    const notification = {
-      id: Date.now(),
-      title,
-      description,
-      timestamp: new Date().toLocaleTimeString()
-    };
-    setNotifications(prev => [notification, ...prev.slice(0, 4)]); // Keep only last 5 notifications
-    
-    // Auto-remove notification after 3 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== notification.id));
-    }, 3000);
-  };
-
-  const handleOrderReceived = (orderId) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId 
-        ? { ...order, status: 'preparing' }
-        : order
-    ));
-    showNotification(
-      "Order Received",
-      `Order #${orderId.slice(-4)} has been marked as received by chef`
-    );
-  };
-
-  const handleOrderOut = (orderId) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId 
-        ? { ...order, status: 'ready' }
-        : order
-    ));
-    showNotification(
-      "Order Ready",
-      `Order #${orderId.slice(-4)} has been sent out to table`
-    );
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'bg-table-service/20 text-table-service border-table-service/30';
-      case 'preparing': return 'bg-orange/20 text-orange border-orange/30';
-      case 'ready': return 'bg-table-available/20 text-table-available border-table-available/30';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />;
-      case 'preparing': return <AlertTriangle className="h-4 w-4" />;
-      case 'ready': return <CheckCircle className="h-4 w-4" />;
-      default: return null;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {notifications.map(notification => (
-          <div
-            key={notification.id}
-            className="bg-card border border-border rounded-lg shadow-lg p-4 max-w-sm transform transition-all duration-300 ease-in-out animate-fade-in"
+    <div className="p-4 min-h-screen bg-gray-100">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-semibold flex items-center gap-2">
+          <Utensils className="w-7 h-7 text-orange-600" />
+          Chef Panel
+        </h1>
+        <div className="flex gap-2">
+          <button
+            className={classNames(
+              "px-4 py-2 rounded text-sm font-semibold border",
+              filter === "pending"
+                ? "bg-orange-500 text-white"
+                : "bg-white text-orange-500 border-orange-500"
+            )}
+            onClick={() => setFilter("pending")}
           >
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-orange" />
-              <h4 className="font-semibold text-sm font-montserrat text-card-foreground">{notification.title}</h4>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1 font-roboto">{notification.description}</p>
-            <p className="text-xs text-muted-foreground/70 mt-2 font-roboto">{notification.timestamp}</p>
-          </div>
-        ))}
+            Pending
+          </button>
+          <button
+            className={classNames(
+              "px-4 py-2 rounded text-sm font-semibold border",
+              filter === "completed"
+                ? "bg-green-600 text-white"
+                : "bg-white text-green-600 border-green-600"
+            )}
+            onClick={() => setFilter("completed")}
+          >
+            Completed
+          </button>
+        </div>
       </div>
 
-      <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-navy font-montserrat">Chef Panel</h1>
-            <p className="text-muted-foreground mt-1 font-roboto">Manage kitchen orders</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-muted-foreground font-roboto">
-              {activeOrders.length} Active Orders
-            </div>
-            <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-table-service/20 text-table-service rounded-full text-xs font-medium font-roboto">
-                <Clock className="h-3 w-3" />
-                {activeOrders.filter(o => o.status === 'pending').length} Pending
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange/20 text-orange rounded-full text-xs font-medium font-roboto">
-                <AlertTriangle className="h-3 w-3" />
-                {activeOrders.filter(o => o.status === 'preparing').length} Preparing
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-table-available/20 text-table-available rounded-full text-xs font-medium font-roboto">
-                <CheckCircle className="h-3 w-3" />
-                {activeOrders.filter(o => o.status === 'ready').length} Ready
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Table Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {ordersByTable.map(({ tableId, orders: tableOrders }) => {
-            const totalItems = tableOrders.reduce((sum, order) => 
-              sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
-            );
-            const totalAmount = tableOrders.reduce((sum, order) => sum + order.total, 0);
-            const hasNewOrders = tableOrders.some(order => order.status === 'pending');
-            
-            return (
-              <div 
-                key={tableId}
-                className={`bg-card rounded-lg shadow-md border-2 cursor-pointer transition-all hover:shadow-lg animate-fade-in ${
-                  hasNewOrders ? 'border-orange shadow-orange/20' : 'border-border'
-                } ${selectedOrder && tableOrders.some(o => o.id === selectedOrder) ? 'ring-2 ring-orange' : ''}`}
-              >
-                <div className="p-4 pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-2xl font-bold text-navy font-montserrat">Table {tableId}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground font-roboto">{totalItems} items</span>
-                      </div>
-                    </div>
-                    {hasNewOrders && (
-                      <span className="inline-flex items-center px-2 py-1 bg-orange text-white rounded-full text-xs font-medium font-roboto">
-                        New
-                      </span>
-                    )}
-                  </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {orders
+          .filter((order: any) => order.status === filter)
+          .map((order: any) => (
+            <div
+              key={order._id}
+              className="bg-white p-4 rounded-xl shadow-md border border-gray-200"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="font-bold text-lg">
+                    Order #{order._id.slice(-5).toUpperCase()}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {order.customer_name || "Guest"}
+                  </p>
                 </div>
-                
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4 text-table-available" />
-                      <span className="font-semibold font-montserrat text-foreground">${totalAmount.toFixed(2)}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground font-roboto">
-                      {new Date(tableOrders[0].createdAt).toLocaleTimeString()}
-                    </div>
-                  </div>
-                  
-                  {/* Order Status Summary */}
-                  <div className="space-y-2">
-                    {tableOrders.map(order => (
-                      <div key={order.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border font-roboto ${getStatusColor(order.status)}`}>
-                            {getStatusIcon(order.status)}
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                          <span className="text-sm font-roboto text-foreground">#{order.id.slice(-4)}</span>
-                        </div>
-                        <button
-                          className="px-3 py-1 text-xs border border-border rounded hover:bg-muted/50 transition-colors font-roboto text-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedOrder(selectedOrder === order.id ? null : order.id);
-                          }}
-                        >
-                          {selectedOrder === order.id ? 'Hide' : 'View'}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-2">
+                  {order.status === "pending" ? (
+                    <Clock className="text-orange-500" />
+                  ) : (
+                    <CheckCircle className="text-green-500" />
+                  )}
+                  <span className="text-sm font-medium capitalize">
+                    {order.status}
+                  </span>
                 </div>
               </div>
-            );
-          })}
-          
-          {ordersByTable.length === 0 && (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="text-lg font-medium mb-2 font-montserrat">No Active Orders</h3>
-              <p className="font-roboto">Orders will appear here when customers place them</p>
-            </div>
-          )}
-        </div>
 
-        {/* Selected Order Details */}
-        {selectedOrder && (
-          <div className="bg-card rounded-lg shadow-md border-2 border-orange animate-fade-in">
-            <div className="p-4 border-b border-border">
-              <h3 className="text-xl font-bold font-montserrat text-navy">Order Details - #{selectedOrder.slice(-4)}</h3>
+              <div className="mb-2">
+                <p className="text-sm text-gray-500">
+                  Ordered at: {format(new Date(order.created_at), "PPpp")}
+                </p>
+              </div>
+
+              <div className="mb-2">
+                <h3 className="font-semibold">Items:</h3>
+                <ul className="list-disc list-inside text-sm">
+                  {order.order_items.map((item: any, index: number) => (
+                    <li key={index}>
+                      {item.name} x {item.quantity}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <p className="font-bold mt-2">Total: ₹{order.total_amount}</p>
+
+              {order.status === "pending" && (
+                <button
+                  className="mt-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  onClick={() => updateStatus(order._id)}
+                >
+                  Mark as Completed
+                </button>
+              )}
             </div>
-            <div className="p-4">
-              {(() => {
-                const order = orders.find(o => o.id === selectedOrder);
-                if (!order) return null;
-                
-                return (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-semibold mb-2 font-montserrat text-foreground">Order Items</h4>
-                        <div className="space-y-2">
-                          {order.items.map(item => (
-                            <div key={item.id} className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                              <div>
-                                <div className="font-medium font-roboto text-foreground">{item.name}</div>
-                                <div className="text-sm text-muted-foreground font-roboto">Qty: {item.quantity}</div>
-                                {item.specialInstructions && (
-                                  <div className="text-sm text-orange italic font-roboto">
-                                    Note: {item.specialInstructions}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <div className="font-medium font-montserrat text-foreground">${(item.price * item.quantity).toFixed(2)}</div>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border font-roboto ${getStatusColor(item.status)}`}>
-                                  {item.status}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold mb-2 font-montserrat text-foreground">Order Summary</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="font-roboto text-muted-foreground">Table:</span>
-                            <span className="font-roboto text-foreground">Table {order.tableId}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="font-roboto text-muted-foreground">Order Time:</span>
-                            <span className="font-roboto text-foreground">{new Date(order.createdAt).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="font-roboto text-muted-foreground">Status:</span>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border font-roboto ${getStatusColor(order.status)}`}>
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between font-semibold border-t border-border pt-2">
-                            <span className="font-montserrat text-foreground">Total:</span>
-                            <span className="font-montserrat text-foreground">${order.total.toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-4 border-t border-border">
-                      {order.status === 'pending' && (
-                        <button
-                          onClick={() => handleOrderReceived(order.id)}
-                          className="px-4 py-2 bg-navy text-white rounded hover:bg-navy/90 transition-colors font-roboto"
-                        >
-                          Order Received by Chef
-                        </button>
-                      )}
-                      
-                      {order.status === 'preparing' && (
-                        <button
-                          onClick={() => handleOrderOut(order.id)}
-                          className="px-4 py-2 bg-table-available text-white rounded hover:bg-table-available/90 transition-colors font-roboto"
-                        >
-                          Order Out to Table
-                        </button>
-                      )}
-                      
-                      {order.status === 'ready' && (
-                        <span className="inline-flex items-center px-3 py-2 bg-table-available/20 text-table-available rounded border border-table-available/30 font-roboto">
-                          Order Ready for Pickup
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        )}
+          ))}
       </div>
     </div>
   );
