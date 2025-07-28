@@ -17,9 +17,15 @@ const io = new Server(server, {
 
 connectdb();
 const port = process.env.PORT || 3001;
+const sendBillRoutes = require('./routes/sendBill');
+
 
 app.use(express.json());
 app.use(cors()); 
+app.use('/send-bill-email', require('./routes/sendBill'));
+
+
+
 
 require('./models/restaurantModel.js');
 require('./models/tableModel.js');
