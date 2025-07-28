@@ -2,7 +2,7 @@ const Order = require("../models/orderModel");
 const Table = require("../models/tableModel");
 const Activity = require("../models/activityModel");
 
-let io; // Socket.IO instance holder
+let io;
 
 const setIO = (ioInstance) => {
   io = ioInstance;
@@ -17,10 +17,10 @@ const logActivity = async (message, restaurant_id, type = "info") => {
   };
 
   if (io) {
-    io.emit("updateRecent", activity);
+    io.emit("updateRecent", activity); // Broadcast activity update
   }
 
-  await Activity.create(activity); // Save to DB
+  await Activity.create(activity);
 };
 
 const placeOrder = async (req, res) => {
@@ -54,9 +54,12 @@ const placeOrder = async (req, res) => {
       "order"
     );
 
-    res
-      .status(201)
-      .json({ message: "Order placed successfully", order: newOrder });
+    // Emit real-time order creation event
+    if (io) {
+      io.emit("newOrder", newOrder);
+    }
+
+    res.status(201).json({ message: "Order placed successfully", order: newOrder });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -95,7 +98,6 @@ const getTableOrders = async (req, res) => {
     }
 
     res.json(orders);
-    console.log(table_id, restaurant_id)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -126,6 +128,11 @@ const updateOrderStatus = async (req, res) => {
       "status"
     );
 
+    // Emit real-time order status update
+    if (io) {
+      io.emit("orderStatusUpdated", order);
+    }
+
     res.json({ message: "Order status updated", order });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -150,6 +157,11 @@ const deleteOrder = async (req, res) => {
       restaurant_id,
       "delete"
     );
+
+    // Emit real-time order deletion
+    if (io) {
+      io.emit("orderDeleted", { order_id });
+    }
 
     res.json({ message: "Order deleted successfully" });
   } catch (error) {

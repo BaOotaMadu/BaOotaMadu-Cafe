@@ -1,5 +1,6 @@
 const Order = require("../models/orderModel");
 const mongoose = require("mongoose");
+const Table = require("../models/tableModel");
 
 const getInsights = async (req, res) => {
   try {
@@ -38,12 +39,25 @@ const getInsights = async (req, res) => {
       status: "pending",
       created_at: { $gte: today }
     });
+// Total tables in the restaurant
+const totalTables = await Table.countDocuments({ restaurant_id: restaurantObjectId });
+
+// Active tables = those with status 'occupied'
+const activeTables = await Table.countDocuments({ 
+  restaurant_id: restaurantObjectId, 
+  status: "occupied" 
+});
+console.log("Total Tables:", totalTables);
+console.log("Active Tables:", activeTables);
 
     // Final response
     res.json({
       totalOrdersToday,
       totalSalesToday: totalSalesResult.length > 0 ? totalSalesResult[0].total : 0,
-      pendingOrdersToday
+      pendingOrdersToday,
+     // activeOrdersToday,
+      totalTables,
+      activeTables,
     });
 
   } catch (err) {
