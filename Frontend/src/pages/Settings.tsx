@@ -115,37 +115,125 @@ const Settings = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="restaurant">
-          <Card>
-            <CardHeader>
-              <CardTitle>Restaurant Details</CardTitle>
-              <CardDescription>Manage your restaurant information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="restaurant-name">Restaurant Name</Label>
-                <Input 
-                  id="restaurant-name" 
-                  value={restaurantName} 
-                  onChange={(e) => setRestaurantName(e.target.value)} 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" defaultValue="123 Restaurant Street, Foodville" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" defaultValue="+1 (555) 123-4567" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input id="website" defaultValue="https://myrestaurant.com" />
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+       <TabsContent value="restaurant">
+  <Card>
+    <CardHeader>
+      <CardTitle>Restaurant Details</CardTitle>
+      <CardDescription>Manage your restaurant information used on bills and customer receipts</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-6">
+      {/* Restaurant Name */}
+      <div className="space-y-2">
+        <Label htmlFor="restaurant-name">Restaurant Name</Label>
+        <Input 
+          id="restaurant-name" 
+          value={restaurantName} 
+          onChange={(e) => setRestaurantName(e.target.value)} 
+          placeholder="e.g., Bella Vista"
+        />
+      </div>
+
+      {/* Slogan / Tagline */}
+      <div className="space-y-2">
+        <Label htmlFor="slogan">Slogan (Optional)</Label>
+        <Input 
+          id="slogan" 
+          defaultValue="Fine Dining, Unforgettable Moments" 
+          placeholder="e.g., Fine Dining, Unforgettable Moments"
+        />
+      </div>
+
+      {/* Address */}
+      <div className="space-y-2">
+        <Label htmlFor="address">Address</Label>
+        <Input 
+          id="address" 
+          defaultValue="123 Restaurant Street, Foodville" 
+          placeholder="Full street address"
+        />
+      </div>
+
+      {/* Phone Number */}
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input 
+          id="phone" 
+          defaultValue="+1 (555) 123-4567" 
+          placeholder="+1 (555) 123-4567"
+        />
+      </div>
+
+      {/* Contact Email */}
+      <div className="space-y-2">
+        <Label htmlFor="email">Contact Email</Label>
+        <Input 
+          id="email" 
+          type="email" 
+          defaultValue="info@bellavista.com" 
+          placeholder="info@restaurant.com"
+        />
+      </div>
+
+      {/* Website */}
+      <div className="space-y-2">
+        <Label htmlFor="website">Website</Label>
+        <Input 
+          id="website" 
+          defaultValue="https://myrestaurant.com" 
+          placeholder="https://yourrestaurant.com"
+        />
+      </div>
+
+      {/* Tax ID / GSTIN */}
+      <div className="space-y-2">
+        <Label htmlFor="tax-id">Tax ID / GSTIN</Label>
+        <Input 
+          id="tax-id" 
+          defaultValue="GST123456789IND" 
+          placeholder="e.g., GST123456789IND"
+        />
+      </div>
+
+      {/* Tax Rate */}
+      <div className="space-y-2">
+        <Label htmlFor="tax-rate">Tax Rate (%)</Label>
+        <Input 
+          id="tax-rate" 
+          type="number" 
+          defaultValue="10" 
+          step="0.01" 
+          min="0" 
+          max="100"
+        />
+        <p className="text-sm text-muted-foreground">This will be used to calculate tax on bills.</p>
+      </div>
+
+      {/* Receipt Footer Message */}
+      <div className="space-y-2">
+        <Label htmlFor="footer-message">Receipt Footer Message</Label>
+        <Input 
+          id="footer-message" 
+          defaultValue="Thank you for dining with us!" 
+          placeholder="e.g., Thank you! Visit again!"
+        />
+      </div>
+
+      {/* Upload Logo */}
+      <div className="space-y-2">
+        <Label htmlFor="logo">Restaurant Logo (Optional)</Label>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center border">
+            <span className="text-xs text-gray-500">Logo</span>
+          </div>
+          <Button variant="outline" size="sm">Upload Logo</Button>
+        </div>
+        <p className="text-sm text-muted-foreground">Recommended: PNG/SVG with transparent background.</p>
+      </div>
+
+      <Button onClick={handleSaveSettings}>Save Changes</Button>
+    </CardContent>
+  </Card>
+</TabsContent>
 
         <TabsContent value="billing">
           <Card>
