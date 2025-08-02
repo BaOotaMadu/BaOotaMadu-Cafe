@@ -51,7 +51,7 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
     <div className="min-h-screen flex flex-col bg-white text-[#1B1F3B]">
       <Header tableNumber={tableId} onCartClick={handleCartToggle} />
 
-      <div className="px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20 bg-white/95 backdrop-blur-sm shadow-sm">
+      {/* <div className="px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20 bg-white/95 backdrop-blur-sm shadow-sm">
         {showSearch && (
           <div className="relative">
             <div
@@ -93,7 +93,7 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
             )}
           </div>
         )}
-      </div>
+      </div> */}
 
       <div className="flex-grow">
         <MenuMain searchTerm={searchTerm} />

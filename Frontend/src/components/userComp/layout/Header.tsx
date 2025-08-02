@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search,
   ShoppingCart,
   HelpCircle,
   User,
@@ -29,43 +27,21 @@ import { useCart } from "@/hooks/useCart";
 interface HeaderProps {
   tableNumber: string;
   onCartClick: () => void;
-  onSearch?: (term: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) => {
+const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { cartItems } = useCart();
-  
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSearch) {
-      onSearch(searchTerm);
-    }
-  };
-
-  const toggleSearch = () => {
-    setSearchVisible(!searchVisible);
-    if (searchVisible) {
-      setSearchTerm("");
-      if (onSearch) {
-        onSearch("");
-      }
-    }
-  };
 
   return (
     <header
@@ -74,8 +50,8 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
       }`}
     >
       <div className="container mx-auto px-4">
+        {/* Logo and Table Number */}
         <div className="flex items-center justify-between">
-          {/* Logo and Table Number */}
           <div className="flex items-center gap-3">
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -102,47 +78,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
-            {/* Search Input (conditionally visible) */}
-            <AnimatePresence>
-              {searchVisible && (
-                <motion.form
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "auto", opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  className="relative"
-                  onSubmit={handleSearchSubmit}
-                >
-                  <Input
-                    type="text"
-                    placeholder="Search menu..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="h-9 pr-8 focus-visible:ring-primary"
-                    autoFocus
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    variant="ghost"
-                    className="absolute right-0 top-0 h-9 w-9 text-muted-foreground"
-                  >
-                    <Search size={16} />
-                  </Button>
-                </motion.form>
-              )}
-            </AnimatePresence>
-
-            {/* Search Toggle Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSearch}
-              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
-            >
-              {searchVisible ? <X size={18} /> : <Search size={18} />}
-            </Button>
-
-            {/* Navigation Items */}
             <nav className="flex items-center gap-1 ml-2">
               <Button
                 variant="ghost"
@@ -151,7 +86,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
                 <Briefcase className="h-4 w-4 mr-2" />
                 <span>Corporate</span>
               </Button>
-              
               <Button
                 variant="ghost"
                 className="text-sm h-9 px-3 hover:bg-primary/10 hover:text-primary"
@@ -162,7 +96,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
                   NEW
                 </Badge>
               </Button>
-              
               <Button
                 variant="ghost"
                 className="text-sm h-9 px-3 hover:bg-primary/10 hover:text-primary"
@@ -170,7 +103,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
                 <HelpCircle className="h-4 w-4 mr-2" />
                 <span>Help</span>
               </Button>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -203,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Cart Button with Item Count */}
+              {/* Cart Button */}
               <Button
                 variant="ghost"
                 onClick={onCartClick}
@@ -221,16 +153,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
 
           {/* Mobile Menu Toggle and Cart */}
           <div className="flex md:hidden items-center gap-2">
-            {/* Mobile Search Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSearch}
-              className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
-            >
-              <Search size={18} />
-            </Button>
-
             {/* Cart Button for Mobile */}
             <Button
               variant="ghost"
@@ -256,40 +178,6 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick, onSearch }) =
             </Button>
           </div>
         </div>
-
-        {/* Mobile Search (when visible) */}
-        <AnimatePresence>
-          {searchVisible && (
-            <motion.form
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-2 px-1"
-              onSubmit={handleSearchSubmit}
-            >
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search menu..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-10 pl-10 pr-4 w-full"
-                  autoFocus
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Button
-                  type="submit"
-                  size="sm"
-                  variant="ghost"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
-                >
-                  Search
-                </Button>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
 
         {/* Mobile Navigation Menu */}
         <AnimatePresence>

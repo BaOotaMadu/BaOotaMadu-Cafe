@@ -17,6 +17,8 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import CustomerView from './components/CustomerView'
 import ChefPanel from "./pages/ChefPanel";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 
 
@@ -47,6 +49,10 @@ const App = () => (
               <Route path="/settings" element={<Layout><Settings /></Layout>} />
               <Route path="/customer1" element={<CustomerView />} />
               <Route path="/chief" element={<ChefPanel />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+
+              
 
               
               {/* New Redux-powered Table Management Page */}
