@@ -1,436 +1,422 @@
-"use client";
+// "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Building2, CircleUser, CreditCard, Bell, Globe, ShieldCheck } from 'lucide-react';
+// import { useEffect, useState } from "react";
+// import { Card, CardContent } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Button } from "@/components/ui/button";
+// import { Label } from "@/components/ui/label";
+// import { toast } from "@/components/ui/use-toast";
 
-const Settings = () => {
-  const { toast } = useToast();
-  const [restaurantName, setRestaurantName] = useState('My Restaurant');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [currency, setCurrency] = useState('USD');
-  const [language, setLanguage] = useState('en');
-  const [plan, setPlan] = useState<'Professional' | 'Basic' | 'Premium'>('Professional');
-  const [billingLoading, setBillingLoading] = useState(false);
+// const availablePlans = ["Basic", "Pro", "Enterprise"];
 
-  const handleSaveSettings = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your settings have been updated successfully",
-    });
-  };
+// export default function ProfilePage() {
+//   const [restaurantName, setRestaurantName] = useState("");
+//   const [managerName, setManagerName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [phone, setPhone] = useState("");
+//   const [slogan, setSlogan] = useState("");
+//   const [address, setAddress] = useState("");
+//   const [plan, setPlan] = useState("Basic");
 
-  const handlePlanChange = (newPlan: 'Professional' | 'Basic' | 'Premium') => {
-    setPlan(newPlan);
-    toast({
-      title: "Plan Changed",
-      description: `You are now on the ${newPlan} Plan.`,
-    });
-  };
+//   const [newAddress, setNewAddress] = useState("");
+//   const [isProfileSet, setIsProfileSet] = useState(false);
+//   //const restaurantId =
+//   // typeof window !== "undefined" ? localStorage.getItem("restaurantId") : null;
+//   const restaurantId = localStorage.getItem("restaurantId");
+//   console.log("restaurantId:", restaurantId);
+//   if (!restaurantId) {
+//     console.error("restaurantId is not set in localStorage");
+//   }
 
-  const handleUpdatePayment = () => {
-    setBillingLoading(true);
-    setTimeout(() => {
-      setBillingLoading(false);
-      toast({
-        title: "Payment Method Updated",
-        description: "Your payment method has been successfully updated.",
+//   const API_URl = "http://localhost:3001";
+//   useEffect(() => {
+//     const fetchProfile = async () => {
+//       if (!restaurantId) {
+//         console.error("restaurantId is missing");
+//         return;
+//       }
+
+//       try {
+//         const res = await fetch(`${API_URl}/api/restaurant/${restaurantId}`);
+//         if (!res.ok) {
+//           console.log("Failed to fetch profile data:", res.statusText);
+//           return;
+//         }
+
+//         const data = await res.json();
+//         console.log("Fetched profile data:", data);
+
+//         if (data && data.name) {
+//           setRestaurantName(data.name);
+//           setManagerName(data.manager);
+//           setSlogan(data.slogan);
+//           setEmail(data.email);
+//           setPhone(data.phone);
+//           setAddress(data.address);
+//           setNewAddress(data.address);
+//           setPlan(data.plan);
+//           setIsProfileSet(true);
+//         }
+//       } catch (err) {
+//         toast({
+//           title: "Error",
+//           description: "Failed to load profile",
+//         });
+//       }
+//     };
+
+//     fetchProfile();
+//   }, [restaurantId]);
+
+//   const handleAddressUpdate = async () => {
+//     const res = await fetch(
+//       `${API_URl}/api/restaurant/${restaurantId}/address`,
+//       {
+//         method: "PUT",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ address: newAddress }),
+//       }
+//     );
+//     const updated = await res.json();
+//     setAddress(updated.address);
+//     setNewAddress(updated.address);
+
+//     toast({
+//       title: "Address Updated",
+//       description: "Your restaurant address has been updated.",
+//     });
+//   };
+
+//   const handleUpgrade = async (newPlan: string) => {
+//     const res = await fetch(`${API_URl}/api/restaurant/${restaurantId}/plan`, {
+//       method: "PUT",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ plan: newPlan }),
+//     });
+//     const updated = await res.json();
+//     setPlan(updated.plan);
+
+//     toast({
+//       title: "Plan Updated",
+//       description: `You've upgraded to the ${newPlan} plan.`,
+//     });
+//   };
+
+//   const handleCreateProfile = async () => {
+//     try {
+//       const res = await fetch(`${API_URl}/api/restaurant/create`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           name: restaurantName,
+//           manager: managerName,
+//           email,
+//           phone,
+//           address,
+//           slogan,
+//           plan,
+//         }),
+//       });
+
+//       const data = await res.json();
+//       localStorage.setItem("restaurantId", data.restaurantId);
+//       setIsProfileSet(true);
+
+//       toast({
+//         title: "Profile Created",
+//         description: "Your restaurant profile has been created.",
+//       });
+//     } catch (err) {
+//       toast({
+//         title: "Error",
+//         description: "Failed to create profile.",
+//       });
+//     }
+//   };
+
+//   return (
+//     <div className="max-w-3xl mx-auto py-12 px-4">
+//       <h1 className="text-3xl font-bold mb-8">Restaurant Profile</h1>
+
+//       {isProfileSet ? (
+//         <>
+//           <Card className="mb-6">
+//             <CardContent className="p-6 space-y-4">
+//               <div>
+//                 <Label className="text-muted-foreground">Restaurant Name</Label>
+//                 <p className="text-lg font-medium">{restaurantName}</p>
+//               </div>
+
+//               <div>
+//                 <Label className="text-muted-foreground">Manager Name</Label>
+//                 <p className="text-lg font-medium">{managerName}</p>
+//               </div>
+
+//               <div>
+//                 <Label className="text-muted-foreground">Email</Label>
+//                 <p className="text-lg">{email}</p>
+//               </div>
+
+//               <div>
+//                 <Label className="text-muted-foreground">Phone</Label>
+//                 <p className="text-lg">{phone}</p>
+//               </div>
+
+//               <div>
+//                 <Label className="text-muted-foreground">Slogan</Label>
+//                 <p className="text-lg italic">{slogan}</p>
+//               </div>
+
+//               <div>
+//                 <Label htmlFor="address">Address</Label>
+//                 <Input
+//                   id="address"
+//                   value={newAddress}
+//                   onChange={(e) => setNewAddress(e.target.value)}
+//                 />
+//                 <Button onClick={handleAddressUpdate} className="mt-2">
+//                   Save Address
+//                 </Button>
+//               </div>
+//             </CardContent>
+//           </Card>
+
+//           <Card>
+//             <CardContent className="p-6 space-y-4">
+//               <div>
+//                 <Label className="text-muted-foreground">Current Plan</Label>
+//                 <p className="text-lg font-semibold text-primary">{plan}</p>
+//               </div>
+
+//               <div>
+//                 <Label className="text-muted-foreground mb-2 block">
+//                   Upgrade Plan
+//                 </Label>
+//                 <div className="flex flex-wrap gap-2">
+//                   {availablePlans
+//                     .filter((p) => p !== plan)
+//                     .map((p) => (
+//                       <Button
+//                         key={p}
+//                         variant="outline"
+//                         onClick={() => handleUpgrade(p)}
+//                       >
+//                         Upgrade to {p}
+//                       </Button>
+//                     ))}
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </>
+//       ) : (
+//         <Card>
+//           <CardContent className="p-6 space-y-4">
+//             <div>
+//               <Label>Restaurant Name</Label>
+//               <Input
+//                 value={restaurantName}
+//                 onChange={(e) => setRestaurantName(e.target.value)}
+//               />
+//             </div>
+
+//             <div>
+//               <Label>Manager Name</Label>
+//               <Input
+//                 value={managerName}
+//                 onChange={(e) => setManagerName(e.target.value)}
+//               />
+//             </div>
+
+//             <div>
+//               <Label>Email</Label>
+//               <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+//             </div>
+
+//             <div>
+//               <Label>Phone</Label>
+//               <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+//             </div>
+
+//             <div>
+//               <Label>Address</Label>
+//               <Input
+//                 value={address}
+//                 onChange={(e) => setAddress(e.target.value)}
+//               />
+//             </div>
+
+//             <div>
+//               <Label>Slogan</Label>
+//               <Input
+//                 value={slogan}
+//                 onChange={(e) => setSlogan(e.target.value)}
+//               />
+//             </div>
+
+//             <div>
+//               <Label>Choose Plan</Label>
+//               <div className="flex flex-wrap gap-2">
+//                 {availablePlans.map((p) => (
+//                   <Button
+//                     key={p}
+//                     variant={p === plan ? "default" : "outline"}
+//                     onClick={() => setPlan(p)}
+//                   >
+//                     {p}
+//                   </Button>
+//                 ))}
+//               </div>
+//             </div>
+
+//             <Button onClick={handleCreateProfile}>Submit</Button>
+//           </CardContent>
+//         </Card>
+//       )}
+//     </div>
+//   );
+// }
+
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
+
+const API_URL = "http://localhost:3001"; // or your backend URL
+
+const RestaurantProfile = () => {
+  const [restaurantName, setRestaurantName] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [slogan, setSlogan] = useState("");
+  const [plan, setPlan] = useState("");
+  const [isProfileSet, setIsProfileSet] = useState(false);
+
+  const restaurantId = localStorage.getItem("restaurantId");
+
+  // Fetch restaurant details if ID exists
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/restaurant/${restaurantId}`);
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+
+        setRestaurantName(data.name || "");
+        setManagerName(data.manager || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+        setAddress(data.address || "");
+        setSlogan(data.slogan || "");
+        setPlan(data.plan || "");
+        setIsProfileSet(true);
+      } catch (err) {
+        console.error("Fetch profile error:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [restaurantId]);
+
+  const handleSaveProfile = async () => {
+    try {
+      if (!email) {
+        throw new Error("Email not found");
+      }
+
+      const res = await fetch(`${API_URL}/api/restaurant/update-by-email`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          name: restaurantName,
+          manager: managerName,
+          phone,
+          address,
+          slogan,
+          plan,
+        }),
       });
-    }, 1000);
-  };
 
-  const handleCancelSubscription = () => {
-    toast({
-      title: "Subscription Canceled",
-      description: "Your subscription will remain active until the end of the billing period.",
-    });
-    setPlan('Basic');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to update");
+      }
+
+      const updated = await res.json();
+
+      toast({
+        title: "Profile Saved",
+        description: "Restaurant profile updated successfully.",
+      });
+
+      setIsProfileSet(true); // optional: track profile completion
+    } catch (err) {
+      console.error("Save error:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to save profile.",
+      });
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-gray-500 mt-1">Configure your restaurant settings and preferences</p>
-      </div>
-      
-      <Tabs defaultValue="account" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="account" className="gap-2">
-            <CircleUser size={16} />
-            <span>Account</span>
-          </TabsTrigger>
-          <TabsTrigger value="restaurant" className="gap-2">
-            <Building2 size={16} />
-            <span>Restaurant</span>
-          </TabsTrigger>
-          <TabsTrigger value="billing" className="gap-2">
-            <CreditCard size={16} />
-            <span>Billing</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
-            <Bell size={16} />
-            <span>Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="preferences" className="gap-2">
-            <Globe size={16} />
-            <span>Preferences</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="gap-2">
-            <ShieldCheck size={16} />
-            <span>Security</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>Manage your account details and preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" defaultValue="Admin User" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="admin@restaurant.com" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Input id="role" defaultValue="Restaurant Manager" disabled />
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-       <TabsContent value="restaurant">
-  <Card>
-    <CardHeader>
-      <CardTitle>Restaurant Details</CardTitle>
-      <CardDescription>Manage your restaurant information used on bills and customer receipts</CardDescription>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      {/* Restaurant Name */}
-      <div className="space-y-2">
-        <Label htmlFor="restaurant-name">Restaurant Name</Label>
-        <Input 
-          id="restaurant-name" 
-          value={restaurantName} 
-          onChange={(e) => setRestaurantName(e.target.value)} 
-          placeholder="e.g., Bella Vista"
+    <div className="max-w-xl mx-auto mt-10 p-6 border rounded-xl shadow-sm space-y-4">
+      <h2 className="text-2xl font-bold mb-2">Restaurant Profile</h2>
+
+      <div className="space-y-1">
+        <Label>Restaurant Name</Label>
+        <Input
+          value={restaurantName}
+          onChange={(e) => setRestaurantName(e.target.value)}
         />
       </div>
 
-      {/* Slogan / Tagline */}
-      <div className="space-y-2">
-        <Label htmlFor="slogan">Slogan (Optional)</Label>
-        <Input 
-          id="slogan" 
-          defaultValue="Fine Dining, Unforgettable Moments" 
-          placeholder="e.g., Fine Dining, Unforgettable Moments"
+      <div className="space-y-1">
+        <Label>Manager Name</Label>
+        <Input
+          value={managerName}
+          onChange={(e) => setManagerName(e.target.value)}
         />
       </div>
 
-      {/* Address */}
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input 
-          id="address" 
-          defaultValue="123 Restaurant Street, Foodville" 
-          placeholder="Full street address"
-        />
+      <div className="space-y-1">
+        <Label>Email</Label>
+        <Input value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
 
-      {/* Phone Number */}
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input 
-          id="phone" 
-          defaultValue="+1 (555) 123-4567" 
-          placeholder="+1 (555) 123-4567"
-        />
+      <div className="space-y-1">
+        <Label>Phone</Label>
+        <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
       </div>
 
-      {/* Contact Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email">Contact Email</Label>
-        <Input 
-          id="email" 
-          type="email" 
-          defaultValue="info@bellavista.com" 
-          placeholder="info@restaurant.com"
-        />
+      <div className="space-y-1">
+        <Label>Address</Label>
+        <Input value={address} onChange={(e) => setAddress(e.target.value)} />
       </div>
 
-      {/* Website */}
-      <div className="space-y-2">
-        <Label htmlFor="website">Website</Label>
-        <Input 
-          id="website" 
-          defaultValue="https://myrestaurant.com" 
-          placeholder="https://yourrestaurant.com"
-        />
+      <div className="space-y-1">
+        <Label>Slogan</Label>
+        <Input value={slogan} onChange={(e) => setSlogan(e.target.value)} />
       </div>
 
-      {/* Tax ID / GSTIN */}
-      <div className="space-y-2">
-        <Label htmlFor="tax-id">Tax ID / GSTIN</Label>
-        <Input 
-          id="tax-id" 
-          defaultValue="GST123456789IND" 
-          placeholder="e.g., GST123456789IND"
-        />
+      <div className="space-y-1">
+        <Label>Plan</Label>
+        <Input value={plan} onChange={(e) => setPlan(e.target.value)} />
       </div>
 
-      {/* Tax Rate */}
-      <div className="space-y-2">
-        <Label htmlFor="tax-rate">Tax Rate (%)</Label>
-        <Input 
-          id="tax-rate" 
-          type="number" 
-          defaultValue="10" 
-          step="0.01" 
-          min="0" 
-          max="100"
-        />
-        <p className="text-sm text-muted-foreground">This will be used to calculate tax on bills.</p>
-      </div>
-
-      {/* Receipt Footer Message */}
-      <div className="space-y-2">
-        <Label htmlFor="footer-message">Receipt Footer Message</Label>
-        <Input 
-          id="footer-message" 
-          defaultValue="Thank you for dining with us!" 
-          placeholder="e.g., Thank you! Visit again!"
-        />
-      </div>
-
-      {/* Upload Logo */}
-      <div className="space-y-2">
-        <Label htmlFor="logo">Restaurant Logo (Optional)</Label>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center border">
-            <span className="text-xs text-gray-500">Logo</span>
-          </div>
-          <Button variant="outline" size="sm">Upload Logo</Button>
-        </div>
-        <p className="text-sm text-muted-foreground">Recommended: PNG/SVG with transparent background.</p>
-      </div>
-
-      <Button onClick={handleSaveSettings}>Save Changes</Button>
-    </CardContent>
-  </Card>
-</TabsContent>
-
-        <TabsContent value="billing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Billing Information</CardTitle>
-              <CardDescription>Manage your billing details and subscription</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="rounded-md bg-muted p-4 text-center flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p>You are currently on the <strong>{plan} Plan</strong></p>
-                  {plan === "Professional" && (
-                    <p className="text-sm text-muted-foreground mt-1">$49 per month, billed monthly</p>
-                  )}
-                  {plan === "Basic" && (
-                    <p className="text-sm text-muted-foreground mt-1">Free plan, includes limited features</p>
-                  )}
-                  {plan === "Premium" && (
-                    <p className="text-sm text-muted-foreground mt-1">$129 per month, premium analytics and support</p>
-                  )}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <Select value={plan} onValueChange={handlePlanChange}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Change Plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Basic">Basic (Free)</SelectItem>
-                      <SelectItem value="Professional">Professional ($49/mo)</SelectItem>
-                      <SelectItem value="Premium">Premium ($129/mo)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleCancelSubscription}
-                  >
-                    Cancel Subscription
-                  </Button>
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <Label htmlFor="payment-method">Payment Method</Label>
-                <div className="flex items-center gap-2 p-2 border rounded-md">
-                  <CreditCard />
-                  <span>•••• •••• •••• 4242</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={billingLoading}
-                    onClick={handleUpdatePayment}
-                  >
-                    {billingLoading ? "Updating..." : "Update Payment"}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="billing-address">Billing Address</Label>
-                <Input id="billing-address" defaultValue="123 Restaurant Street, Foodville" />
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Manage how you receive notifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-notifications">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive order and customer notifications via email</p>
-                </div>
-                <Switch 
-                  id="email-notifications"
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="push-notifications">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive real-time push notifications on your device</p>
-                </div>
-                <Switch 
-                  id="push-notifications"
-                  checked={pushNotifications}
-                  onCheckedChange={setPushNotifications}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="marketing-notifications">Marketing Updates</Label>
-                  <p className="text-sm text-muted-foreground">Receive updates about new features and promotions</p>
-                </div>
-                <Switch id="marketing-notifications" />
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="preferences">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Preferences</CardTitle>
-              <CardDescription>Customize your MenuZen experience</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                    <SelectItem value="GBP">GBP (£)</SelectItem>
-                    <SelectItem value="CAD">CAD ($)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="time-zone">Time Zone</Label>
-                <Select defaultValue="utc-8">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Time Zone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="utc-8">Pacific Time (UTC-8)</SelectItem>
-                    <SelectItem value="utc-5">Eastern Time (UTC-5)</SelectItem>
-                    <SelectItem value="utc+0">UTC</SelectItem>
-                    <SelectItem value="utc+1">Central European Time (UTC+1)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage your account security preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Current Password</Label>
-                <Input id="current-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input id="new-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input id="confirm-password" type="password" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="two-factor">Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
-                </div>
-                <Switch id="two-factor" />
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Button onClick={handleSaveProfile} className="mt-4">
+        Save Profile
+      </Button>
     </div>
   );
 };
 
-export default Settings;
+export default RestaurantProfile;

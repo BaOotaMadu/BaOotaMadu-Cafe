@@ -46,7 +46,7 @@ interface MenuItemForm {
   image: string;
 }
 
-const API_URL = "http://localhost:3000/menu";
+const API_URL = "http://localhost:3001";
 
 const Menu = () => {
   const { toast } = useToast();
@@ -57,10 +57,10 @@ const Menu = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
-  const restaurantId = "681f3a4888df8faae5bbd380";
+  const restaurantId = localStorage.getItem("restaurantId");
   // Fetch menu items from backend
   useEffect(() => {
-    fetch(`http://localhost:3001/menu/681f3a4888df8faae5bbd380`)
+    fetch(`${API_URL}/menu/${restaurantId}`)
       .then((res) => res.json())
       .then((data) => setMenuItems(data))
       .catch(() =>
@@ -122,16 +122,13 @@ const Menu = () => {
     };
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/menu/update/${editingItem._id}`,
-        {
-          method: "PUT", // or PATCH if your backend expects that
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatedItem),
-        }
-      );
+      const res = await fetch(`${API_URL}/menu/update/${editingItem._id}`, {
+        method: "PUT", // or PATCH if your backend expects that
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedItem),
+      });
 
       if (!res.ok) throw new Error("Failed to update item");
 
@@ -159,7 +156,7 @@ const Menu = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`${API_URL}${id}`, { method: "DELETE" });
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       setMenuItems((prevItems) => prevItems.filter((item) => item._id !== id));
       toast({
         title: "Delete Menu Item",
@@ -202,14 +199,11 @@ const Menu = () => {
   // };
   const handleToggleAvailability = async (id: string, available: boolean) => {
     try {
-      const res = await fetch(
-        `http://localhost:3001/menu/updateAvailable/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ available }),
-        }
-      );
+      const res = await fetch(`${API_URL}/menu/updateAvailable/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ available }),
+      });
       if (!res.ok) throw new Error("Failed to update availability");
       const updatedItem = await res.json();
       setMenuItems((prevItems) =>
@@ -242,11 +236,11 @@ const Menu = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3001/menu/add", {
+      const res = await fetch(`${API_URL}/menu/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          restaurantId: "681f3a4888df8faae5bbd380",
+          restaurantId: restaurantId,
           name: data.name,
           category: data.category,
           price,

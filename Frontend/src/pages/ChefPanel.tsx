@@ -296,8 +296,8 @@ import axios from "axios";
 import { CheckCircle, Clock, XCircle, Utensils } from "lucide-react";
 import { format } from "date-fns";
 import classNames from "classnames";
-const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with your actual restaurant ID
-const API_URL = `http://localhost:3001/orders/${restaurantId}`; // Replace with your actual URL
+const restaurantId = localStorage.getItem("restaurantId"); // Replace with your actual restaurant ID
+const API_URL = `http://localhost:3001`; // Replace with your actual URL
 
 const ChefPanel = () => {
   const [orders, setOrders] = useState([]);
@@ -319,7 +319,7 @@ const ChefPanel = () => {
 
   const updateStatus = async (id: string) => {
     try {
-      await axios.put(`${API_URL}/${id}/status`, {
+      await axios.put(`${API_URL}/insights/today/${id}/status`, {
         status: "completed",
       });
       toast.success("Order marked as completed");

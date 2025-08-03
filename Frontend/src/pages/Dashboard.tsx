@@ -204,7 +204,8 @@ import TableCard from "@/components/TableCard";
 import OrderDetailsDialog from "@/components/OrderDetailsDialog";
 import { useToast } from "@/hooks/use-toast";
 
-const socket = io("http://localhost:3001");
+const API_URL = "http://localhost:3001"; // Replace with your actual API URL
+const socket = io(API_URL);
 
 type Table = {
   id: string;
@@ -230,11 +231,13 @@ const Dashboard = () => {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
-  const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with useParams() if dynamic
+  //const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with useParams() if dynamic
 
+  const restaurantId = localStorage.getItem("restaurantId") || "";
+  console.log("Restaurant ID:", restaurantId);
   // Fetch Dashboard Stats
   useEffect(() => {
-    fetch(`http://localhost:3001/insights/today/${restaurantId}`)
+    fetch(`${API_URL}/insights/today/${restaurantId}`)
       .then((res) => res.json())
       .then((data) => {
         setTotalOrdersToday(data.totalOrdersToday || 0);
@@ -248,7 +251,7 @@ const Dashboard = () => {
 
   // Fetch Recent Activity
   useEffect(() => {
-    fetch(`http://localhost:3001/activities/${restaurantId}`)
+    fetch(`${API_URL}/activities/${restaurantId}`)
       .then((res) => res.json())
       .then((data) => {
         setRecentMessages(data);
@@ -258,7 +261,7 @@ const Dashboard = () => {
 
   // Fetch Active Tables
   useEffect(() => {
-    fetch(`http://localhost:3001/tables/`)
+    fetch(`${API_URL}/tables/`)
       .then((res) => res.json())
       .then((data) => {
         const activeTablesOnly = data

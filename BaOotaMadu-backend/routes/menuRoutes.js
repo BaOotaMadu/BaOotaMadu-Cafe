@@ -6,10 +6,10 @@ const MenuItem = require("../models/menuModel");
 router.post("/add", async (req, res) => {
   try {
     const { name, price, category, image_url } = req.body;
-    const restaurantId = "681f3a4888df8faae5bbd380";
-    //if (!restaurantId) {
-     // return res.status(400).json({ error: "Restaurant ID is required" });
-    //}
+    const restaurantId = req.body.restaurantId || req.query.restaurant_id; // Ensure restaurantId is provided
+    if (!restaurantId) {
+     return res.status(400).json({ error: "Restaurant ID is required" });
+    }
     const newItem = new MenuItem({ restaurant_id: restaurantId, name, price, category, image_url });
     await newItem.save();
 
@@ -20,14 +20,15 @@ router.post("/add", async (req, res) => {
 });
 
 // Get Menu Items for Specific Restaurant (Fixing incorrect param reference)
-router.get("/:restaurant_id", async (req, res) => {
+router.get("/:restaurantId", async (req, res) => {
   try {
-    const menuItems = await MenuItem.find({ restaurant_id: req.params.restaurant_id });
+    const menuItems = await MenuItem.find({ restaurant_id: req.params.restaurantId });
     res.status(200).json(menuItems);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Update Menu Item (Ensures correct parameter handling)
 router.put("/update/:id", async (req, res) => {

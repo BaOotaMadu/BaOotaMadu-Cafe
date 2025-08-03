@@ -37,12 +37,15 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', require('./routes/authroutes.js'));
-app.use('/user', require('./routes/userRoutes.js'));
+//app.use('/user', require('./routes/userRoutes.js'));
 app.use('/orders', require('./routes/orderRoutes.js')(io)); // pass io
 app.use('/tables', require('./routes/tableRoutes.js'));
 app.use('/menu', require('./routes/menuRoutes.js'));
 app.use('/insights', require('./routes/insightsRoutes'));
 app.use("/activities", require("./routes/activityRoutes"));
+app.use("/uploads", express.static("uploads")); // Serve logos
+app.use("/", require("./routes/settingsRoutes.js")); // pass iosettingsRoutes);
+app.use("/api/restaurant", require("./routes/restaurantRoutes.js")); // pass iorestaurantRoutes);
 
 
 // Socket.IO connection listener

@@ -1,9 +1,33 @@
 const mongoose = require("mongoose");
 
-const RestaurantSchema = new mongoose.Schema({
+const restaurantSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: false,
+  },
+  phone: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  answer: {
+    type: String,
+    required: [false, "Answer is required"],
+  },
   name: String,
+  manager: String,
+  slogan: String,
   address: String,
-  // You can add more fields later
+  plan: {
+    type: String,
+    enum: ["Basic", "Pro", "Enterprise"],
+    default: "Basic",
+  },
 });
 
-module.exports = mongoose.model("Restaurant", RestaurantSchema);
+module.exports = mongoose.model("Restaurant", restaurantSchema);

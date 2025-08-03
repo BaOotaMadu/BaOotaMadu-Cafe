@@ -1,100 +1,125 @@
-const usermodel = require('../models/usermodel');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const registerUser = async(req,res) => {
-    try{
-        const {
-            username,
-            email,
-            password,
-            phone,
-            userType,
-            answer
-        } = req.body;
-        if(!username || !email || !password || !phone || !userType || !answer){
-            return res.send({
-               success:false,
-               message:"All fields are required",
-            });
-        }
-        //check user
-        const existing = await usermodel.findOne({email});
-        if(existing)
-        {
-            res.status(500).send({
-                success:false,
-                message:"User already exists please login"
-            })
-        }
-        const Hashedpassword = await bcrypt.hash(password,10);
-        //create user
-        const user = await usermodel.create({
-            username,
-            email,
-            password:Hashedpassword,
-            phone,
-            userType,
-            answer
-        });
-        res.status(201).send({
-            success:true,
-            message:"User registered successfully",
-            user
-        })
+const Restaurant = require("../models/restaurantModel");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-}
-catch(error){
-    console.log(error);
-    res.send("Unsuccessful registration")
-}
-}
+// SIGNUP
+exports.signup = async (req, res) => {
+  try {
+    const { email, password, phone } = req.body;
 
-
-const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).send({
-                success: false,
-                message: "All fields are required",
-            });
-        }
-
-        // Check if user exists
-        const existing = await usermodel.findOne({ email });
-        if (!existing) {
-            return res.status(401).send({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, existing.password);
-        if (!isMatch) {
-            return res.status(401).send({
-                success: false,
-                message: "Wrong password",
-            });
-        }
-         const token = jwt.sign({ id: existing._id }, process.env.SECRET_key, {
-             expiresIn: "5d",
-         })
-        // Remove password before sending response
-        existing.password = undefined;
-
-        return res.status(200).send({
-            success: true,
-            message: "User logged in successfully",
-            token,
-            user: existing,
-        });
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send({ success: false, message: "Server error" });
+    const existing = await Restaurant.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: "Email already in use" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const restaurant = await Restaurant.create({
+      email,
+      password: hashedPassword,
+      phone,
+      name: req.body.name || "",
+        manager: req.body.manager || "",
+        slogan: req.body.slogan || "",
+        address: req.body.address || "",
+        plan: req.body.plan || "Basic",
+    });
+
+    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+    res.status(201).json({
+      token,
+      restaurantId: restaurant._id,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-module.exports = { registerUser , loginUser };
+// LOGIN
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const restaurant = await Restaurant.findOne({ email });
+    if (!restaurant) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, restaurant.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+    res.json({
+      token,
+      restaurantId: restaurant._id,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// GET LOGGED-IN USER INFO
+exports.getUser = async (req, res) => {
+  try {
+    const user = await Restaurant.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// UPDATE USER PROFILE
+exports.updateUser = async (req, res) => {
+  try {
+    const { name, address, slogan, phone, plan } = req.body;
+
+    const updated = await Restaurant.findByIdAndUpdate(
+      req.user.id,
+      { name, address, slogan, phone, plan },
+      { new: true }
+    ).select("-password");
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// RESET PASSWORD
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const user = await Restaurant.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// DELETE ACCOUNT
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await Restaurant.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+// LOGOUT
+exports.logout = (req, res) => {
+  res.json({ message: "Logged out successfully" });
+};
