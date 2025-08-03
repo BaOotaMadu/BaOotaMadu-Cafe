@@ -147,6 +147,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
 
       const json = await res.json();
       console.log("Order placed successfully:", json);
+      window.dispatchEvent(new Event('orderPlaced'));
       clearCart();
       onClose();
     } catch (error) {
