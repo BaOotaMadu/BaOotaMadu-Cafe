@@ -305,7 +305,7 @@ const ChefPanel = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(`${API_URL}/orders/${restaurantId}`);
       const today = new Date().toISOString().split("T")[0];
       const todaysOrders = res.data.filter((order: any) => {
         const orderDate = order.created_at.split("T")[0];
@@ -319,7 +319,7 @@ const ChefPanel = () => {
 
   const updateStatus = async (id: string) => {
     try {
-      await axios.put(`${API_URL}/insights/today/${id}/status`, {
+      await axios.put(`${API_URL}/orders/${restaurantId}/${id}/status`, {
         status: "completed",
       });
       toast.success("Order marked as completed");

@@ -115,8 +115,6 @@ const tableBackendActions = {
   // Function to generate QR code
   generateQRCode: async (tableId: string) => {
     console.log(`Backend: Generating QR code for table ${tableId}`);
-    // TODO: Replace with actual API call
-    // await fetch(`/api/tables/${tableId}/qr`, { method: 'POST' });
     return true;
   },
 };

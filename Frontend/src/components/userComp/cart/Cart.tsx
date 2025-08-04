@@ -109,11 +109,16 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const { placeOrder } = useOrder();
   const urlParams = new URLSearchParams(window.location.search);
   const paramTableId = urlParams.get("table");
+  const API_URL = "http://localhost:3001";
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
 
     try {
-      const restaurantId = "681f3a4888df8faae5bbd380";
+      const restaurantId = localStorage.getItem("restaurantId");
+      if (!restaurantId) {
+        console.error("No restaurant ID provided");
+        return;
+      }
       const customerName = "hello";
 
       const orderData = {
@@ -131,7 +136,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
       console.log("Order payload", orderData);
 
       const res = await fetch(
-        `http://localhost:3001/orders/${restaurantId}/place`, // if this is your API route
+        `${API_URL}/orders/${restaurantId}/place`, // if this is your API route
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -147,7 +152,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
 
       const json = await res.json();
       console.log("Order placed successfully:", json);
-      window.dispatchEvent(new Event('orderPlaced'));
+      window.dispatchEvent(new Event("orderPlaced"));
       clearCart();
       onClose();
     } catch (error) {

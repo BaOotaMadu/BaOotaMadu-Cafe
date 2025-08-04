@@ -79,7 +79,7 @@ const TableCard = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={onViewOrder}
+            onClick={() => onViewOrder && onViewOrder(tableId)}
             className="flex-1 flex items-center gap-1"
           >
             <Utensils size={14} />
@@ -92,7 +92,7 @@ const TableCard = ({
               size="sm"
               onClick={() => {
                 setOpenQRDialog(true);
-                if (onGenerateQR) onGenerateQR();
+                if (onGenerateQR) onGenerateQR(tableId); // Pass tableId if needed
               }}
               className="flex items-center gap-1"
             >

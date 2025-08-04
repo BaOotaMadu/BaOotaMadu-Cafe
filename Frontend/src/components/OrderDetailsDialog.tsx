@@ -443,58 +443,17 @@
 //   const [tableOrder, setTableOrder] = useState<any | null>(null);
 //   const [loading, setLoading] = useState(false);
 //   const restaurantId = "681f3a4888df8faae5bbd380";
-  
+
 //   // Clean up table number for display (extract actual table number if it's an ID)
-//   const displayTableNumber = tableNumber.length > 10 ? 
+//   const displayTableNumber = tableNumber.length > 10 ?
 //     `Table ${tableNumber.slice(-3)}` : // Show last 3 characters if it's a long ID
 //     tableNumber;
 
-  // useEffect(() => {
-  //   if (open) {
-  //     setLoading(true);
-  //     setTableOrder(null); // Reset state when opening
-      
-  //     fetch(`http://localhost:3001/orders/${restaurantId}/table/${tableNumber}`)
-  //       .then((res) => {
-  //         if (!res.ok) {
-  //           // Handle 404 and other HTTP errors
-  //           throw new Error(`HTTP error! status: ${res.status}`);
-  //         }
-  //         return res.json();
-  //       })
-  //       .then((data) => {
-  //         console.log("Fetched order:", data);
-  //         // Handle array response - take the first order if it exists
-  //         const orderData = Array.isArray(data) ? data[0] : data;
-          
-  //         // Check if the response contains valid order data
-  //         if (!orderData || orderData.message || !orderData.order_items || orderData.order_items.length === 0) {
-  //           setTableOrder(null);
-  //         } else {
-  //           // Transform the data to match expected structure
-  //           const transformedOrder = {
-  //             id: orderData._id || 'N/A',
-  //             items: orderData.order_items,
-  //             total: orderData.total || orderData.order_items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-  //             createdAt: orderData.created_at,
-  //             customer_name: orderData.customer_name
-  //           };
-  //           setTableOrder(transformedOrder);
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log("No order found for table:", displayTableNumber);
-  //         setTableOrder(null);
-  //       })
-  //       .finally(() => setLoading(false));
-  //   }
-  // }, [open, tableNumber, displayTableNumber]);
-
-//   useEffect(() => {
+// useEffect(() => {
 //   if (open) {
 //     setLoading(true);
 //     setTableOrder(null); // Reset state when opening
-    
+
 //     fetch(`http://localhost:3001/orders/${restaurantId}/table/${tableNumber}`)
 //       .then((res) => {
 //         if (!res.ok) {
@@ -505,10 +464,51 @@
 //       })
 //       .then((data) => {
 //         console.log("Fetched order:", data);
-        
 //         // Handle array response - take the first order if it exists
 //         const orderData = Array.isArray(data) ? data[0] : data;
-        
+
+//         // Check if the response contains valid order data
+//         if (!orderData || orderData.message || !orderData.order_items || orderData.order_items.length === 0) {
+//           setTableOrder(null);
+//         } else {
+//           // Transform the data to match expected structure
+//           const transformedOrder = {
+//             id: orderData._id || 'N/A',
+//             items: orderData.order_items,
+//             total: orderData.total || orderData.order_items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+//             createdAt: orderData.created_at,
+//             customer_name: orderData.customer_name
+//           };
+//           setTableOrder(transformedOrder);
+//         }
+//       })
+//       .catch((err) => {
+//         console.log("No order found for table:", displayTableNumber);
+//         setTableOrder(null);
+//       })
+//       .finally(() => setLoading(false));
+//   }
+// }, [open, tableNumber, displayTableNumber]);
+
+//   useEffect(() => {
+//   if (open) {
+//     setLoading(true);
+//     setTableOrder(null); // Reset state when opening
+
+//     fetch(`http://localhost:3001/orders/${restaurantId}/table/${tableNumber}`)
+//       .then((res) => {
+//         if (!res.ok) {
+//           // Handle 404 and other HTTP errors
+//           throw new Error(`HTTP error! status: ${res.status}`);
+//         }
+//         return res.json();
+//       })
+//       .then((data) => {
+//         console.log("Fetched order:", data);
+
+//         // Handle array response - take the first order if it exists
+//         const orderData = Array.isArray(data) ? data[0] : data;
+
 //         // Check if the response contains valid order data
 //         if (!orderData || orderData.message || !orderData.order_items || orderData.order_items.length === 0) {
 //           console.log("No valid order data found");
@@ -524,7 +524,7 @@
 //             status: orderData.status || 'pending',
 //             table_number: orderData.table_number || tableNumber
 //           };
-          
+
 //           console.log("Transformed order for display:", transformedOrder);
 //           setTableOrder(transformedOrder);
 //         }
@@ -568,13 +568,13 @@
 //               padding: 0;
 //               box-sizing: border-box;
 //             }
-//             body { 
+//             body {
 //               font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 //               background: white;
 //               color: #2d3748;
 //               padding: 20px;
 //             }
-//             .bill-container { 
+//             .bill-container {
 //               background: white;
 //               max-width: 420px;
 //               width: 100%;
@@ -582,7 +582,7 @@
 //               box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 //               overflow: hidden;
 //             }
-//             .header { 
+//             .header {
 //               text-align: center;
 //               padding: 32px 24px 24px;
 //               background: #f8fafc;
@@ -635,7 +635,7 @@
 //               color: #1a202c;
 //               margin-bottom: 16px;
 //             }
-//             .order-item { 
+//             .order-item {
 //               display: flex;
 //               justify-content: space-between;
 //               margin: 12px 0;
@@ -661,7 +661,7 @@
 //               font-weight: 600;
 //               color: #059669;
 //             }
-//             .separator { 
+//             .separator {
 //               height: 1px;
 //               background: #e2e8f0;
 //               margin: 20px 24px;
@@ -676,7 +676,7 @@
 //               font-size: 14px;
 //               color: #64748b;
 //             }
-//             .total { 
+//             .total {
 //               display: flex;
 //               justify-content: space-between;
 //               align-items: center;
@@ -689,7 +689,7 @@
 //               margin-top: 16px;
 //               border: 2px solid #0ea5e9;
 //             }
-//             .footer { 
+//             .footer {
 //               text-align: center;
 //               padding: 24px;
 //               background: #f8fafc;
@@ -874,9 +874,9 @@
 //               })}
 //             </div>
 //           </div>
-          
+
 //           <Separator />
-          
+
 //           <div>
 //             <h3 className="font-medium mb-3">Order Items</h3>
 //             <div className="space-y-2">
@@ -894,9 +894,9 @@
 //               ))}
 //             </div>
 //           </div>
-          
+
 //           <Separator />
-          
+
 //           <div className="space-y-2">
 //             <div className="flex justify-between text-sm">
 //               <span>Subtotal:</span>
@@ -912,7 +912,7 @@
 //             </div>
 //           </div>
 //         </div>
-        
+
 //         {/* Buttons - Only shown when there's an active order */}
 //         <div className="flex gap-2 mt-6">
 //           <Button
@@ -965,19 +965,18 @@ const OrderDetailsDialog = ({
   const [loading, setLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
-  const restaurantId = "681f3a4888df8faae5bbd380";
-
+  const restaurantId = localStorage.getItem("restaurantId");
+  const API_URL = "http://localhost:3001";
   // Clean up table number for display
-  const displayTableNumber = tableNumber.length > 10
-    ? `Table ${tableNumber.slice(-3)}`
-    : tableNumber;
+  const displayTableNumber =
+    tableNumber.length > 10 ? `Table ${tableNumber.slice(-3)}` : tableNumber;
 
   // Fetch order data when dialog opens
   useEffect(() => {
     if (open) {
       setLoading(true);
       setTableOrder(null);
-      fetch(`http://localhost:3001/orders/${restaurantId}/table/${tableNumber}`)
+      fetch(`${API_URL}/orders/${restaurantId}/table/${tableNumber}`)
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
@@ -991,16 +990,19 @@ const OrderDetailsDialog = ({
           }
 
           const transformedOrder = {
-            id: orderData._id || 'N/A',
+            id: orderData._id || "N/A",
             items: orderData.order_items,
-            total: orderData.total || orderData.order_items.reduce(
-              (sum: number, item: any) => sum + item.price * item.quantity,
-              0
-            ),
+            total:
+              orderData.total ||
+              orderData.order_items.reduce(
+                (sum: number, item: any) => sum + item.price * item.quantity,
+                0
+              ),
             createdAt: orderData.created_at,
-            customer_name: orderData.customer_name || 'Guest',
+            customer_name: orderData.customer_name || "Guest",
             table_number: orderData.table_number || tableNumber,
-            customer_email: orderData.customer_email || 'jayanthoffical18@gmail.com',
+            customer_email:
+              orderData.customer_email || "jayanthoffical18@gmail.com",
           };
 
           setTableOrder(transformedOrder);
@@ -1168,9 +1170,13 @@ const OrderDetailsDialog = ({
                 <div class="order-item">
                   <div class="item-details">
                     <div class="item-name">${item.name}</div>
-                    <div class="item-quantity">Qty: ${item.quantity} × $${item.price.toFixed(2)}</div>
+                    <div class="item-quantity">Qty: ${
+                      item.quantity
+                    } × $${item.price.toFixed(2)}</div>
                   </div>
-                  <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                  <div class="item-price">$${(
+                    item.price * item.quantity
+                  ).toFixed(2)}</div>
                 </div>
               `
                 )
@@ -1212,7 +1218,7 @@ const OrderDetailsDialog = ({
       htmlContent: billHTML,
     };
 
-    fetch("http://localhost:3001/send-bill-email", {
+    fetch(`${API_URL}/send-bill-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(emailPayload),
@@ -1266,7 +1272,9 @@ const OrderDetailsDialog = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{displayTableNumber} - Order Details</DialogTitle>
-            <DialogDescription>No active order found for this table.</DialogDescription>
+            <DialogDescription>
+              No active order found for this table.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-8 text-center text-gray-500">
             <div className="text-lg mb-2">📋</div>
@@ -1282,29 +1290,54 @@ const OrderDetailsDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{displayTableNumber} - Order Details</DialogTitle>
-          <DialogDescription>View and manage the current order.</DialogDescription>
+          <DialogDescription>
+            View and manage the current order.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Order Summary */}
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="font-medium">Order ID:</span> #{tableOrder.id}</div>
-            <div><span className="font-medium">Table:</span> {displayTableNumber}</div>
-            <div><span className="font-medium">Customer:</span> {tableOrder.customer_name}</div>
-            <div><span className="font-medium">Date:</span> {new Date(tableOrder.createdAt).toLocaleDateString()}</div>
-            <div><span className="font-medium">Time:</span> {new Date(tableOrder.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
+            <div>
+              <span className="font-medium">Order ID:</span> #{tableOrder.id}
+            </div>
+            <div>
+              <span className="font-medium">Table:</span> {displayTableNumber}
+            </div>
+            <div>
+              <span className="font-medium">Customer:</span>{" "}
+              {tableOrder.customer_name}
+            </div>
+            <div>
+              <span className="font-medium">Date:</span>{" "}
+              {new Date(tableOrder.createdAt).toLocaleDateString()}
+            </div>
+            <div>
+              <span className="font-medium">Time:</span>{" "}
+              {new Date(tableOrder.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
           </div>
           <Separator />
           <div>
             <h3 className="font-medium mb-3">Order Items</h3>
             <div className="space-y-2">
               {tableOrder.items.map((item: any, i: number) => (
-                <div key={i} className="flex justify-between py-2 border-b last:border-b-0">
+                <div
+                  key={i}
+                  className="flex justify-between py-2 border-b last:border-b-0"
+                >
                   <div className="flex-1">
                     <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-gray-500">Qty: {item.quantity} × ${item.price.toFixed(2)}</div>
+                    <div className="text-sm text-gray-500">
+                      Qty: {item.quantity} × ${item.price.toFixed(2)}
+                    </div>
                   </div>
-                  <div className="font-medium text-green-600">${(item.price * item.quantity).toFixed(2)}</div>
+                  <div className="font-medium text-green-600">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </div>
                 </div>
               ))}
             </div>

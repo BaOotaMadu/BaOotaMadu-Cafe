@@ -13,7 +13,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
   const { toast } = useToast();
   const [showQR, setShowQR] = useState(false);
 
-  const baseUrl = "https://localhost:8000"; // Replace with your actual base URL
+  const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
   const qrValue = `${baseUrl}/user?table=${tableId}`;
 
   const handlePrint = () => {

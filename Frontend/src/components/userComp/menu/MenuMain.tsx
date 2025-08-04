@@ -542,7 +542,7 @@
 //                         else setActiveFilter(filter);
 //                       }}
 //                       className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-//                         (activeFilter === filter) || 
+//                         (activeFilter === filter) ||
 //                         (filter === "Veg" && activeFilter === "Vegetarian") ||
 //                         (filter === "Non-Veg" && activeFilter === "Non-Vegetarian")
 //                           ? "bg-red-600 text-white"
@@ -707,7 +707,7 @@
 //                 <ShoppingCart size={64} className="mx-auto text-gray-400 mb-4" />
 //                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
 //                 <p className="text-gray-600">
-//                   {searchTerm 
+//                   {searchTerm
 //                     ? `No items matching "${searchTerm}" found.`
 //                     : "No items found in this category."
 //                   }
@@ -916,7 +916,18 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, Minus, Star, Clock, Leaf, Search, Menu, X, CheckCircle } from "lucide-react";
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Star,
+  Clock,
+  Leaf,
+  Search,
+  Menu,
+  X,
+  CheckCircle,
+} from "lucide-react";
 import Cart from "../cart/Cart"; // ✅ Use the real Cart component
 import { useCart } from "@/hooks/useCart"; // ✅ Use real cart hook
 
@@ -947,7 +958,9 @@ interface MenuMainProps {
   searchTerm?: string;
 }
 
-const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = "" }) => {
+const MenuMain: React.FC<MenuMainProps> = ({
+  searchTerm: externalSearchTerm = "",
+}) => {
   const [foodItems, setFoodItems] = useState<FoodCategories>({});
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -958,13 +971,15 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>(externalSearchTerm);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState<boolean>(false);
-  
+
   // ✅ Order Status Panel State
   const [showOrderStatus, setShowOrderStatus] = useState<boolean>(false);
   const [orderProgress, setOrderProgress] = useState<number>(0);
   const [orderTime, setOrderTime] = useState<string>("");
   const [estimatedTime, setEstimatedTime] = useState<number>(1); // 25 minutes estimated
 
+  const API_URL = "http://localhost:3001";
+  const restaurantId = localStorage.getItem("restaurantId");
   // ✅ Use the real global cart hook
   const { addItem, cartItems } = useCart();
 
@@ -977,23 +992,25 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
       setShowOrderStatus(true);
       setOrderProgress(0);
       const now = new Date();
-      setOrderTime(now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: true 
-      }));
+      setOrderTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+      );
     };
 
     // Listen for the orderPlaced event from Cart component
-    window.addEventListener('orderPlaced', handleOrderPlaced);
-    return () => window.removeEventListener('orderPlaced', handleOrderPlaced);
+    window.addEventListener("orderPlaced", handleOrderPlaced);
+    return () => window.removeEventListener("orderPlaced", handleOrderPlaced);
   }, []);
 
   // ✅ Progress animation
   useEffect(() => {
     if (showOrderStatus && orderProgress < 100) {
       const timer = setTimeout(() => {
-        setOrderProgress(prev => Math.min(prev + 1, 100));
+        setOrderProgress((prev) => Math.min(prev + 1, 100));
       }, (estimatedTime * 60 * 1000) / 100); // Complete in estimated time
 
       return () => clearTimeout(timer);
@@ -1014,20 +1031,20 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
 
   // ✅ Get progress bar color based on progress
   const getProgressColor = (progress: number) => {
-    if (progress < 25) return 'bg-red-300';
-    if (progress < 50) return 'bg-red-500';
-    if (progress < 75) return 'bg-yellow-500';
-    if (progress < 100) return 'bg-blue-500';
-    return 'bg-green-500';
+    if (progress < 25) return "bg-red-300";
+    if (progress < 50) return "bg-red-500";
+    if (progress < 75) return "bg-yellow-500";
+    if (progress < 100) return "bg-blue-500";
+    return "bg-green-500";
   };
 
   // ✅ Get status text based on progress
   const getStatusText = (progress: number) => {
-    if (progress < 25) return 'Order Received';
-    if (progress < 50) return 'Preparing';
-    if (progress < 75) return 'Cooking';
-    if (progress < 100) return 'Almost Ready';
-    return 'Order Ready!';
+    if (progress < 25) return "Order Received";
+    if (progress < 50) return "Preparing";
+    if (progress < 75) return "Cooking";
+    if (progress < 100) return "Almost Ready";
+    return "Order Ready!";
   };
 
   // Detect mobile
@@ -1042,7 +1059,7 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
   useEffect(() => {
     async function fetchFoodItems() {
       try {
-        const res = await fetch("http://localhost:3001/menu/681f3a4888df8faae5bbd380");
+        const res = await fetch(`${API_URL}/menu/${restaurantId}`);
         const rawItems = await res.json();
         const categorized: FoodCategories = {};
 
@@ -1058,7 +1075,10 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
             description: item.description || "Delicious item",
             rating: item.rating || 4.5,
             reviewCount: item.reviewCount || Math.floor(Math.random() * 300),
-            isVegetarian: item.isVegetarian !== undefined ? item.isVegetarian : Math.random() > 0.5,
+            isVegetarian:
+              item.isVegetarian !== undefined
+                ? item.isVegetarian
+                : Math.random() > 0.5,
             calories: item.calories || 320 + Math.floor(Math.random() * 100),
             protein: item.protein || "4g",
             carbs: item.carbs || "42g",
@@ -1101,9 +1121,12 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
 
   const filteredItems = () => {
     let items = allItems;
-    if (activeFilter === "Vegetarian") items = items.filter((item) => item.isVegetarian);
-    if (activeFilter === "Non-Vegetarian") items = items.filter((item) => !item.isVegetarian);
-    if (activeFilter === "Top Rated") items = items.filter((item) => item.rating >= 4.5);
+    if (activeFilter === "Vegetarian")
+      items = items.filter((item) => item.isVegetarian);
+    if (activeFilter === "Non-Vegetarian")
+      items = items.filter((item) => !item.isVegetarian);
+    if (activeFilter === "Top Rated")
+      items = items.filter((item) => item.rating >= 4.5);
     if (activeFilter === "Price: Low to High")
       items = [...items].sort((a, b) => a.price - b.price);
     return items;
@@ -1137,23 +1160,33 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
     });
   };
 
-
-
   // Stars UI
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         size={12}
-        className={i < Math.floor(rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+        className={
+          i < Math.floor(rating)
+            ? "fill-yellow-400 text-yellow-400"
+            : "text-gray-300"
+        }
       />
     ));
   };
 
   // Veg/Non-Veg Icon
   const VegIcon = ({ isVeg }: { isVeg: boolean }) => (
-    <div className={`w-4 h-4 border-2 ${isVeg ? 'border-green-600' : 'border-red-600'} flex items-center justify-center`}>
-      <div className={`w-2 h-2 rounded-full ${isVeg ? 'bg-green-600' : 'bg-red-600'}`} />
+    <div
+      className={`w-4 h-4 border-2 ${
+        isVeg ? "border-green-600" : "border-red-600"
+      } flex items-center justify-center`}
+    >
+      <div
+        className={`w-2 h-2 rounded-full ${
+          isVeg ? "bg-green-600" : "bg-red-600"
+        }`}
+      />
     </div>
   );
 
@@ -1165,12 +1198,17 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Menu</h1>
-              <p className="text-gray-600">Choose from our delicious selection</p>
+              <p className="text-gray-600">
+                Choose from our delicious selection
+              </p>
             </div>
             {!isMobile && (
               <div className="flex items-center gap-4">
                 <div className="relative w-96">
-                  <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Search
+                    size={20}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
                   <input
                     type="text"
                     placeholder="Search for dishes..."
@@ -1179,7 +1217,6 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
-
               </div>
             )}
           </div>
@@ -1208,10 +1245,11 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                       <span>Ordered at {orderTime}</span>
                       <span>•</span>
                       <span>
-                        {orderProgress >= 100 
-                          ? "Ready for pickup!" 
-                          : `Est. ${Math.ceil((estimatedTime * (100 - orderProgress)) / 100)} min remaining`
-                        }
+                        {orderProgress >= 100
+                          ? "Ready for pickup!"
+                          : `Est. ${Math.ceil(
+                              (estimatedTime * (100 - orderProgress)) / 100
+                            )} min remaining`}
                       </span>
                     </div>
                   </div>
@@ -1223,22 +1261,26 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                   <X size={18} />
                 </button>
               </div>
-              
+
               {/* ✅ Interactive Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-500 ease-out ${getProgressColor(orderProgress)} relative`}
+                  className={`h-full transition-all duration-500 ease-out ${getProgressColor(
+                    orderProgress
+                  )} relative`}
                   style={{ width: `${orderProgress}%` }}
                 >
                   {/* ✅ Animated shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
                 </div>
               </div>
-              
+
               {/* ✅ Progress percentage */}
               <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
                 <span>0%</span>
-                <span className="font-semibold text-gray-700">{orderProgress}% Complete</span>
+                <span className="font-semibold text-gray-700">
+                  {orderProgress}% Complete
+                </span>
                 <span>100%</span>
               </div>
             </div>
@@ -1251,7 +1293,9 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
           {/* Sidebar - Desktop */}
           {!isMobile && (
             <div className="lg:w-64 bg-white shadow-sm h-fit sticky top-4 rounded-lg m-4">
-              <h3 className="font-semibold text-gray-900 p-4 border-b">Categories</h3>
+              <h3 className="font-semibold text-gray-900 p-4 border-b">
+                Categories
+              </h3>
               <div className="p-2">
                 {Object.keys(foodItems).map((category) => (
                   <button
@@ -1271,7 +1315,7 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
           )}
 
           {/* Main Content */}
-          <div className={`flex-1 ${isMobile ? 'pb-20' : 'p-4'}`}>
+          <div className={`flex-1 ${isMobile ? "pb-20" : "p-4"}`}>
             {/* Mobile Filters */}
             {isMobile && (
               <div className="bg-white shadow-sm mb-4 p-4">
@@ -1281,13 +1325,15 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                       key={filter}
                       onClick={() => {
                         if (filter === "Veg") setActiveFilter("Vegetarian");
-                        else if (filter === "Non-Veg") setActiveFilter("Non-Vegetarian");
+                        else if (filter === "Non-Veg")
+                          setActiveFilter("Non-Vegetarian");
                         else setActiveFilter(filter);
                       }}
                       className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        (activeFilter === filter) || 
+                        activeFilter === filter ||
                         (filter === "Veg" && activeFilter === "Vegetarian") ||
-                        (filter === "Non-Veg" && activeFilter === "Non-Vegetarian")
+                        (filter === "Non-Veg" &&
+                          activeFilter === "Non-Vegetarian")
                           ? "bg-red-600 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
@@ -1303,7 +1349,13 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
             {!isMobile && (
               <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
                 <div className="flex flex-wrap gap-2">
-                  {["All", "Vegetarian", "Non-Vegetarian", "Top Rated", "Price: Low to High"].map((filter) => (
+                  {[
+                    "All",
+                    "Vegetarian",
+                    "Non-Vegetarian",
+                    "Top Rated",
+                    "Price: Low to High",
+                  ].map((filter) => (
                     <button
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
@@ -1323,37 +1375,58 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
             {/* Search Header */}
             {searchTerm && (
               <div className="mb-6 px-4">
-                <h2 className="text-2xl font-bold text-gray-900">Search Results</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Search Results
+                </h2>
                 <p className="text-gray-600">Results for "{searchTerm}"</p>
               </div>
             )}
 
             {/* Food Grid */}
-            <div className={`${isMobile ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
+            <div
+              className={`${
+                isMobile
+                  ? "space-y-4"
+                  : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              }`}
+            >
               {filteredItems().map((item) => (
                 <div
                   key={item.id}
                   className={`bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group ${
-                    isMobile ? 'mx-4' : ''
+                    isMobile ? "mx-4" : ""
                   }`}
                   onClick={() => handleItemClick(item)}
                 >
                   {isMobile ? (
                     <div className="flex h-32">
                       <div className="relative w-32 flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                         <div className="absolute top-2 left-2">
                           <VegIcon isVeg={item.isVegetarian} />
                         </div>
                       </div>
                       <div className="flex-1 p-3 flex flex-col justify-between">
                         <div>
-                          <h3 className="font-semibold text-gray-900 text-base mb-1 line-clamp-1">{item.name}</h3>
+                          <h3 className="font-semibold text-gray-900 text-base mb-1 line-clamp-1">
+                            {item.name}
+                          </h3>
                           <div className="flex items-center gap-2 mb-2">
                             <div className="flex items-center gap-1">
-                              <Star size={12} className="fill-green-500 text-green-500" />
-                              <span className="text-sm font-medium text-gray-900">{item.rating}</span>
-                              <span className="text-xs text-gray-500">({item.reviewCount})</span>
+                              <Star
+                                size={12}
+                                className="fill-green-500 text-green-500"
+                              />
+                              <span className="text-sm font-medium text-gray-900">
+                                {item.rating}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                ({item.reviewCount})
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1365,11 +1438,14 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                                   ₹{item.originalPrice.toFixed(0)}
                                 </span>
                               )}
-                              <span className="text-lg font-bold text-gray-900">₹{item.price.toFixed(0)}</span>
+                              <span className="text-lg font-bold text-gray-900">
+                                ₹{item.price.toFixed(0)}
+                              </span>
                             </div>
                             {item.originalPrice && (
                               <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-1 rounded">
-                                ₹{(item.originalPrice - item.price).toFixed(0)} OFF
+                                ₹{(item.originalPrice - item.price).toFixed(0)}{" "}
+                                OFF
                               </span>
                             )}
                           </div>
@@ -1395,13 +1471,20 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                         </div>
                         {item.originalPrice && (
                           <div className="absolute top-3 right-3 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                            {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
+                            {Math.round(
+                              ((item.originalPrice - item.price) /
+                                item.originalPrice) *
+                                100
+                            )}
+                            % OFF
                           </div>
                         )}
                       </div>
                       <div className="p-4">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-gray-900 text-lg">{item.name}</h3>
+                          <h3 className="font-semibold text-gray-900 text-lg">
+                            {item.name}
+                          </h3>
                           <button
                             onClick={(e) => handleQuickAdd(item, e)}
                             className="bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-colors p-2 rounded-lg"
@@ -1409,11 +1492,19 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                             <Plus size={16} />
                           </button>
                         </div>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="flex items-center gap-1">{renderStars(item.rating)}</div>
-                          <span className="text-sm font-medium text-gray-900">{item.rating}</span>
-                          <span className="text-sm text-gray-500">({item.reviewCount})</span>
+                          <div className="flex items-center gap-1">
+                            {renderStars(item.rating)}
+                          </div>
+                          <span className="text-sm font-medium text-gray-900">
+                            {item.rating}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            ({item.reviewCount})
+                          </span>
                           {item.cookTime && (
                             <>
                               <span className="text-gray-300">•</span>
@@ -1426,7 +1517,9 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-xl font-bold text-gray-900">₹{item.price.toFixed(0)}</span>
+                            <span className="text-xl font-bold text-gray-900">
+                              ₹{item.price.toFixed(0)}
+                            </span>
                             {item.originalPrice && (
                               <span className="text-sm text-gray-500 line-through">
                                 ₹{item.originalPrice.toFixed(0)}
@@ -1447,13 +1540,17 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
 
             {filteredItems().length === 0 && (
               <div className="text-center py-12">
-                <ShoppingCart size={64} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+                <ShoppingCart
+                  size={64}
+                  className="mx-auto text-gray-400 mb-4"
+                />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No items found
+                </h3>
                 <p className="text-gray-600">
-                  {searchTerm 
+                  {searchTerm
                     ? `No items matching "${searchTerm}" found.`
-                    : "No items found in this category."
-                  }
+                    : "No items found in this category."}
                 </p>
               </div>
             )}
@@ -1466,7 +1563,10 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search
+                size={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search 'curries'"
@@ -1487,7 +1587,11 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
 
       {/* Floating Cart Button */}
       {itemCount > 0 && (
-        <div className={`fixed ${isMobile ? 'bottom-20 right-4' : 'bottom-6 right-6'} z-40`}>
+        <div
+          className={`fixed ${
+            isMobile ? "bottom-20 right-4" : "bottom-6 right-6"
+          } z-40`}
+        >
           <button
             onClick={() => setIsCartOpen(true)}
             className="bg-red-600 hover:bg-red-700 text-white rounded-full p-4 shadow-lg flex items-center gap-2 transition-all"
@@ -1495,7 +1599,10 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
             <ShoppingCart size={20} />
             <span className="font-semibold">{itemCount}</span>
             <span className="hidden sm:inline">
-              • ₹{cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(0)}
+              • ₹
+              {cartItems
+                .reduce((acc, item) => acc + item.price * item.quantity, 0)
+                .toFixed(0)}
             </span>
           </button>
         </div>
@@ -1515,7 +1622,11 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="relative">
-              <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-64 object-cover" />
+              <img
+                src={selectedItem.image}
+                alt={selectedItem.name}
+                className="w-full h-64 object-cover"
+              />
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="absolute top-4 right-4 bg-white text-gray-600 hover:text-gray-800 rounded-full p-2 shadow-lg"
@@ -1527,18 +1638,30 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
               </div>
             </div>
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedItem.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {selectedItem.name}
+              </h2>
               <p className="text-gray-600 mb-4">{selectedItem.description}</p>
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1">{renderStars(selectedItem.rating)}</div>
-                <span className="font-medium text-gray-900">{selectedItem.rating}</span>
-                <span className="text-gray-500">({selectedItem.reviewCount} reviews)</span>
+                <div className="flex items-center gap-1">
+                  {renderStars(selectedItem.rating)}
+                </div>
+                <span className="font-medium text-gray-900">
+                  {selectedItem.rating}
+                </span>
+                <span className="text-gray-500">
+                  ({selectedItem.reviewCount} reviews)
+                </span>
               </div>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-gray-900">₹{selectedItem.price.toFixed(0)}</span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    ₹{selectedItem.price.toFixed(0)}
+                  </span>
                   {selectedItem.originalPrice && (
-                    <span className="text-gray-500 line-through">₹{selectedItem.originalPrice.toFixed(0)}</span>
+                    <span className="text-gray-500 line-through">
+                      ₹{selectedItem.originalPrice.toFixed(0)}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1 text-gray-500">
@@ -1547,18 +1670,26 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                 </div>
               </div>
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Nutrition Information</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  Nutrition Information
+                </h3>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="font-semibold text-gray-900">{selectedItem.protein}</div>
+                    <div className="font-semibold text-gray-900">
+                      {selectedItem.protein}
+                    </div>
                     <div className="text-sm text-gray-600">Protein</div>
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">{selectedItem.carbs}</div>
+                    <div className="font-semibold text-gray-900">
+                      {selectedItem.carbs}
+                    </div>
                     <div className="text-sm text-gray-600">Carbs</div>
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">{selectedItem.fat}</div>
+                    <div className="font-semibold text-gray-900">
+                      {selectedItem.fat}
+                    </div>
                     <div className="text-sm text-gray-600">Fat</div>
                   </div>
                 </div>
@@ -1587,7 +1718,10 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
                 onClick={handleAddToCart}
                 className="w-full bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold rounded-xl"
               >
-                Add to Cart • ₹{((selectedItem.price * (quantities[selectedItem.id] || 1))).toFixed(0)}
+                Add to Cart • ₹
+                {(
+                  selectedItem.price * (quantities[selectedItem.id] || 1)
+                ).toFixed(0)}
               </Button>
             </div>
           </div>
@@ -1621,14 +1755,23 @@ const MenuMain: React.FC<MenuMainProps> = ({ searchTerm: externalSearchTerm = ""
 };
 
 // MenuModal Component (kept inline)
-const MenuModal = ({ isOpen, onClose, categories, selectedCategory, onCategorySelect }) => {
+const MenuModal = ({
+  isOpen,
+  onClose,
+  categories,
+  selectedCategory,
+  onCategorySelect,
+}) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
       <div className="bg-white w-full rounded-t-2xl max-h-[80vh] overflow-y-auto">
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">Menu Categories</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X size={20} />
           </button>
         </div>
