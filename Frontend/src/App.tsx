@@ -19,6 +19,8 @@ import CustomerView from './components/CustomerView'
 import ChefPanel from "./pages/ChefPanel";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ProtectedRoute from "./ProtectedRoute";
+
 
 
 
@@ -41,14 +43,15 @@ const App = () => (
           <TableProvider>
             <Routes>
               {/* Owner Interface Routes */}
-              <Route path="/" element={<Layout><Dashboard /></Layout>} />
-              <Route path="/tables" element={<Layout><Tables /></Layout>} />
-              <Route path="/menu" element={<Layout><Menu /></Layout>} />
-              <Route path="/reports" element={<Layout><Reports /></Layout>} />
-              <Route path="/customer" element={<Layout><Customer /></Layout>} />
-              <Route path="/settings" element={<Layout><Settings /></Layout>} />
-              <Route path="/customer1" element={<CustomerView />} />
-              <Route path="/chief" element={<ChefPanel />} />
+<Route path="/" element={<Layout><Dashboard /></Layout>} />
+<Route path="/tables" element={<Layout><Tables /></Layout>} />
+<Route path="/menu" element={<Layout><Menu /></Layout>} />
+<Route path="/reports" element={<Layout><Reports /></Layout>} />
+<Route path="/customer" element={<Layout><Customer /></Layout>} />
+<Route path="/settings" element={<Layout><Settings /></Layout>} />
+<Route path="/customer1" element={<CustomerView />} />
+<Route path="/chief" element={<ChefPanel />} />
+
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
 
