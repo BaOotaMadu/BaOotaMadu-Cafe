@@ -48,13 +48,18 @@ exports.createTable = async (req, res) => {
 
 exports.getAllTables = async (req, res) => {
   try {
-    const tables = await Table.find().populate("restaurant_id", "name");
+    const { restaurant_id } = req.query;
+
+    const filter = restaurant_id ? { restaurant_id } : {};
+
+    const tables = await Table.find(filter).populate("restaurant_id", "name");
 
     res.json(tables);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 exports.clearTable = async (req, res) => {
   try {

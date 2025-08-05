@@ -29,7 +29,6 @@ import { addActivity, updateStats } from "@/store/slices/dashboardSlice";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 
 const API_BASE = "http://localhost:3001";
-//const restaurantId = "681f3a4888df8faae5bbd380";
 const restaurantId = localStorage.getItem("restaurantId");
 
 // Backend integration functions - replace these with actual API calls
