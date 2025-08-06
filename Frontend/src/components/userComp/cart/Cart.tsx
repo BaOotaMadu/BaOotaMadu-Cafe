@@ -62,12 +62,12 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
         <div className="flex justify-between items-start">
           <h4 className="font-medium text-sm truncate">{item.name}</h4>
           <span className="font-medium text-sm">
-            ${(item.price * item.quantity).toFixed(2)}
+            ₹{(item.price * item.quantity).toFixed(2)}
           </span>
         </div>
 
         <p className="text-muted-foreground text-xs line-clamp-1 mb-2">
-          ${item.price.toFixed(2)} each
+          ₹{item.price.toFixed(2)} each
         </p>
 
         {/* Quantity Controls */}
@@ -266,19 +266,19 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>${cartTotal.toFixed(2)}</span>
+                      <span>₹{cartTotal.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Tax (8%)</span>
-                      <span>${taxAmount.toFixed(2)}</span>
+                      <span>₹{taxAmount.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
                         Service Charge (5%)
                       </span>
-                      <span>${serviceCharge.toFixed(2)}</span>
+                      <span>₹{serviceCharge.toFixed(2)}</span>
                     </div>
 
                     <Separator />
@@ -286,7 +286,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                     <div className="flex justify-between pt-2 font-medium">
                       <span>Total</span>
                       <span className="text-lg">
-                        ${totalWithTax.toFixed(2)}
+                        ₹{totalWithTax.toFixed(2)}
                       </span>
                     </div>
                   </div>
