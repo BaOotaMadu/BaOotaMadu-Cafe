@@ -12,6 +12,12 @@ export interface MenuItem {
   customizable: boolean;
 }
 
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role?: string;
+}
 // Customization option for cart items
 export interface Customization {
   name: string;

@@ -1,53 +1,23 @@
-// import React, { useEffect } from "react";
-// import { Navigate } from "react-router-dom";
-// import axios from "axios";
-// import { useSelector, useDispatch } from "react-redux";
-// import { hideLoading, showLoading } from "./store/slices/authslice";
-// import { setUser } from "../redux/features/userSlice";
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext'; // Import our new hook
 
-// export default function ProtectedRoute({ children }) {
-//   const dispatch = useDispatch();
-//   const { user } = useSelector((state) => state.user);
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-//   //get user
-//   //eslint-disable-next-line
-//   const getUser = async () => {
-//     try {
-//       dispatch(showLoading());
-//       const res = await axios.get(
-//         'http://localhost:3000/users/getuser',
-//         {
-//             headers: {  // Change 'header' to 'headers'
-//                 Authorization: `Bearer ${localStorage.getItem('token')}`
-//             }
-//         }
-//     );
-    
-//       dispatch(hideLoading());
-//       console.log('res.data : ',res.data);
-      
-//       if (res.data) {
-//         dispatch(setUser(res.data));
-//       } else {
-//         localStorage.clear();
-//         <Navigate to="/login" />;
-//       }
-//     } catch (error) {
-//       localStorage.clear();
-//       dispatch(hideLoading());
-//       console.log(error);
-//     }
-//   };
+  // While checking for a user, show a loading screen
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-//   useEffect(() => {
-//     if (!user) {
-//       getUser();
-//     }
-//   }, [user, getUser]);
+  // If there is a user, show the requested page
+  if (user) {
+    return <>{children}</>;
+  }
 
-//   if (localStorage.getItem("token")) {
-//     return children;
-//   } else {
-//     return <Navigate to="/login" />;
-//   }
-// }
+  // If no user and not loading, redirect to login
+  return <Navigate to="/login" state={{ from: location }} replace />;
+};
+
+export default ProtectedRoute;

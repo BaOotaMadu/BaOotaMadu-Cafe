@@ -1351,9 +1351,9 @@ const OrderDetailsDialog = ({
                     <div class="item-name">${item.name || "Unknown Item"}</div>
                     <div class="item-quantity">Qty: ${
                       item.quantity || 1
-                    } × $${item.price.toFixed(2)}</div>
+                    } × ₹${item.price.toFixed(2)}</div>
                   </div>
-                  <div class="item-price">$${(
+                  <div class="item-price">₹${(
                     item.price * item.quantity
                   ).toFixed(2)}</div>
                 </div>
@@ -1365,15 +1365,15 @@ const OrderDetailsDialog = ({
             <div class="total-section">
               <div class="subtotal-item">
                 <span>Subtotal:</span>
-                <span>$${(tableOrder.total * 0.9).toFixed(2)}</span>
+                <span>₹${(tableOrder.total * 0.9).toFixed(2)}</span>
               </div>
               <div class="subtotal-item">
                 <span>Tax (10%):</span>
-                <span>$${(tableOrder.total * 0.1).toFixed(2)}</span>
+                <span>₹${(tableOrder.total * 0.1).toFixed(2)}</span>
               </div>
               <div class="total">
                 <span>Total Amount:</span>
-                <span>$${tableOrder.total.toFixed(2)}</span>
+                <span>₹${tableOrder.total.toFixed(2)}</span>
               </div>
             </div>
             <div class="footer">
@@ -1507,11 +1507,11 @@ const OrderDetailsDialog = ({
                       <div className="flex-1">
                         <div className="font-medium">{item.name}</div>
                         <div className="text-sm text-gray-500">
-                          Qty: {item.quantity} × ${(item.price || 0).toFixed(2)}
+                          Qty: {item.quantity} × ₹{(item.price || 0).toFixed(2)}
                         </div>
                       </div>
                       <div className="font-medium text-green-600">
-                        ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                        ₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                       </div>
                     </div>
                   ))
@@ -1526,15 +1526,15 @@ const OrderDetailsDialog = ({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
-                <span>${(tableOrder.total * 0.9).toFixed(2)}</span>
+                <span>₹{(tableOrder.total * 0.9).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Tax (10%):</span>
-                <span>${(tableOrder.total * 0.1).toFixed(2)}</span>
+                <span>₹{(tableOrder.total * 0.1).toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total:</span>
-                <span>${tableOrder.total.toFixed(2)}</span>
+                <span>₹{tableOrder.total.toFixed(2)}</span>
               </div>
             </div>
 

@@ -1,38 +1,38 @@
 // src/store/slices/authSlice.ts
-import { createSlice, PayloadAction, configureStore } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
   token: string | null;
+  loading: boolean;
 }
 
 const initialState: AuthState = {
-  token: null,
+  // This line is critical: It reads the token from localStorage on app load
+  token: localStorage.getItem('token') || null,
+  loading: false,
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
-    setToken: (state, action: PayloadAction<string>) => {
+    setToken(state, action: PayloadAction<string>) {
+      console.log("✅ auth/setToken reducer is running. Payload:", action.payload);
+      localStorage.setItem('token', action.payload); // Keep localStorage in sync
       state.token = action.payload;
     },
-    clearToken: (state) => {
+    clearToken(state) {
+      localStorage.removeItem('token'); // Keep localStorage in sync
       state.token = null;
+    },
+    showLoading(state) {
+      state.loading = true;
+    },
+    hideLoading(state) {
+      state.loading = false;
     },
   },
 });
 
-export const { setToken, clearToken } = authSlice.actions;
-
-// ✅ Create store here
-export const store = configureStore({
-  reducer: {
-    auth: authSlice.reducer,
-  },
-});
-
-// ✅ Export types
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-
+export const { setToken, clearToken, showLoading, hideLoading } = authSlice.actions;
 export default authSlice.reducer;
