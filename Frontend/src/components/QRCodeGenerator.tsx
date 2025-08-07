@@ -9,6 +9,7 @@ interface QRCodeGeneratorProps {
 }
 
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
+  //console.log("Rendering QRCodeGenerator for table:", tableId);
   const qrRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [showQR, setShowQR] = useState(false);

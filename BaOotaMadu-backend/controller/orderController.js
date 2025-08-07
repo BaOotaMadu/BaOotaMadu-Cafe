@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Table = require("../models/tableModel");
 const Activity = require("../models/activityModel");
+const mongoose = require("mongoose");
 
 let io;
 
@@ -168,6 +169,51 @@ const deleteOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const markOrderAsPaid = async (req, res) => {
+  const { orderId } = req.params;
+  console.log("💡 Received orderId:", orderId);
+
+  // Check if orderId is valid
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    console.log("❌ Invalid ObjectId");
+    return res.status(400).json({ message: "Invalid order ID" });
+  }
+
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      console.log("❌ Order not found");
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    console.log("✅ Order found:", order);
+
+    order.payment_status = 'paid'; // ✅ CORRECT
+    await order.save();
+    console.log("✅ Order status updated to 'paid'");
+
+    if (order.id && order.restaurant_id) {
+      console.log("ℹ️ Updating associated table:", order.table_id);
+      const result = await Table.findOneAndUpdate(
+        {
+          number: order.table_id,
+          restaurant_id: order.restaurant_id,
+        },
+        { status: "available" }
+      );
+      console.log("✅ Table updated:", result);
+    } else {
+      console.log("⚠️ Skipping table update: missing table_number or restaurant_id");
+    }
+
+    return res.status(200).json({ message: "Order marked as paid" });
+  } catch (err) {
+    console.error("❌ Backend error:", err.message);
+    console.error(err.stack);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 module.exports = {
   setIO,
@@ -176,4 +222,5 @@ module.exports = {
   getTableOrders,
   updateOrderStatus,
   deleteOrder,
+  markOrderAsPaid
 };

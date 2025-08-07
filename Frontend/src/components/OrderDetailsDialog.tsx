@@ -521,9 +521,6 @@
 
 // export default OrderDetailsDialog;
 
-
-
-
 // import { useState, useEffect } from "react";
 // import {
 //   Dialog,
@@ -624,13 +621,13 @@
 //           <style>
 //             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 //             * { margin: 0; padding: 0; box-sizing: border-box; }
-//             body { 
+//             body {
 //               font-family: 'Inter', sans-serif;
 //               background: white;
 //               color: #2d3748;
 //               padding: 20px;
 //             }
-//             .bill-container { 
+//             .bill-container {
 //               background: white;
 //               max-width: 420px;
 //               width: 100%;
@@ -638,7 +635,7 @@
 //               box-shadow: 0 25px 50px rgba(0,0,0,0.15);
 //               overflow: hidden;
 //             }
-//             .header { 
+//             .header {
 //               text-align: center;
 //               padding: 32px 24px 24px;
 //               background: #f8fafc;
@@ -686,7 +683,7 @@
 //               color: #1a202c;
 //               margin-bottom: 16px;
 //             }
-//             .order-item { 
+//             .order-item {
 //               display: flex;
 //               justify-content: space-between;
 //               margin: 12px 0;
@@ -700,7 +697,7 @@
 //             .separator { height: 1px; background: #e2e8f0; margin: 20px 24px; }
 //             .total-section { padding: 0 24px 24px; }
 //             .subtotal-item { display: flex; justify-content: space-between; margin: 8px 0; color: #64748b; }
-//             .total { 
+//             .total {
 //               display: flex;
 //               justify-content: space-between;
 //               font-weight: 700;
@@ -712,7 +709,7 @@
 //               margin-top: 16px;
 //               border: 2px solid #0ea5e9;
 //             }
-//             .footer { 
+//             .footer {
 //               text-align: center;
 //               padding: 24px;
 //               background: #f8fafc;
@@ -967,8 +964,6 @@
 
 // export default OrderDetailsDialog;
 
-
-
 import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
@@ -980,6 +975,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Download, Eye, QrCode } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 // Define TypeScript interfaces
 interface OrderItem {
@@ -1023,7 +1019,9 @@ const OrderDetailsDialog = ({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [contact, setContact] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "upi" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "upi" | null>(
+    null
+  );
   const [cashGiven, setCashGiven] = useState<string>("");
   const [upiPaid, setUpiPaid] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
@@ -1068,7 +1066,8 @@ const OrderDetailsDialog = ({
               ? orderData.total
               : items.reduce((sum, item) => {
                   const price = typeof item.price === "number" ? item.price : 0;
-                  const quantity = typeof item.quantity === "number" ? item.quantity : 1;
+                  const quantity =
+                    typeof item.quantity === "number" ? item.quantity : 1;
                   return sum + price * quantity;
                 }, 0);
 
@@ -1079,7 +1078,8 @@ const OrderDetailsDialog = ({
             createdAt: orderData.created_at,
             customer_name: orderData.customer_name || "Guest",
             table_number: orderData.table_number || tableNumber,
-            customer_email: orderData.customer_email || "jayanthoffical18@gmail.com",
+            customer_email:
+              orderData.customer_email || "jayanthoffical18@gmail.com",
           };
 
           setTableOrder(transformedOrder);
@@ -1121,9 +1121,13 @@ const OrderDetailsDialog = ({
   const isValidPaymentMethod = !!paymentMethod;
   const parsedCashGiven = parseFloat(cashGiven) || 0;
   const balance = parsedCashGiven - (tableOrder?.total || 0);
-  const isValidCashGiven = paymentMethod === "cash" ? parsedCashGiven >= (tableOrder?.total || 0) : true;
+  const isValidCashGiven =
+    paymentMethod === "cash"
+      ? parsedCashGiven >= (tableOrder?.total || 0)
+      : true;
 
-  const isFormValid = isValidContact() && isValidPaymentMethod && isValidCashGiven;
+  const isFormValid =
+    isValidContact() && isValidPaymentMethod && isValidCashGiven;
 
   const handleUPISuccess = () => {
     setUpiPaid(true);
@@ -1137,6 +1141,7 @@ const OrderDetailsDialog = ({
       setTimeout(() => {
         if (Math.random() > 0.1) {
           handleUPISuccess();
+          finalizePayment();
         } else {
           alert("❌ UPI Payment Failed. Try again.");
         }
@@ -1146,6 +1151,47 @@ const OrderDetailsDialog = ({
 
     if (paymentMethod === "cash") {
       setPaymentDone(true);
+      finalizePayment();
+    }
+  };
+
+  const finalizePayment = async () => {
+    if (!tableOrder) return;
+
+    try {
+      const res = await fetch(`${API_URL}/orders/${tableOrder.id}/pay`, {
+        method: "PATCH", // or POST/PUT/DELETE depending on your backend
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "paid", // optional, depending on backend
+          table_number: tableOrder.table_number, // if you want to clear table too
+          payment_method: paymentMethod,
+          contact: contact,
+          total: tableOrder.total,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Failed with status ${res.status}`);
+
+      toast({
+        title: "✅ Payment successful",
+        description: `Order for Table ${tableOrder.table_number} is now marked as paid.`,
+      });
+
+      // Clear the tableOrder from frontend state
+      setTableOrder(null);
+      setShowPayment(false);
+
+      // Optionally refetch tables/orders or trigger a state update
+    } catch (err) {
+      console.error("❌ Failed to mark order as paid:", err);
+      toast({
+        variant: "destructive",
+        title: "Payment Save Failed",
+        description: "Could not update order status. Please try again.",
+      });
     }
   };
 
@@ -1307,7 +1353,9 @@ const OrderDetailsDialog = ({
                       item.quantity || 1
                     } × $${item.price.toFixed(2)}</div>
                   </div>
-                  <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+                  <div class="item-price">$${(
+                    item.price * item.quantity
+                  ).toFixed(2)}</div>
                 </div>
               `
                 )
@@ -1414,17 +1462,35 @@ const OrderDetailsDialog = ({
       <DialogContent className="max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{displayTableNumber} - Order Details</DialogTitle>
-          <DialogDescription>View and manage the current order.</DialogDescription>
+          <DialogDescription>
+            View and manage the current order.
+          </DialogDescription>
         </DialogHeader>
 
         {!showPayment ? (
           <div className="space-y-6 pb-6">
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="font-medium">Order ID:</span> #{tableOrder.id}</div>
-              <div><span className="font-medium">Table:</span> {displayTableNumber}</div>
-              <div><span className="font-medium">Customer:</span> {tableOrder.customer_name}</div>
-              <div><span className="font-medium">Date:</span> {new Date(tableOrder.createdAt).toLocaleDateString()}</div>
-              <div><span className="font-medium">Time:</span> {new Date(tableOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              <div>
+                <span className="font-medium">Order ID:</span> #{tableOrder.id}
+              </div>
+              <div>
+                <span className="font-medium">Table:</span> {displayTableNumber}
+              </div>
+              <div>
+                <span className="font-medium">Customer:</span>{" "}
+                {tableOrder.customer_name}
+              </div>
+              <div>
+                <span className="font-medium">Date:</span>{" "}
+                {new Date(tableOrder.createdAt).toLocaleDateString()}
+              </div>
+              <div>
+                <span className="font-medium">Time:</span>{" "}
+                {new Date(tableOrder.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
             </div>
 
             <Separator />
@@ -1434,7 +1500,10 @@ const OrderDetailsDialog = ({
               <div className="space-y-2">
                 {tableOrder.items.length > 0 ? (
                   tableOrder.items.map((item, i) => (
-                    <div key={i} className="flex justify-between py-2 border-b last:border-b-0">
+                    <div
+                      key={i}
+                      className="flex justify-between py-2 border-b last:border-b-0"
+                    >
                       <div className="flex-1">
                         <div className="font-medium">{item.name}</div>
                         <div className="text-sm text-gray-500">
@@ -1455,9 +1524,18 @@ const OrderDetailsDialog = ({
             <Separator />
 
             <div className="space-y-2">
-              <div className="flex justify-between text-sm"><span>Subtotal:</span><span>${(tableOrder.total * 0.9).toFixed(2)}</span></div>
-              <div className="flex justify-between text-sm"><span>Tax (10%):</span><span>${(tableOrder.total * 0.1).toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Total:</span><span>${tableOrder.total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm">
+                <span>Subtotal:</span>
+                <span>${(tableOrder.total * 0.9).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Tax (10%):</span>
+                <span>${(tableOrder.total * 0.1).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                <span>Total:</span>
+                <span>${tableOrder.total.toFixed(2)}</span>
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -1483,7 +1561,9 @@ const OrderDetailsDialog = ({
             <Separator />
 
             <div>
-              <label className="block text-sm font-medium mb-2">Phone Number / Email</label>
+              <label className="block text-sm font-medium mb-2">
+                Phone Number / Email
+              </label>
               <input
                 type="text"
                 value={contact}
@@ -1496,14 +1576,18 @@ const OrderDetailsDialog = ({
                 }`}
               />
               {contact && !isValidContact() && (
-                <p className="text-red-500 text-xs mt-1">Enter valid 10-digit phone or email.</p>
+                <p className="text-red-500 text-xs mt-1">
+                  Enter valid 10-digit phone or email.
+                </p>
               )}
             </div>
 
             <Separator />
 
             <div>
-              <label className="block text-sm font-medium mb-3">Payment Method</label>
+              <label className="block text-sm font-medium mb-3">
+                Payment Method
+              </label>
               <div className="space-y-2">
                 <label className="flex items-center gap-3">
                   <input
@@ -1525,7 +1609,9 @@ const OrderDetailsDialog = ({
                 </label>
               </div>
               {!paymentMethod && (
-                <p className="text-red-500 text-xs mt-1">Please select a payment method.</p>
+                <p className="text-red-500 text-xs mt-1">
+                  Please select a payment method.
+                </p>
               )}
             </div>
 
@@ -1563,7 +1649,11 @@ const OrderDetailsDialog = ({
                   <QrCode className="h-16 w-16 text-gray-600 mx-auto" />
                   <p className="text-sm text-gray-500 mt-2">Scan to Pay</p>
                 </div>
-                <p className={`font-medium ${upiPaid ? "text-green-600" : "text-yellow-600"}`}>
+                <p
+                  className={`font-medium ${
+                    upiPaid ? "text-green-600" : "text-yellow-600"
+                  }`}
+                >
                   {upiPaid ? "✅ Payment Successful" : "⏳ Payment Pending..."}
                 </p>
                 {!upiPaid && (
@@ -1584,12 +1674,16 @@ const OrderDetailsDialog = ({
               disabled={!isFormValid || paymentDone}
               onClick={handlePaymentSubmit}
             >
-              {paymentMethod === "upi" && !upiPaid ? "Confirm Payment" : "Confirm Payment"}
+              {paymentMethod === "upi" && !upiPaid
+                ? "Confirm Payment"
+                : "Confirm Payment"}
             </Button>
 
             {paymentDone && (
               <div className="space-y-4">
-                <div className="text-green-600 font-bold text-center text-lg">✅ Payment Done</div>
+                <div className="text-green-600 font-bold text-center text-lg">
+                  ✅ Payment Done
+                </div>
                 <Button
                   className="w-full bg-gray-800 hover:bg-gray-900 text-white"
                   onClick={handlePrintAndEmail}

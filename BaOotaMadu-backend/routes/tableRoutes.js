@@ -10,4 +10,5 @@ router.delete("/:table_id", tableController.deleteTable);
 router.put("/clear/:table_id", tableController.clearTable);
 router.put("/occupy/:table_id", tableController.occupyTable);
 
+
 module.exports = router;

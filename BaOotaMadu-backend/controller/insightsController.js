@@ -18,20 +18,22 @@ const getInsights = async (req, res) => {
     });
 
     // Total sales today
-    const totalSalesResult = await Order.aggregate([
-      {
-        $match: {
-          restaurant_id: restaurantObjectId,
-          created_at: { $gte: today }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$total_amount" }
-        }
-      }
-    ]);
+   const totalSalesResult = await Order.aggregate([
+  {
+    $match: {
+      restaurant_id: restaurantObjectId,
+      created_at: { $gte: today },
+      payment_status: "paid" // Only include paid orders
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      total: { $sum: "$total_amount" }
+    }
+  }
+]);
+
 
     // Pending orders today
     const pendingOrdersToday = await Order.countDocuments({

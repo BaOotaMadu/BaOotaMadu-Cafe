@@ -428,6 +428,7 @@ const Tables = () => {
               return (
                 <TableCard
                   key={table.id}
+                  tableId={table.id}
                   tableNumber={table.number}
                   status={table.status}
                   orderItems={table.items || 0}

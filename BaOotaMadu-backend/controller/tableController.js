@@ -61,6 +61,7 @@ exports.getAllTables = async (req, res) => {
 };
 
 
+
 exports.clearTable = async (req, res) => {
   try {
     const { table_id } = req.params;
