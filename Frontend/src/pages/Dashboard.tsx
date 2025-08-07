@@ -245,6 +245,7 @@ const Dashboard = () => {
         setPendingOrders(data.pendingOrdersToday || 0);
         setActiveTables(data.activeTables || 0);
         setTotalTables(data.totalTables || 0);
+        console.log("Dashboard stats:", data);
       })
       .catch((err) => console.error("API Error:", err));
   }, []);

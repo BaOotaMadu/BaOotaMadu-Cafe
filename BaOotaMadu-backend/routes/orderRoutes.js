@@ -12,6 +12,8 @@ module.exports = function (io) {
   router.put("/:restaurant_id/:order_id/status", orderController.updateOrderStatus);
   router.delete("/:restaurant_id/:order_id", orderController.deleteOrder);
   router.patch("/:orderId/pay", orderController.markOrderAsPaid);
+  router.patch("/pay-table/:restaurant_id/:table_id", orderController.payAllTableOrders);
+
 
   return router;
 };

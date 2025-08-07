@@ -1034,62 +1034,63 @@ const OrderDetailsDialog = ({
     tableNumber.length > 10 ? `Table ${tableNumber.slice(-3)}` : tableNumber;
 
   useEffect(() => {
-    if (open) {
-      setLoading(true);
-      setTableOrder(null);
+    if (!open) return;
 
-      fetch(`${API_URL}/orders/${restaurantId}/table/${tableNumber}`)
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then((data) => {
-          // Normalize: ensure we have an object
-          const orderData: OrderData = Array.isArray(data) ? data[0] : data;
-          if (!orderData) {
-            setTableOrder(null);
-            return;
-          }
+    setLoading(true);
+    setTableOrder(null);
 
-          // Safely extract and normalize order_items
-          const rawItems = orderData.order_items;
-          const items: OrderItem[] = Array.isArray(rawItems) ? rawItems : [];
+    fetch(`${API_URL}/orders/${restaurantId}/table/${tableNumber}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const orders: OrderData[] = Array.isArray(data) ? data : [];
 
-          if (items.length === 0) {
-            setTableOrder(null);
-            return;
-          }
-
-          // Calculate total safely
-          const total =
-            typeof orderData.total === "number"
-              ? orderData.total
-              : items.reduce((sum, item) => {
-                  const price = typeof item.price === "number" ? item.price : 0;
-                  const quantity =
-                    typeof item.quantity === "number" ? item.quantity : 1;
-                  return sum + price * quantity;
-                }, 0);
-
-          const transformedOrder = {
-            id: orderData._id || "N/A",
-            items,
-            total,
-            createdAt: orderData.created_at,
-            customer_name: orderData.customer_name || "Guest",
-            table_number: orderData.table_number || tableNumber,
-            customer_email:
-              orderData.customer_email || "jayanthoffical18@gmail.com",
-          };
-
-          setTableOrder(transformedOrder);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch order:", err);
+        if (orders.length === 0) {
           setTableOrder(null);
-        })
-        .finally(() => setLoading(false));
-    }
+          return;
+        }
+
+        // Combine all items from all unpaid orders
+        const combinedItems: OrderItem[] = orders.flatMap((order) => {
+          return Array.isArray(order.order_items) ? order.order_items : [];
+        });
+
+        if (combinedItems.length === 0) {
+          setTableOrder(null);
+          return;
+        }
+
+        // Calculate total from all items
+        const total = combinedItems.reduce((sum, item) => {
+          const price = typeof item.price === "number" ? item.price : 0;
+          const quantity =
+            typeof item.quantity === "number" ? item.quantity : 1;
+          return sum + price * quantity;
+        }, 0);
+
+        // Use the most recent order (optional) for display info
+        const mostRecentOrder = orders[0];
+
+        const transformedOrder = {
+          id: mostRecentOrder._id,
+          items: combinedItems,
+          total,
+          createdAt: mostRecentOrder.created_at,
+          customer_name: mostRecentOrder.customer_name || "Guest",
+          table_number: tableNumber,
+          customer_email: mostRecentOrder.customer_email || "guest@example.com",
+          order_ids: orders.map((order) => order._id), // ✅ Needed for bulk payment
+        };
+
+        setTableOrder(transformedOrder);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch order:", err);
+        setTableOrder(null);
+      })
+      .finally(() => setLoading(false));
   }, [open, tableNumber, restaurantId]);
 
   const handlePayClick = () => {
@@ -1159,19 +1160,23 @@ const OrderDetailsDialog = ({
     if (!tableOrder) return;
 
     try {
-      const res = await fetch(`${API_URL}/orders/${tableOrder.id}/pay`, {
-        method: "PATCH", // or POST/PUT/DELETE depending on your backend
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "paid", // optional, depending on backend
-          table_number: tableOrder.table_number, // if you want to clear table too
-          payment_method: paymentMethod,
-          contact: contact,
-          total: tableOrder.total,
-        }),
-      });
+      // const res = await fetch(`${API_URL}/orders/${tableOrder.id}/pay`, {
+      const res = await fetch(
+        `${API_URL}/orders/pay-table/${restaurantId}/${tableNumber}`,
+        {
+          method: "PATCH", // or POST/PUT/DELETE depending on your backend
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: "paid", // optional, depending on backend
+            table_number: tableOrder.table_number, // if you want to clear table too
+            payment_method: paymentMethod,
+            contact: contact,
+            total: tableOrder.total,
+          }),
+        }
+      );
 
       if (!res.ok) throw new Error(`Failed with status ${res.status}`);
 

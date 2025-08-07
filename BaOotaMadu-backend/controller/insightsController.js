@@ -1,3 +1,4 @@
+
 const Order = require("../models/orderModel");
 const mongoose = require("mongoose");
 const Table = require("../models/tableModel");
@@ -11,55 +12,53 @@ const getInsights = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Total orders today
+    // 1. Total orders today (any status)
     const totalOrdersToday = await Order.countDocuments({
       restaurant_id: restaurantObjectId,
       created_at: { $gte: today }
     });
 
-    // Total sales today
-   const totalSalesResult = await Order.aggregate([
-  {
-    $match: {
-      restaurant_id: restaurantObjectId,
-      created_at: { $gte: today },
-      payment_status: "paid" // Only include paid orders
-    }
-  },
-  {
-    $group: {
-      _id: null,
-      total: { $sum: "$total_amount" }
-    }
-  }
-]);
+    // 2. Total revenue (only paid orders)
+    const totalSalesResult = await Order.aggregate([
+      {
+        $match: {
+          restaurant_id: restaurantObjectId,
+          created_at: { $gte: today },
+          payment_status: "paid" // ✅ Only paid orders
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$total_amount" } // ✅ Total revenue
+        }
+      }
+    ]);
+    console.log("Total Sales Result:", totalSalesResult);
 
+    const totalSalesToday = totalSalesResult.length > 0 ? totalSalesResult[0].total : 0;
 
-    // Pending orders today
+    // 3. Pending orders today
     const pendingOrdersToday = await Order.countDocuments({
       restaurant_id: restaurantObjectId,
       status: "pending",
       created_at: { $gte: today }
     });
-// Total tables in the restaurant
-const totalTables = await Table.countDocuments({ restaurant_id: restaurantObjectId });
 
-// Active tables = those with status 'occupied'
-const activeTables = await Table.countDocuments({ 
-  restaurant_id: restaurantObjectId, 
-  status: "occupied" 
-});
-console.log("Total Tables:", totalTables);
-console.log("Active Tables:", activeTables);
+    // 4. Table stats
+    const totalTables = await Table.countDocuments({ restaurant_id: restaurantObjectId });
+    const activeTables = await Table.countDocuments({
+      restaurant_id: restaurantObjectId,
+      status: "occupied"
+    });
 
-    // Final response
+    // ✅ Send response
     res.json({
       totalOrdersToday,
-      totalSalesToday: totalSalesResult.length > 0 ? totalSalesResult[0].total : 0,
+      totalSalesToday, // ✅ Only sum of paid orders
       pendingOrdersToday,
-     // activeOrdersToday,
       totalTables,
-      activeTables,
+      activeTables
     });
 
   } catch (err) {
@@ -70,5 +69,8 @@ console.log("Active Tables:", activeTables);
     });
   }
 };
+
+
+
 
 module.exports = { getInsights };

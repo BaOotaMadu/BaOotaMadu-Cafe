@@ -88,14 +88,16 @@ const getTableOrders = async (req, res) => {
   try {
     const { table_id, restaurant_id } = req.params;
 
-    const orders = await Order.find({ table_id, restaurant_id }).sort({
-      createdAt: -1,
-    });
+    const orders = await Order.find({
+      table_id,
+      restaurant_id,
+      payment_status: "unpaid" // Filter only unpaid orders
+    }).sort({ createdAt: -1 });
 
     if (!orders.length) {
       return res
         .status(404)
-        .json({ message: "No orders found for this table." });
+        .json({ message: "No unpaid orders found for this table." });
     }
 
     res.json(orders);
@@ -103,6 +105,7 @@ const getTableOrders = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 const updateOrderStatus = async (req, res) => {
   try {
@@ -213,6 +216,31 @@ const markOrderAsPaid = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+// PATCH /orders/pay-table/:restaurant_id/:table_id
+const payAllTableOrders = async (req, res) => {
+  try {
+    const { restaurant_id, table_id } = req.params;
+
+    const result = await Order.updateMany(
+      {
+        restaurant_id,
+        table_id,
+        payment_status: "unpaid"
+      },
+      {
+        $set: { payment_status: "paid" }
+      }
+    );
+
+    res.json({
+      message: "All unpaid orders for this table marked as paid.",
+      updated: result.modifiedCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 
 module.exports = {
@@ -222,5 +250,6 @@ module.exports = {
   getTableOrders,
   updateOrderStatus,
   deleteOrder,
-  markOrderAsPaid
+  markOrderAsPaid,
+  payAllTableOrders
 };
