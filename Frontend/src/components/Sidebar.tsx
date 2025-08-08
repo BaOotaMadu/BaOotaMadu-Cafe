@@ -38,11 +38,12 @@ const Sidebar = ({ className }: SidebarProps) => {
     )}>
       <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
         {!collapsed && (
-          <h1 className="text-lg font-bold font-montserrat">MenuZen</h1>
-        )}
+            <div className="h-25 w-25 rounded-full  flex items-center justify-center">
+                <img src="dist/assets/11.png" alt="BoM logo" /> 
+              </div>       )}
         {collapsed && (
           <div className="w-full flex justify-center">
-            <span className="text-xl font-bold">MZ</span>
+            <span className="text-xl font-bold">BOM</span>
           </div>
         )}
         <button 

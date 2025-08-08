@@ -58,8 +58,8 @@ const Header: React.FC<HeaderProps> = ({ tableNumber, onCartClick }) => {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
               className="relative"
             >
-              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">BM</span>
+              <div className="h-20 w-20   flex items-center justify-center">
+                <img src="dist/assets/11.png" alt="BoM logo" /> 
               </div>
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
