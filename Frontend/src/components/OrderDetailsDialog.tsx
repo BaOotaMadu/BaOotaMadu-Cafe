@@ -1160,17 +1160,15 @@ const OrderDetailsDialog = ({
     if (!tableOrder) return;
 
     try {
-      // const res = await fetch(`${API_URL}/orders/${tableOrder.id}/pay`, {
+      // 1️⃣ Mark the order as paid
       const res = await fetch(
         `${API_URL}/orders/pay-table/${restaurantId}/${tableNumber}`,
         {
-          method: "PATCH", // or POST/PUT/DELETE depending on your backend
-          headers: {
-            "Content-Type": "application/json",
-          },
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            status: "paid", // optional, depending on backend
-            table_number: tableOrder.table_number, // if you want to clear table too
+            status: "paid",
+            table_number: tableOrder.table_number,
             payment_method: paymentMethod,
             contact: contact,
             total: tableOrder.total,
@@ -1180,25 +1178,87 @@ const OrderDetailsDialog = ({
 
       if (!res.ok) throw new Error(`Failed with status ${res.status}`);
 
+      // 2️⃣ Clear the table using your API
+      const clearRes = await fetch(
+        `${API_URL}/tables/clear/${tableOrder.id}`, // ✅ Make sure table_id is in tableOrder
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!clearRes.ok) {
+        const errorData = await clearRes.json();
+        throw new Error(errorData.message || "Failed to clear table");
+      }
+
+      // 3️⃣ Notify user
       toast({
         title: "✅ Payment successful",
-        description: `Order for Table ${tableOrder.table_number} is now marked as paid.`,
+        description: `Order for Table ${tableOrder.table_number} is now marked as paid and table is available.`,
       });
 
-      // Clear the tableOrder from frontend state
+      // 4️⃣ Clear local state
       setTableOrder(null);
       setShowPayment(false);
 
-      // Optionally refetch tables/orders or trigger a state update
+      // 5️⃣ Optionally refresh tables/orders list
+      // fetchTables();
+      // fetchOrders();
     } catch (err) {
-      console.error("❌ Failed to mark order as paid:", err);
+      console.error("❌ Failed to finalize payment:", err);
       toast({
         variant: "destructive",
         title: "Payment Save Failed",
-        description: "Could not update order status. Please try again.",
+        description:
+          err.message || "Could not update order status. Please try again.",
       });
     }
   };
+
+  // const finalizePayment = async () => {
+  //   if (!tableOrder) return;
+
+  //   try {
+  //     // const res = await fetch(`${API_URL}/orders/${tableOrder.id}/pay`, {
+  //     const res = await fetch(
+  //       `${API_URL}/orders/pay-table/${restaurantId}/${tableNumber}`,
+  //       {
+  //         method: "PATCH", // or POST/PUT/DELETE depending on your backend
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           status: "paid", // optional, depending on backend
+  //           table_number: tableOrder.table_number, // if you want to clear table too
+  //           payment_method: paymentMethod,
+  //           contact: contact,
+  //           total: tableOrder.total,
+  //         }),
+  //       }
+  //     );
+
+  //     if (!res.ok) throw new Error(`Failed with status ${res.status}`);
+
+  //     toast({
+  //       title: "✅ Payment successful",
+  //       description: `Order for Table ${tableOrder.table_number} is now marked as paid.`,
+  //     });
+
+  //     // Clear the tableOrder from frontend state
+  //     setTableOrder(null);
+  //     setShowPayment(false);
+
+  //     // Optionally refetch tables/orders or trigger a state update
+  //   } catch (err) {
+  //     console.error("❌ Failed to mark order as paid:", err);
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Payment Save Failed",
+  //       description: "Could not update order status. Please try again.",
+  //     });
+  //   }
+  // };
 
   const handlePrintAndEmail = () => {
     if (!tableOrder) return;
