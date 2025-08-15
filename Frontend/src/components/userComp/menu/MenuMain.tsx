@@ -64,8 +64,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
   const [estimatedTime, setEstimatedTime] = useState<number>(1); // 25 minutes estimated
 
   //const API_URL = "http://localhost:3001";
-  const API_URL =
-    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com"; // Use environment variable or fallback
+  const API_URL = import.meta.env.VITE_API_BASE || "http://localhost:3001"; // Use environment variable or fallback
   const params = new URLSearchParams(window.location.search);
   const restaurantId = params.get("restaurant");
   console.log("Restaurant ID:", restaurantId);
