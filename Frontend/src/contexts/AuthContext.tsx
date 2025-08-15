@@ -1,9 +1,16 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:3001";
-
+//const API_URL = "http://localhost:3001";
+const API_URL =
+  import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com"; // Replace with your actual API URL
 // Define the shape of the context data
 interface AuthContextType {
   user: any; // You can replace 'any' with your User type
@@ -29,13 +36,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(res.data); // Set the user in state
     } catch (error) {
       console.error("Token validation failed, logging out.", error);
-      localStorage.removeItem('token'); // Invalid token, remove it
+      localStorage.removeItem("token"); // Invalid token, remove it
     }
   }, []);
 
   // On initial app load, check if a token exists in localStorage
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       fetchUserProfile(token).finally(() => setLoading(false));
     } else {
@@ -47,13 +54,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const res = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+      });
       const { token } = res.data;
 
       if (token) {
-        localStorage.setItem('token', token); // Save token
+        localStorage.setItem("token", token); // Save token
         await fetchUserProfile(token); // Fetch profile and set user
-        navigate('/'); // Navigate to home
+        navigate("/"); // Navigate to home
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -66,8 +76,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('token');
-    navigate('/login');
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -81,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
