@@ -16,7 +16,8 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
 
   //const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
   const baseUrl =
-    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com";
+    import.meta.env.VITE_API_BASE_Frontend ||
+    "https://ba-oota-madu.vercel.app/";
   const qrValue = `${baseUrl}/user?table=${tableId}`;
 
   const handlePrint = () => {
