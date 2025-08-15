@@ -915,6 +915,7 @@
 // export default MenuMain;
 
 import React, { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ShoppingCart,
@@ -981,7 +982,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
   //const API_URL = "http://localhost:3001";
   const API_URL =
     import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com"; // Use environment variable or fallback
-  const restaurantId = localStorage.getItem("restaurantId");
+  //const restaurantId = localStorage.getItem("restaurantId");
+  const { restaurantId } = useParams();
   // ✅ Use the real global cart hook
   const { addItem, cartItems } = useCart();
 

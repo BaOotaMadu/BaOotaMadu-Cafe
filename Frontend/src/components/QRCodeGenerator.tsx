@@ -13,12 +13,11 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
   const qrRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [showQR, setShowQR] = useState(false);
-
-  //const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
+  const restaurantId = localStorage.getItem("restaurantId"); //const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
   const baseUrl =
     import.meta.env.VITE_API_BASE_Frontend ||
     "https://ba-oota-madu.vercel.app/";
-  const qrValue = `${baseUrl}/user?table=${tableId}`;
+  const qrValue = `${baseUrl}/${restaurantId}/user?table=${tableId}`;
 
   const handlePrint = () => {
     if (qrRef.current) {
