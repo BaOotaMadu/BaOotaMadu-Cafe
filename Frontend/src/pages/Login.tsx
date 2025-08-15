@@ -17,10 +17,11 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
+  const API_BASE =
+    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com";
   const handleLogin = async () => {
     try {
-      const res = await axios.post(`http://localhost:3001/auth/login`, {
+      const res = await axios.post(`${API_BASE}/auth/login`, {
         email,
         password,
       });
@@ -33,9 +34,7 @@ const Login = () => {
         return alert("Login failed. Please check your credentials.");
       }
       if (token && restaurantId) {
-        const res = await fetch(
-          `http://localhost:3001/api/restaurant/${restaurantId}`
-        );
+        const res = await fetch(`${API_BASE}/api/restaurant/${restaurantId}`);
         if (!res.ok) throw new Error("Failed to fetch profile");
         const data = await res.json();
         //console.log("Restaurant profile data:", data);
@@ -153,7 +152,7 @@ export default Login;
 
 //         if (!profileRes.ok) throw new Error("Failed to fetch profile");
 //         const data = await profileRes.json();
-        
+
 //         // Your existing localStorage logic (kept as requested)
 //         localStorage.setItem("restaurantProfile", JSON.stringify(data));
 //         localStorage.setItem("token", token);
@@ -242,7 +241,7 @@ export default Login;
 // const Login = () => {
 //   const [email, setEmail] = useState("");
 //   const [password, setPassword] = useState("");
-  
+
 //   // Get the login function and loading state from our AuthContext
 //   const { login, loading } = useAuth();
 

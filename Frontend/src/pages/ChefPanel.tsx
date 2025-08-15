@@ -297,8 +297,9 @@ import { CheckCircle, Clock, XCircle, Utensils } from "lucide-react";
 import { format } from "date-fns";
 import classNames from "classnames";
 const restaurantId = localStorage.getItem("restaurantId"); // Replace with your actual restaurant ID
-const API_URL = `http://localhost:3001`; // Replace with your actual URL
-
+//const API_URL = `http://localhost:3001`; // Replace with your actual URL
+const API_URL =
+  import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com/";
 const ChefPanel = () => {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState<"pending" | "completed">("pending");

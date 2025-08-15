@@ -21,7 +21,9 @@ import { addTable, setTables, type Order } from "@/store/slices/tableSlice";
 import { addActivity, updateStats } from "@/store/slices/dashboardSlice";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 
-const API_BASE = "http://localhost:3001";
+//const API_BASE = "http://localhost:3001";
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com/";
 const restaurantId = localStorage.getItem("restaurantId");
 
 // Backend integration functions

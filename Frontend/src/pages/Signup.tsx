@@ -24,7 +24,8 @@ const Signup = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
+  const API_BASE =
+    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com/"; // Replace with your actual API URL
   const handleSignup = async () => {
     setError("");
 
@@ -46,10 +47,7 @@ const Signup = () => {
 
       console.log("Sending signup data:", payload);
 
-      const res = await axios.post(
-        "http://localhost:3001/auth/register",
-        payload
-      );
+      const res = await axios.post(`${API_BASE}/auth/register`, payload);
 
       console.log("Response from server:", res.data);
 
