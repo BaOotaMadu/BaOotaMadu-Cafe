@@ -14,7 +14,9 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
   const { toast } = useToast();
   const [showQR, setShowQR] = useState(false);
 
-  const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
+  //const baseUrl = "http://localhost:8080"; // Replace with your actual base URL
+  const baseUrl =
+    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com";
   const qrValue = `${baseUrl}/user?table=${tableId}`;
 
   const handlePrint = () => {
