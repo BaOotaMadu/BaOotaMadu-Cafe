@@ -51,50 +51,6 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
     <div className="min-h-screen flex flex-col bg-white text-[#1B1F3B]">
       <Header tableNumber={tableId} onCartClick={handleCartToggle} />
 
-      {/* <div className="px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20 bg-white/95 backdrop-blur-sm shadow-sm">
-        {showSearch && (
-          <div className="relative">
-            <div
-              className={`flex items-center border rounded-full overflow-hidden transition-all ${
-                isSearchFocused
-                  ? "border-indigo-500 ring-2 ring-indigo-100"
-                  : "border-gray-200"
-              }`}
-            >
-              <div className="pl-3 sm:pl-4 text-gray-400">
-                <Search size={16} />
-              </div>
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder="Search menu..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                className="w-full py-2 sm:py-3 px-2 sm:px-3 focus:outline-none text-xs sm:text-sm"
-              />
-              {searchTerm && (
-                <button
-                  onClick={handleSearchClear}
-                  className="pr-3 sm:pr-4 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            {searchTerm && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                <span className="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium">
-                  Searching: "{searchTerm}"
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div> */}
-
       <div className="flex-grow">
         <MenuMain searchTerm={searchTerm} />
       </div>
@@ -137,26 +93,10 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
 
 const Index: React.FC = () => {
   const [tableId, setTableId] = useState<string>("");
+  const [restaurantId, setRestaurantId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
 
-  // useEffect(() => {
-  //   const setupTable = async () => {
-  //     try {
-  //       initTableEventManager();
-  //       const paramTableId = searchParams.get("table");
-  //       const fallbackTableId = getTableNumber();
-  //       const finalTableId = paramTableId || fallbackTableId;
-
-  //       setTableId(finalTableId);
-  //       document.title = `Table ${finalTableId} - Dine-In Symphony`;
-  //     } finally {
-  //       setTimeout(() => setIsLoading(false), 800);
-  //     }
-  //   };
-
-  //   setupTable();
-  // }, [searchParams]);
   useEffect(() => {
     const setupTable = async () => {
       try {
@@ -165,6 +105,7 @@ const Index: React.FC = () => {
         // Parse query params manually
         const urlParams = new URLSearchParams(window.location.search);
         const paramTableId = urlParams.get("table");
+        const restaurantId = urlParams.get("restaurant");
 
         const fallbackTableId = getTableNumber();
         const finalTableId =
@@ -178,6 +119,7 @@ const Index: React.FC = () => {
         );
 
         setTableId(finalTableId);
+        setRestaurantId(restaurantId || "");
 
         if (finalTableId) {
           document.title = `Table ${finalTableId} - Dine-In Symphony`;

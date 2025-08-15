@@ -17,7 +17,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ tableId }) => {
   const baseUrl =
     import.meta.env.VITE_API_BASE_Frontend ||
     "https://ba-oota-madu.vercel.app/";
-  const qrValue = `${baseUrl}/${restaurantId}/user?table=${tableId}`;
+  const qrValue = `${baseUrl}/user?table=${tableId}&restaurant=${restaurantId}`;
 
   const handlePrint = () => {
     if (qrRef.current) {
