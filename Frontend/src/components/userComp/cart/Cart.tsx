@@ -109,7 +109,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const { placeOrder } = useOrder();
   const urlParams = new URLSearchParams(window.location.search);
   const paramTableId = urlParams.get("table");
-  const API_URL = "http://localhost:3001";
+  //const API_URL = "http://localhost:3001";
+  const API_URL =
+    import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com"; // Use environment variable or fallback
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
 

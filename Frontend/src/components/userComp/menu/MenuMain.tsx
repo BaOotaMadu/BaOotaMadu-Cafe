@@ -978,7 +978,9 @@ const MenuMain: React.FC<MenuMainProps> = ({
   const [orderTime, setOrderTime] = useState<string>("");
   const [estimatedTime, setEstimatedTime] = useState<number>(1); // 25 minutes estimated
 
-  const API_URL = "http://localhost:3001";
+  //const API_URL = "http://localhost:3001";
+  const API_URL =
+    process.env.VITE_API_BASE || "https://ba-oota-madu.vercel.app"; // Use environment variable or fallback
   const restaurantId = localStorage.getItem("restaurantId");
   // ✅ Use the real global cart hook
   const { addItem, cartItems } = useCart();
