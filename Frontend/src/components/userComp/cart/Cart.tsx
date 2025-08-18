@@ -109,6 +109,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
   const { placeOrder } = useOrder();
   const urlParams = new URLSearchParams(window.location.search);
   const paramTableId = urlParams.get("table");
+  const restaurantId = urlParams.get("restaurant");
   //const API_URL = "http://localhost:3001";
   const API_URL =
     import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com"; // Use environment variable or fallback
@@ -116,7 +117,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
     if (cartItems.length === 0) return;
 
     try {
-      const restaurantId = localStorage.getItem("restaurantId");
+      //const restaurantId = localStorage.getItem("restaurantId");
       if (!restaurantId) {
         console.error("No restaurant ID provided");
         return;
