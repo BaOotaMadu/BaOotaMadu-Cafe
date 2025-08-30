@@ -14,7 +14,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Cart from "../cart/Cart"; // ✅ Use the real Cart component
-import { useCart } from "@/hooks/useCart"; // ✅ Use real cart hook
+import { useCart } from "@/hooks/useCart"; // ✅ Must support addItem, removeItem
 
 // Types
 interface FoodItem {
@@ -63,17 +63,27 @@ const MenuMain: React.FC<MenuMainProps> = ({
   const [orderTime, setOrderTime] = useState<string>("");
   const [estimatedTime, setEstimatedTime] = useState<number>(1); // 25 minutes estimated
 
-  //const API_URL = "http://localhost:3001";
-  const API_URL = import.meta.env.VITE_API_BASE || "http://localhost:3001"; // Use environment variable or fallback
+  const API_URL = import.meta.env.VITE_API_BASE || "http://localhost:3001";
   const params = new URLSearchParams(window.location.search);
   const restaurantId = params.get("restaurant");
   console.log("Restaurant ID:", restaurantId);
-  const { addItem, cartItems } = useCart();
 
-  // ✅ Calculate item count from real cart
+  // ✅ Use real cart with addItem and removeItem
+  const { addItem, removeItem, cartItems } = useCart();
+
+  // ✅ Calculate total item count
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  // ✅ Listen for order placed event from Cart component
+  // ✅ Sync local quantities with cart on every cart update
+  useEffect(() => {
+    const cartQuantities: Record<string, number> = {};
+    cartItems.forEach((item) => {
+      cartQuantities[item.id] = item.quantity;
+    });
+    setQuantities(cartQuantities);
+  }, [cartItems]);
+
+  // ✅ Listen for order placed event
   useEffect(() => {
     const handleOrderPlaced = () => {
       setShowOrderStatus(true);
@@ -88,7 +98,6 @@ const MenuMain: React.FC<MenuMainProps> = ({
       );
     };
 
-    // Listen for the orderPlaced event from Cart component
     window.addEventListener("orderPlaced", handleOrderPlaced);
     return () => window.removeEventListener("orderPlaced", handleOrderPlaced);
   }, []);
@@ -98,7 +107,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
     if (showOrderStatus && orderProgress < 100) {
       const timer = setTimeout(() => {
         setOrderProgress((prev) => Math.min(prev + 1, 100));
-      }, (estimatedTime * 60 * 1000) / 100); // Complete in estimated time
+      }, (estimatedTime * 60 * 1000) / 100);
 
       return () => clearTimeout(timer);
     }
@@ -110,13 +119,13 @@ const MenuMain: React.FC<MenuMainProps> = ({
       const timer = setTimeout(() => {
         setShowOrderStatus(false);
         setOrderProgress(0);
-      }, 3000); // Hide after 3 seconds when complete
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
   }, [orderProgress]);
 
-  // ✅ Get progress bar color based on progress
+  // ✅ Get progress bar color
   const getProgressColor = (progress: number) => {
     if (progress < 25) return "bg-red-300";
     if (progress < 50) return "bg-red-500";
@@ -125,7 +134,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
     return "bg-green-500";
   };
 
-  // ✅ Get status text based on progress
+  // ✅ Get status text
   const getStatusText = (progress: number) => {
     if (progress < 25) return "Order Received";
     if (progress < 50) return "Preparing";
@@ -180,11 +189,13 @@ const MenuMain: React.FC<MenuMainProps> = ({
         const firstCategory = Object.keys(categorized)[0];
         if (firstCategory) setSelectedCategory(firstCategory);
 
+        // Initialize quantities from cart
         const initialQuantities: Record<string, number> = {};
         Object.values(categorized)
           .flat()
           .forEach((item) => {
-            initialQuantities[item.id] = 0;
+            const cartItem = cartItems.find((ci) => ci.id === item.id);
+            initialQuantities[item.id] = cartItem?.quantity || 0;
           });
         setQuantities(initialQuantities);
       } catch (error) {
@@ -193,7 +204,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
       }
     }
     fetchFoodItems();
-  }, []);
+  }, [cartItems]); // Re-fetch quantities if cart changes
 
   // Filtered items
   const allItems = searchTerm
@@ -222,30 +233,41 @@ const MenuMain: React.FC<MenuMainProps> = ({
   // Handlers
   const handleItemClick = (item: FoodItem) => {
     setSelectedItem(item);
-    setQuantities((prev) => ({ ...prev, [item.id]: prev[item.id] || 1 }));
     setIsModalOpen(true);
   };
 
   const handleAddToCart = () => {
     if (!selectedItem) return;
     const qty = quantities[selectedItem.id] || 1;
-    addItem({ ...selectedItem, quantity: qty }); // ✅ Uses real `useCart`
-    setQuantities((prev) => ({ ...prev, [selectedItem.id]: 0 }));
+    if (qty === 0) return;
+
+    // Ensure cart reflects final quantity
+    const existing = cartItems.find((i) => i.id === selectedItem.id);
+    if (existing) {
+      // If already in cart, just ensure quantity is correct
+    } else {
+      addItem({ ...selectedItem, quantity: qty });
+    }
+
     setIsModalOpen(false);
   };
 
-  const handleQuickAdd = (item: FoodItem, e: React.MouseEvent) => {
-    e.stopPropagation();
-    addItem({ ...item, quantity: 1 }); // ✅ Add directly to real cart
-  };
+  const handleQuantityChange = (item: FoodItem, delta: number, e?: React.MouseEvent) => {
+  e?.stopPropagation();
 
-  const handleQuantityChange = (delta: number) => {
-    if (!selectedItem) return;
-    setQuantities((prev) => {
-      const current = prev[selectedItem.id] || 1;
-      return { ...prev, [selectedItem.id]: Math.max(1, current + delta) };
-    });
-  };
+  const currentQty = quantities[item.id] || 0;
+  const newQty = Math.max(0, currentQty + delta);
+
+  // Only update local UI immediately
+  setQuantities((prev) => ({ ...prev, [item.id]: newQty }));
+
+  // Update cart: add or remove one unit
+  if (delta === 1) {
+    addItem({ ...item, quantity: 1 }); // Add one to cart
+  } else if (delta === -1 && currentQty > 0) {
+    removeItem(item.id); // Remove one from cart
+  }
+};
 
   // Stars UI
   const renderStars = (rating: number) => {
@@ -349,7 +371,6 @@ const MenuMain: React.FC<MenuMainProps> = ({
                 </button>
               </div>
 
-              {/* ✅ Interactive Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ease-out ${getProgressColor(
@@ -357,12 +378,10 @@ const MenuMain: React.FC<MenuMainProps> = ({
                   )} relative`}
                   style={{ width: `${orderProgress}%` }}
                 >
-                  {/* ✅ Animated shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
                 </div>
               </div>
 
-              {/* ✅ Progress percentage */}
               <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
                 <span>0%</span>
                 <span className="font-semibold text-gray-700">
@@ -403,8 +422,27 @@ const MenuMain: React.FC<MenuMainProps> = ({
 
           {/* Main Content */}
           <div className={`flex-1 ${isMobile ? "pb-20" : "p-4"}`}>
-            {/* Mobile Filters */}
+            {/* Mobile Search Bar - Always on top when visible */}
             {isMobile && (
+              <div className="bg-white shadow-sm mb-4 p-4 sticky top-0 z-30">
+                <div className="relative">
+                  <Search
+                    size={20}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search 'curries'"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Filters (only if not searching) */}
+            {isMobile && !searchTerm && (
               <div className="bg-white shadow-sm mb-4 p-4">
                 <div className="flex space-x-2 overflow-x-auto">
                   {["All", "Veg", "Non-Veg", "Top Rated"].map((filter) => (
@@ -429,43 +467,6 @@ const MenuMain: React.FC<MenuMainProps> = ({
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Desktop Filters */}
-            {!isMobile && (
-              <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "All",
-                    "Vegetarian",
-                    "Non-Vegetarian",
-                    "Top Rated",
-                    "Price: Low to High",
-                  ].map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setActiveFilter(filter)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        activeFilter === filter
-                          ? "bg-red-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Search Header */}
-            {searchTerm && (
-              <div className="mb-6 px-4">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Search Results
-                </h2>
-                <p className="text-gray-600">Results for "{searchTerm}"</p>
               </div>
             )}
 
@@ -504,10 +505,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
                           </h3>
                           <div className="flex items-center gap-2 mb-2">
                             <div className="flex items-center gap-1">
-                              <Star
-                                size={12}
-                                className="fill-green-500 text-green-500"
-                              />
+                              {renderStars(item.rating)}
                               <span className="text-sm font-medium text-gray-900">
                                 {item.rating}
                               </span>
@@ -531,17 +529,29 @@ const MenuMain: React.FC<MenuMainProps> = ({
                             </div>
                             {item.originalPrice && (
                               <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-1 rounded">
-                                ₹{(item.originalPrice - item.price).toFixed(0)}{" "}
-                                OFF
+                                ₹{(item.originalPrice - item.price).toFixed(0)} OFF
                               </span>
                             )}
                           </div>
-                          <button
-                            onClick={(e) => handleQuickAdd(item, e)}
-                            className="bg-white border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-colors px-4 py-1.5 rounded-md text-sm font-semibold"
-                          >
-                            ADD
-                          </button>
+                          {/* Quantity Counter */}
+                          <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
+                            <button
+                              onClick={(e) => handleQuantityChange(item, -1, e)}
+                              className="bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 flex items-center justify-center disabled:opacity-40"
+                              disabled={(quantities[item.id] || 0) <= 0}
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <span className="px-2 py-1 text-sm font-medium min-w-[1.5rem] text-center">
+                              {quantities[item.id] || 0}
+                            </span>
+                            <button
+                              onClick={(e) => handleQuantityChange(item, 1, e)}
+                              className="bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 flex items-center justify-center"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -573,7 +583,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
                             {item.name}
                           </h3>
                           <button
-                            onClick={(e) => handleQuickAdd(item, e)}
+                            onClick={(e) => handleQuantityChange(item, 1, e)}
                             className="bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-colors p-2 rounded-lg"
                           >
                             <Plus size={16} />
@@ -627,13 +637,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
 
             {filteredItems().length === 0 && (
               <div className="text-center py-12">
-                <ShoppingCart
-                  size={64}
-                  className="mx-auto text-gray-400 mb-4"
-                />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No items found
-                </h3>
+                <ShoppingCart size={64} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
                 <p className="text-gray-600">
                   {searchTerm
                     ? `No items matching "${searchTerm}" found.`
@@ -645,8 +650,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
         </div>
       </div>
 
-      {/* Mobile Bottom Bar */}
-      {isMobile && (
+      {/* Mobile Bottom Bar - Hidden during search */}
+      {isMobile && !searchTerm && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
@@ -785,7 +790,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
                 <span className="font-semibold text-gray-900">Quantity</span>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => handleQuantityChange(-1)}
+                    onClick={() => handleQuantityChange(selectedItem, -1)}
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
                   >
                     <Minus size={16} />
@@ -794,7 +799,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
                     {quantities[selectedItem.id] || 1}
                   </span>
                   <button
-                    onClick={() => handleQuantityChange(1)}
+                    onClick={() => handleQuantityChange(selectedItem, 1)}
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
                   >
                     <Plus size={16} />
@@ -815,7 +820,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
         </div>
       )}
 
-      {/* ✅ Use the real external Cart */}
+      {/* ✅ Real Cart Component */}
       <Cart
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -841,7 +846,7 @@ const MenuMain: React.FC<MenuMainProps> = ({
   );
 };
 
-// MenuModal Component (kept inline)
+// MenuModal Component
 const MenuModal = ({
   isOpen,
   onClose,

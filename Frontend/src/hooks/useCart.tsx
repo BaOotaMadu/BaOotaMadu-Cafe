@@ -80,10 +80,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Remove item from cart
-  const removeItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
+ const removeItem = (id: string) => {
+  setCartItems((prevItems) =>
+    prevItems.reduce((acc, item) => {
+      if (item.id === id) {
+        // If there's more than one, reduce quantity by 1
+        if (item.quantity > 1) {
+          acc.push({ ...item, quantity: item.quantity - 1 });
+        }
+        // If quantity is 1, don't add it back (i.e. remove it)
+      } else {
+        acc.push(item);
+      }
+      return acc;
+    }, [] as CartItem[])
+  );
+};
   // Update item quantity
   const updateItemQuantity = (id: string, quantity: number) => {
     if (quantity <= 0) {

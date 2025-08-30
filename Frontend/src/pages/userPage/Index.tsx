@@ -63,7 +63,7 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
 
       {!isCartOpen && itemCount > 0 && (
         <div className="fixed bottom-4 right-4 z-50 md:hidden">
-          <Button
+          {/* <Button
             onClick={handleCartToggle}
             className="h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg bg-indigo-600 hover:bg-indigo-700"
             aria-label="Open cart"
@@ -74,18 +74,18 @@ const TableHeader: React.FC<{ tableId: string }> = ({ tableId }) => {
                 {itemCount}
               </span>
             </div>
-          </Button>
+          </Button> */}
         </div>
       )}
 
       <div className="fixed bottom-4 left-4 z-40">
-        <Button
+        {/* <Button
           onClick={handleCallStaff}
           variant="outline"
           className="h-10 px-3 sm:px-4 text-xs sm:text-sm border-indigo-200 text-indigo-700 hover:bg-indigo-50"
         >
           Call Staff
-        </Button>
+        </Button> */}
       </div>
     </div>
   );
