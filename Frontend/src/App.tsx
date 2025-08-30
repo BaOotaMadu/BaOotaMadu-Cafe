@@ -97,6 +97,7 @@ import Reports from "./pages/Reports";
 import Customer from "@/components/Customer";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Feedback from "./pages/Feedback";
 import CustomerView from "./components/CustomerView";
 import ChefPanel from "./pages/ChefPanel";
 import Login from "./pages/Login";
@@ -146,6 +147,7 @@ const App = () => (
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/customer" element={<Customer />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/feedback" element={<Feedback />} />
               </Route>
 
               <Route path="/customer1" element={<ProtectedRoute><CustomerView /></ProtectedRoute>} />

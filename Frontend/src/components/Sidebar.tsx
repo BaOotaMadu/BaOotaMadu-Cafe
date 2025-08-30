@@ -6,7 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, TableProperties, BookOpen, PieChart, Settings, Menu as MenuIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, TableProperties, BookOpen, PieChart, Settings, Menu as MenuIcon, ChevronRight, ChevronLeft,Speech } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -28,6 +28,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     { title: 'Menu Management', icon: <MenuIcon size={20} />, path: '/menu' },
     { title: 'Reports', icon: <PieChart size={20} />, path: '/reports' },
     { title: 'Settings', icon: <Settings size={20} />, path: '/settings' },
+    { title: 'Feedback', icon: <Speech size={20} />, path: '/feedback' },
   ];
 
   return (
