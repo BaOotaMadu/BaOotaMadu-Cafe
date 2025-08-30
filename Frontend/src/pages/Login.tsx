@@ -139,7 +139,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your restaurant account</CardDescription>
+          <CardDescription>Login in to your restaurant account</CardDescription>
         </CardHeader>
         <CardContent>
           {/* 4. Use a <form> element and handle the submission with onSubmit */}
@@ -175,7 +175,7 @@ const Login = () => {
               size="lg"
               disabled={loading}
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? "Loging In..." : "Log In"}
             </Button>
           </form>
 
