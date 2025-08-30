@@ -175,7 +175,7 @@ const Login = () => {
               size="lg"
               disabled={loading}
             >
-              {loading ? "Loging In..." : "Log In"}
+              {loading ? "Loging In.." : "Log In"}
             </Button>
           </form>
 
