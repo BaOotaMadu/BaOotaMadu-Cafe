@@ -83,7 +83,7 @@ export default function Feedback() {
       <Card className="w-full max-w-md shadow-xl rounded-2xl">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-center">
-            Feedback Form
+            Feedback  Form
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
