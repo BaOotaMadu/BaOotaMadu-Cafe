@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+// const reportRoutes = require("./routes/reportRoutes");
 
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
@@ -24,8 +25,7 @@ app.use(express.json());
 app.use(cors()); 
 app.use('/send-bill-email', require('./routes/sendBill'));
 
-
-
+app.use("/api/reports", require("./routes/reportRoutes"));
 
 require('./models/restaurantModel.js');
 require('./models/tableModel.js');

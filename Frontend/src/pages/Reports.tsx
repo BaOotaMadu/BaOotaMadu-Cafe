@@ -1,26 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import {
   BarChart3,
   FileBarChart,
   FileText,
   ArrowDownNarrowWide,
   Calendar,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@/components/ui/tabs';
+} from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import StatCard from '@/components/StatCard';
+} from "@/components/ui/select";
+import StatCard from "@/components/StatCard";
 import {
   Table,
   TableBody,
@@ -28,122 +28,184 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+
+// Types
+interface SalesData {
+  date: string;
+  orders: number;
+  revenue: number;
+  avgOrder: number;
+}
+
+interface PopularItem {
+  name: string;
+  category: string;
+  orders: number;
+  revenue: number;
+}
+
+interface ReportApiResponse {
+  salesData: SalesData[];
+  popularItems: PopularItem[];
+  timeframeLabel: string;
+}
+
+// API Base URL (same as Dashboard)
+const API_URL =
+  import.meta.env.VITE_API_BASE || "https://baootamadu.onrender.com";
 
 const Reports = () => {
   const { toast } = useToast();
-  const [timeframe, setTimeframe] = useState<string>('week');
+  const [timeframe, setTimeframe] = useState<"day" | "week" | "month" | "year">("week");
+  const [reportData, setReportData] = useState<ReportApiResponse>({
+    salesData: [],
+    popularItems: [],
+    timeframeLabel: "Last 7 Days",
+  });
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Mock sales data
-  const salesData = [
-    { date: 'Mon, Mar 10', orders: 42, revenue: 789.5, avgOrder: 18.8 },
-    { date: 'Tue, Mar 11', orders: 38, revenue: 712.2, avgOrder: 18.74 },
-    { date: 'Wed, Mar 12', orders: 45, revenue: 892.75, avgOrder: 19.84 },
-    { date: 'Thu, Mar 13', orders: 52, revenue: 1043.65, avgOrder: 20.07 },
-    { date: 'Fri, Mar 14', orders: 68, revenue: 1354.45, avgOrder: 19.91 },
-    { date: 'Sat, Mar 15', orders: 72, revenue: 1580.9, avgOrder: 21.96 },
-    { date: 'Sun, Mar 16', orders: 58, revenue: 1245.8, avgOrder: 21.48 },
-  ];
+  // Get restaurantId from localStorage (same as Dashboard)
+  const restaurantId = localStorage.getItem("restaurantId") || "";
+  console.log("Reports - Restaurant ID:", restaurantId);
 
-  // Mock popular items
-  const popularItems = [
-    { name: 'Classic Cheeseburger', category: 'Main Course', orders: 145, revenue: 1885.55 },
-    { name: 'Margherita Pizza', category: 'Main Course', orders: 118, revenue: 1769.82 },
-    { name: 'Caesar Salad', category: 'Starters', orders: 92, revenue: 827.08 },
-    { name: 'Chocolate Brownie', category: 'Desserts', orders: 87, revenue: 608.13 },
-    { name: 'Grilled Salmon', category: 'Main Course', orders: 76, revenue: 1519.24 },
-  ];
+  if (!restaurantId) {
+    useEffect(() => {
+      toast({
+        title: "Error",
+        description: "Restaurant ID not found. Please log in again.",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }, []);
+  }
 
+  // Fetch report data
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    const fetchReportData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${API_URL}/api/reports/sales/${restaurantId}?timeframe=${timeframe}`
+        );
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || "Failed to fetch report data");
+        }
+
+        const result: ReportApiResponse = await response.json();
+        setReportData(result);
+
+        toast({
+          title: "Success",
+          description: `Loaded ${result.timeframeLabel} analytics.`,
+        });
+      } catch (error: any) {
+        console.error("Error fetching report:", error);
+        toast({
+          title: "Fetch Failed",
+          description: error.message || "Could not load report data.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportData();
+  }, [restaurantId, timeframe, toast]);
+
+  // Calculate summary stats
+  const totalRevenue = reportData.salesData.reduce((sum, d) => sum + d.revenue, 0);
+  const totalOrders = reportData.salesData.reduce((sum, d) => sum + d.orders, 0);
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+  // Generate PDF
   const generateReport = () => {
     try {
       const doc = new jsPDF();
+      let yOffset = 10;
 
-      let yOffset = 10; // Tracks the vertical position in the PDF
-
-      // Add title
       doc.setFontSize(18);
-      doc.text('Sales Report', 14, (yOffset += 10));
+      doc.text("Sales Report", 14, (yOffset += 10));
 
-      // Add sales data table
       doc.setFontSize(12);
-      doc.text('Sales Overview', 14, (yOffset += 15));
-      const salesColumns = ['Date', 'Orders', 'Revenue', 'Avg. Order'];
-      const salesRows = salesData.map((day) => [
+      doc.text(`Period: ${reportData.timeframeLabel}`, 14, (yOffset += 15));
+
+      // Sales Table
+      doc.text("Sales Overview", 14, (yOffset += 15));
+      const salesHeaders = ["Date", "Orders", "Revenue", "Avg. Order"];
+      const salesRows = reportData.salesData.map((day) => [
         day.date,
         day.orders.toString(),
-        `₹
-₹
-{day.revenue.toFixed(2)}`,
-        `₹
-₹
-{day.avgOrder.toFixed(2)}`,
+        `₹${day.revenue.toFixed(2)}`,
+        `₹${day.avgOrder.toFixed(2)}`,
       ]);
 
-      // Add table headers
-      salesColumns.forEach((column, index) => {
-        doc.text(column, 14 + index * 50, (yOffset += 10));
+      salesHeaders.forEach((header, i) => {
+        doc.text(header, 14 + i * 50, (yOffset += 10));
       });
-
-      // Add table rows
       salesRows.forEach((row) => {
-        row.forEach((cell, index) => {
-          doc.text(cell, 14 + index * 50, (yOffset += 10));
+        row.forEach((cell, i) => {
+          doc.text(cell, 14 + i * 50, (yOffset += 10));
         });
       });
 
-      // Add popular items section
-      doc.setFontSize(12);
-      doc.text('Popular Items', 14, (yOffset += 20));
-      const itemsColumns = ['Item', 'Category', 'Orders', 'Revenue'];
-      const itemsRows = popularItems.map((item) => [
+      // Popular Items
+      doc.text("Popular Items", 14, (yOffset += 20));
+      const itemHeaders = ["Item", "Category", "Orders", "Revenue"];
+      const itemRows = reportData.popularItems.map((item) => [
         item.name,
         item.category,
         item.orders.toString(),
-        `₹
-₹
-{item.revenue.toFixed(2)}`,
+        `₹${item.revenue.toFixed(2)}`,
       ]);
 
-      // Add table headers
-      itemsColumns.forEach((column, index) => {
-        doc.text(column, 14 + index * 50, (yOffset += 10));
+      itemHeaders.forEach((header, i) => {
+        doc.text(header, 14 + i * 50, (yOffset += 10));
       });
-
-      // Add table rows
-      itemsRows.forEach((row) => {
-        row.forEach((cell, index) => {
-          doc.text(cell, 14 + index * 50, (yOffset += 10));
+      itemRows.forEach((row) => {
+        row.forEach((cell, i) => {
+          doc.text(cell, 14 + i * 50, (yOffset += 10));
         });
       });
 
-      // Save the PDF
-      doc.save('report.pdf');
+      doc.save(`sales-report-${timeframe}.pdf`);
 
-      // Show success toast
       toast({
-        title: 'Report Generated',
-        description: 'Your report has been generated and is ready to download.',
+        title: "Downloaded",
+        description: "Your report has been saved as PDF.",
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      // Show error toast if PDF generation fails
+      console.error("PDF Generation Error:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to generate the report. Please try again.',
-        variant: 'destructive',
+        title: "Failed",
+        description: "Could not generate PDF.",
+        variant: "destructive",
       });
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Loading analytics...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
+    <div className="space-y-6 p-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Reports & Analytics</h1>
-          <p className="text-gray-500 mt-1">Track performance and generate detailed reports</p>
+          <p className="text-gray-500 mt-1">Track performance and generate reports</p>
         </div>
         <Button variant="outline" className="gap-2" onClick={generateReport}>
           <FileText size={16} />
@@ -151,36 +213,34 @@ const Reports = () => {
         </Button>
       </div>
 
-      {/* Stats Section */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Revenue"
-          value="₹
-7,619.25"
+          value={`₹${totalRevenue.toFixed(2)}`}
           icon={<BarChart3 className="text-navy" />}
-          trend={{ value: '8.2%', positive: true }}
+          trend={{ value: "8.2%", positive: true }}
         />
         <StatCard
           title="Total Orders"
-          value="375"
+          value={totalOrders.toString()}
           icon={<FileBarChart className="text-navy" />}
-          trend={{ value: '5.3%', positive: true }}
+          trend={{ value: "5.3%", positive: true }}
         />
         <StatCard
           title="Average Order"
-          value="₹
-20.32"
+          value={`₹${avgOrderValue.toFixed(2)}`}
           icon={<ArrowDownNarrowWide className="text-navy" />}
-          trend={{ value: '2.8%', positive: false }}
+          trend={{ value: "2.8%", positive: false }}
         />
         <StatCard
           title="Time Period"
-          value="Last 7 Days"
+          value={reportData.timeframeLabel}
           icon={<Calendar className="text-navy" />}
         />
       </div>
 
-      {/* Tabs Section */}
+      {/* Tabs */}
       <Tabs defaultValue="sales" className="w-full">
         <div className="flex justify-between items-center mb-4">
           <TabsList>
@@ -188,8 +248,7 @@ const Reports = () => {
             <TabsTrigger value="items">Popular Items</TabsTrigger>
           </TabsList>
 
-          {/* Timeframe Select */}
-          <Select id="timeframe" name="timeframe" value={timeframe} onValueChange={setTimeframe}>
+          <Select value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select timeframe" />
             </SelectTrigger>
@@ -202,7 +261,7 @@ const Reports = () => {
           </Select>
         </div>
 
-        {/* Sales Overview Tab */}
+        {/* Sales Tab */}
         <TabsContent value="sales" className="mt-0">
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <Table>
@@ -215,16 +274,22 @@ const Reports = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {salesData.map((day) => (
-                  <TableRow key={day.date}>
-                    <TableCell className="font-medium">{day.date}</TableCell>
-                    <TableCell className="text-right">{day.orders}</TableCell>
-                    <TableCell className="text-right">₹
-{day.revenue.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">₹
-{day.avgOrder.toFixed(2)}</TableCell>
+                {reportData.salesData.length > 0 ? (
+                  reportData.salesData.map((day) => (
+                    <TableRow key={day.date}>
+                      <TableCell className="font-medium">{day.date}</TableCell>
+                      <TableCell className="text-right">{day.orders}</TableCell>
+                      <TableCell className="text-right">₹{day.revenue.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">₹{day.avgOrder.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-gray-500">
+                      No data available
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -243,15 +308,22 @@ const Reports = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {popularItems.map((item) => (
-                  <TableRow key={item.name}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell className="text-right">{item.orders}</TableCell>
-                    <TableCell className="text-right">₹
-{item.revenue.toFixed(2)}</TableCell>
+                {reportData.popularItems.length > 0 ? (
+                  reportData.popularItems.map((item) => (
+                    <TableRow key={item.name}>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell className="text-right">{item.orders}</TableCell>
+                      <TableCell className="text-right">₹{item.revenue.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-gray-500">
+                      No popular items
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
