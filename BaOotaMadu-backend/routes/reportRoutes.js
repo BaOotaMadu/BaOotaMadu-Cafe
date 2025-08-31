@@ -33,7 +33,7 @@ router.get("/sales/:restaurantId", (req, res) => {
     timeframe: req.query.timeframe,
     salesData: [],
     popularItems: [],
-    timeframeLabel: "Last 7 Dayss"
+    timeframeLabel: "Last 7 Days"
   });
 });
 
