@@ -40,7 +40,7 @@ const Sidebar = ({ className }: SidebarProps) => {
       <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
         {!collapsed && (
             <div className="h-25 w-25 rounded-full  flex items-center justify-center">
-                <img src="dist/assets/11.png" alt="BoM logo" /> 
+                <img src="/11.png" alt="BoM logo" /> 
               </div>       )}
         {collapsed && (
           <div className="w-full flex justify-center">
