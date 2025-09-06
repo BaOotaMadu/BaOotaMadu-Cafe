@@ -105,6 +105,7 @@ import Signup from "./pages/Signup";
 import ProtectedRoute from "./ProtectedRoute";
 import Index from "./pages/userPage/Index";
 import { TableProvider } from "./contexts/TableContext";
+import ARPreview from "./pages/ARPreview"
 
 const queryClient = new QueryClient();
 
@@ -129,6 +130,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/user" element={<Index />} />
+              <Route path="/ar-preview" element={<ARPreview />} />
 
               <Route element={<ProtectedLayout />}>
                 <Route path="/" element={<Dashboard />} />

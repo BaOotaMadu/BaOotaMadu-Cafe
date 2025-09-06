@@ -102,7 +102,7 @@ const RestaurantProfile = () => {
       </div>
 
       <div className="space-y-1">
-        <Label>Manager Name</Label>
+        <Label>Manager Name </Label>
         <Input
           value={managerName}
           onChange={(e) => setManagerName(e.target.value)}

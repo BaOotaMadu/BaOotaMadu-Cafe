@@ -1,21 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MenuZen - Restaurant Management Dashboard</title>
+    <title>MenuZen - Restaurant Management Dashboard </title>
     <meta name="description" content="Restaurant management dashboard for tables, orders, and menu management" />
     <meta name="author" content="MenuZen" />
     <meta property="og:image" content="/og-image.png" />
-    <script src="https://smtpjs.com/v3/smtp.js"></script>
 
+    <!-- ✅ Add model-viewer for 3D/AR (NO TRAILING SPACES) -->
+    <script 
+      type="module" 
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   </head>
 
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
 
+    <!-- ✅ Fixed: Removed trailing spaces in src -->
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    
+    <!-- Your main React app entry -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
