@@ -19,7 +19,7 @@ const getDateRange = (timeframe) => {
     case "year":
       return new Date(now.getFullYear(), 0, 1);
     default:
-      return startOfWeek; // fallback to week
+      return startOfDay; // fallback
   }
 };
 

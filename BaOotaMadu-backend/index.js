@@ -23,10 +23,6 @@ const sendBillRoutes = require('./routes/sendBill');
 
 app.use(express.json());
 app.use(cors()); 
-app.use('/send-bill-email', require('./routes/sendBill'));
-
-app.use("/api/reports", require("./routes/reportRoutes"));
-
 require('./models/restaurantModel.js');
 require('./models/tableModel.js');
 require('./models/orderModel.js');
@@ -46,6 +42,9 @@ app.use("/activities", require("./routes/activityRoutes"));
 app.use("/uploads", express.static("uploads")); // Serve logos
 app.use("/", require("./routes/settingsRoutes.js")); // pass iosettingsRoutes);
 app.use("/api/restaurant", require("./routes/restaurantRoutes.js")); // pass iorestaurantRoutes);
+app.use('/send-bill-email', require('./routes/sendBill'));
+app.use("/api/reports", require("./routes/reportRoutes"));
+
 
 
 // Socket.IO connection listener

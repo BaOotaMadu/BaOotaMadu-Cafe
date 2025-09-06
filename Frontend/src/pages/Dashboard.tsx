@@ -229,7 +229,7 @@ const Dashboard = () => {
             setShowOrderDialog(false);
             setSelectedTableId(null);
           }}
-          tableId={selectedTableId}
+          tableNumber={selectedTableId}
         />
       )}
     </div>
