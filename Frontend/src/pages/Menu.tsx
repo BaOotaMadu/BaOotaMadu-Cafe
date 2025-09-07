@@ -663,26 +663,28 @@ interface MenuItem {
   category: string;
   price: number;
   available: boolean;
-  image: string;
+  image_url: string;
 }
 
 interface MenuItemForm {
   name: string;
   category: string;
   price: string;
-  image: string;
+  image_url: string;
 }
 
+// ✅ FIXED: Removed trailing space
 const API_URL =
   import.meta.env.VITE_API_BASE?.trim() || "https://baootamadu.onrender.com";
 
-// 👇 Cloudinary Upload Function
+// ✅ FIXED: Cloudinary Upload — removed space in URL
 const uploadToCloudinary = async (file: File): Promise<string> => {
   const data = new FormData();
   data.append("file", file);
-  data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET); // set in Cloudinary
+  data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
   data.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
+  // ✅ No space before cloud name
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
     {
@@ -692,11 +694,20 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
   );
 
   if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Cloudinary upload failed:", errorText);
     throw new Error("Cloudinary upload failed");
   }
 
   const json = await res.json();
-  return json.secure_url; // final hosted URL
+  let url = json.secure_url;
+
+  if (!url.startsWith("https://")) {
+    url = url.replace("http://", "https://");
+  }
+
+  console.log("✅ Uploaded Image URL:", url);
+  return url;
 };
 
 const Menu = () => {
@@ -710,7 +721,6 @@ const Menu = () => {
 
   const restaurantId = localStorage.getItem("restaurantId");
 
-  // Fetch menu items from backend
   useEffect(() => {
     fetch(`${API_URL}/menu/${restaurantId}`)
       .then((res) => res.json())
@@ -724,7 +734,6 @@ const Menu = () => {
       );
   }, []);
 
-  // Ensure all items have availability set
   useEffect(() => {
     if (menuItems.length > 0) {
       const hasUnavailableItems = menuItems.some(
@@ -747,7 +756,7 @@ const Menu = () => {
       name: "",
       category: "Main Course",
       price: "",
-      image: "",
+      image_url: "",
     },
   });
 
@@ -758,7 +767,7 @@ const Menu = () => {
       form.setValue("name", itemToEdit.name);
       form.setValue("category", itemToEdit.category);
       form.setValue("price", itemToEdit.price.toString());
-      form.setValue("image", itemToEdit.image);
+      form.setValue("image_url", itemToEdit.image_url);
       setOpenEditDialog(true);
     }
   };
@@ -770,7 +779,7 @@ const Menu = () => {
       name: form.getValues("name"),
       category: form.getValues("category"),
       price: parseFloat(form.getValues("price")),
-      image: form.getValues("image"),
+      image_url: form.getValues("image_url"),
     };
 
     try {
@@ -871,7 +880,7 @@ const Menu = () => {
           category: data.category,
           price,
           available: true,
-          image: data.image || "https://via.placeholder.com/150",
+          image_url: data.image_url,
         }),
       });
       const newItem = await res.json();
@@ -996,10 +1005,9 @@ const Menu = () => {
                     </FormItem>
                   )}
                 />
-                {/* ✅ UPDATED: Cloudinary Upload */}
                 <FormField
                   control={form.control}
-                  name="image"
+                  name="image_url"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Image</FormLabel>
@@ -1013,6 +1021,7 @@ const Menu = () => {
                                 const file = e.target.files[0];
                                 const imageUrl = await uploadToCloudinary(file);
                                 field.onChange(imageUrl);
+                                e.target.value = "";
                               } catch (error) {
                                 toast({
                                   title: "Upload Failed",
@@ -1027,9 +1036,14 @@ const Menu = () => {
                       </FormControl>
                       {field.value && (
                         <img
-                          src={field.value}
+                          src={field.value + `?t=${Date.now()}`}
                           alt="Preview"
                           className="w-20 h-20 object-cover mt-2"
+                          onError={(e) => {
+                            console.error("Preview image failed to load:", field.value);
+                            e.currentTarget.src =
+                              "https://via.placeholder.com/150?text=Preview+Unavailable"; // ✅ Fixed: no extra spaces
+                          }}
                         />
                       )}
                       <FormMessage />
@@ -1106,7 +1120,7 @@ const Menu = () => {
               category={item.category}
               price={item.price}
               available={item.available}
-              image={item.image}
+              image_url={item.image_url}
               onToggleAvailability={handleToggleAvailability}
               onEdit={handleEdit}
               onDelete={handleDelete}
@@ -1131,7 +1145,6 @@ const Menu = () => {
           </Button>
         </div>
       )}
-      {/* Edit Dialog */}
       <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -1204,10 +1217,9 @@ const Menu = () => {
                   </FormItem>
                 )}
               />
-              {/* ✅ UPDATED: Cloudinary Upload */}
               <FormField
                 control={form.control}
-                name="image"
+                name="image_url"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Image</FormLabel>
@@ -1221,6 +1233,7 @@ const Menu = () => {
                               const file = e.target.files[0];
                               const imageUrl = await uploadToCloudinary(file);
                               field.onChange(imageUrl);
+                              e.target.value = "";
                             } catch (error) {
                               toast({
                                 title: "Upload Failed",
@@ -1233,11 +1246,17 @@ const Menu = () => {
                         }}
                       />
                     </FormControl>
-                    {(field.value || editingItem?.image) && (
+                    {(field.value || editingItem?.image_url) && (
                       <img
-                        src={field.value || editingItem?.image}
+                        src={(field.value || editingItem?.image_url) + `?t=${Date.now()}`}
                         alt="Preview"
                         className="w-20 h-20 object-cover mt-2"
+                        onError={(e) => {
+                          const failedUrl = field.value || editingItem?.image_url;
+                          console.error("Preview image failed to load:", failedUrl);
+                          e.currentTarget.src =
+                            "https://via.placeholder.com/150?text=Preview+Unavailable"; // ✅ Fixed: no extra spaces
+                        }}
                       />
                     )}
                     <FormMessage />

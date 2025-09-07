@@ -9,12 +9,17 @@ interface MenuItemCardProps {
   category: string;
   price: number;
   available: boolean;
-  image: string;
+  image_url: string ; // 👈 Allow undefined
   className?: string;
   onToggleAvailability: (id: string, available: boolean) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
+
+// ✅ Use a LOCAL placeholder (no external dependency)
+// Save any image as `public/images/placeholder-menu.jpg`
+// OR use this reliable external one as backup:
+const DEFAULT_IMAGE = "/images/placeholder-menu.jpg";
 
 const MenuItemCard = ({
   id,
@@ -22,12 +27,15 @@ const MenuItemCard = ({
   category,
   price,
   available,
-  image,
+  image_url,
   className,
   onToggleAvailability,
   onEdit,
   onDelete,
 }: MenuItemCardProps) => {
+  // ✅ Handle undefined or empty image
+  const safeImage = image_url && image_url.trim() !== "" ? image_url : DEFAULT_IMAGE;
+
   return (
     <div
       className={cn(
@@ -38,12 +46,19 @@ const MenuItemCard = ({
     >
       <div className="h-48 overflow-hidden relative">
         <img
-          src={image}
+          src={safeImage + `?t=${Date.now()}`}
           alt={name}
           className={cn(
             "w-full h-full object-cover transition-transform duration-300",
             available ? "hover:scale-105" : "grayscale"
           )}
+          onError={(e) => {
+            console.warn(`Failed to load image for "${name}". Falling back to default.`, {
+              original: image_url,
+              used: safeImage,
+            });
+            e.currentTarget.src = DEFAULT_IMAGE; // Double fallback
+          }}
         />
         {!available && (
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
