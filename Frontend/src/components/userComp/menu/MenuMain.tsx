@@ -16,13 +16,13 @@ import {
 import Cart from "../cart/Cart"; // ✅ Use the real Cart component
 import { useCart } from "@/hooks/useCart"; // ✅ Must support addItem, removeItem
 
-// Types
+// ✅ UPDATED: Renamed "image" → "image_url" to match backend
 interface FoodItem {
   id: string;
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  image_url: string; // ✅ Changed from "image"
   description: string;
   rating: number;
   reviewCount: number;
@@ -167,7 +167,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
             name: item.name,
             price: item.price,
             originalPrice: item.originalPrice,
-            image: item.image || "/api/placeholder/300/200",
+            // ✅ FIXED: "image" → "image_url"
+            image_url: item.image_url || item.image || "/api/placeholder/300/200",
             description: item.description || "Delicious item",
             rating: item.rating || 4.5,
             reviewCount: item.reviewCount || Math.floor(Math.random() * 300),
@@ -489,8 +490,9 @@ const MenuMain: React.FC<MenuMainProps> = ({
                   {isMobile ? (
                     <div className="flex h-32">
                       <div className="relative w-32 flex-shrink-0">
+                        {/* ✅ FIXED: "item.image" → "item.image_url" */}
                         <img
-                          src={item.image}
+                          src={item.image_url}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
@@ -558,8 +560,9 @@ const MenuMain: React.FC<MenuMainProps> = ({
                   ) : (
                     <>
                       <div className="relative">
+                        {/* ✅ FIXED: "item.image" → "item.image_url" */}
                         <img
-                          src={item.image}
+                          src={item.image_url}
                           alt={item.name}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -714,8 +717,9 @@ const MenuMain: React.FC<MenuMainProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="relative">
+              {/* ✅ FIXED: "selectedItem.image" → "selectedItem.image_url" */}
               <img
-                src={selectedItem.image}
+                src={selectedItem.image_url}
                 alt={selectedItem.name}
                 className="w-full h-64 object-cover"
               />
