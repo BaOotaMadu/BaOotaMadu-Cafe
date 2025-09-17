@@ -8,7 +8,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import StatCard from "@/components/StatCard";
-import TableCard from "@/components/TableCard";
+import TableCard from "@/components/TokenCard";
 import OrderDetailsDialog from "@/components/OrderDetailsDialog";
 import { useToast } from "@/hooks/use-toast";
 
