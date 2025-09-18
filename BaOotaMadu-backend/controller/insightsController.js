@@ -1,7 +1,6 @@
 
 const Order = require("../models/orderModel");
 const mongoose = require("mongoose");
-const Table = require("../models/tableModel");
 
 const getInsights = async (req, res) => {
   try {

@@ -8,12 +8,9 @@ module.exports = function (io) {
 
   router.post("/:restaurant_id/place", orderController.placeOrder);
   router.get("/:restaurant_id", orderController.getAllOrders);
-  router.get("/:restaurant_id/table/:table_id", orderController.getTableOrders);
   router.put("/:restaurant_id/:order_id/status", orderController.updateOrderStatus);
   router.delete("/:restaurant_id/:order_id", orderController.deleteOrder);
   router.patch("/:orderId/pay", orderController.markOrderAsPaid);
-  router.patch("/pay-table/:restaurant_id/:table_id", orderController.payAllTableOrders);
-
 
   return router;
 };
