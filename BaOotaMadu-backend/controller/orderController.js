@@ -1,6 +1,17 @@
 const Order = require("../models/orderModel");
 const Activity = require("../models/activityModel");
+const TokenCounter = require("../models/TokenCounter");
+const dayjs = require("dayjs");
 const mongoose = require("mongoose");
+const googleTTS = require("google-tts-api");
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+
+// ✅ Force VLC in headless mode (Windows path, adjust if needed)
+const player = require("play-sound")({
+  player: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
+});
 
 let io;
 
@@ -23,24 +34,70 @@ const logActivity = async (message, restaurant_id, type = "info") => {
   await Activity.create(activity);
 };
 
+// 🔊 Token announcer
+async function announceToken(tokenNumber) {
+  try {
+    const text = `Token number ${tokenNumber}, please collect your order`;
+    const url = googleTTS.getAudioUrl(text, {
+      lang: "en",
+      slow: false,
+      host: "https://translate.google.com",
+    });
+
+    // Save audio file
+    const filePath = path.resolve(__dirname, `token-${tokenNumber}.mp3`);
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    fs.writeFileSync(filePath, response.data);
+
+    console.log(`✅ Saved audio for token ${tokenNumber} at ${filePath}`);
+
+    // Play silently in background (VLC flags)
+    player.play(
+      filePath,
+      { vlc: ["--intf", "dummy", "--play-and-exit"] },
+      (err) => {
+        if (err) console.error("❌ Error playing audio:", err);
+        else console.log(`🔊 Announced token ${tokenNumber}`);
+      }
+    );
+  } catch (err) {
+    console.error("❌ announceToken error:", err.message);
+  }
+}
+
+// 📌 Place new order
 const placeOrder = async (req, res) => {
   try {
-    const { restaurant_id, table_id, customer_name, order_items } = req.body;
+    const { restaurant_id, customer_name, order_items } = req.body;
 
-    if (!table_id || !order_items?.length) {
+    if (!order_items?.length) {
       return res
         .status(400)
-        .json({ message: "Table ID and order items are required." });
+        .json({ message: "At least one order item is required." });
     }
 
+    // Step 1: Find or create today's counter
+    const today = dayjs().format("YYYY-MM-DD");
+    let counter = await TokenCounter.findOne({ date: today });
+
+    if (!counter) {
+      counter = await TokenCounter.create({ date: today, lastToken: 0 });
+    }
+
+    // Step 2: Increment token
+    counter.lastToken += 1;
+    await counter.save();
+
+    // Step 3: Calculate order total
     const total_amount = order_items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
 
+    // Step 4: Create order with token
     const newOrder = await Order.create({
       restaurant_id,
-      table_id,
+      tokenNumber: counter.lastToken,
       customer_name,
       order_items,
       total_amount,
@@ -49,54 +106,61 @@ const placeOrder = async (req, res) => {
     });
 
     await logActivity(
-      `New order placed for table ${newOrder.table_id}`,
+      `New order placed with token number ${newOrder.tokenNumber}`,
       restaurant_id,
       "order"
     );
 
-    // Emit real-time order creation event
-    if (io) {
-      io.emit("newOrder", newOrder);
-    }
+    if (io) io.emit("newOrder", newOrder);
 
-    res.status(201).json({ message: "Order placed successfully", order: newOrder });
+    res
+      .status(201)
+      .json({ message: "Order placed successfully", order: newOrder });
   } catch (error) {
+    console.error("❌ placeOrder error:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
+// 📌 Fetch all orders
 const getAllOrders = async (req, res) => {
   try {
     const { restaurant_id } = req.params;
-
     if (!restaurant_id) {
       return res.status(400).json({ message: "Restaurant ID is required." });
     }
 
     const orders = await Order.find({ restaurant_id })
-      .populate("table_id", "table_number")
-      .sort({ createdAt: -1 });
-
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getTableOrders = async (req, res) => {
-  try {
-    const { table_id, restaurant_id } = req.params;
-
-    const orders = await Order.find({
-      table_id,
-      restaurant_id,
-      payment_status: "unpaid" // Filter only unpaid orders
-    }).sort({ createdAt: -1 });
+      .populate("restaurant_id", "name")
+      .sort({ created_at: -1 });
 
     if (!orders.length) {
       return res
         .status(404)
-        .json({ message: "No unpaid orders found for this table." });
+        .json({ message: "No orders found for this restaurant." });
+    }
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📌 Get active token orders
+const getTokenOrders = async (req, res) => {
+  try {
+    const { restaurant_id } = req.params;
+
+    const orders = await Order.find({
+      restaurant_id,
+      status: { $ne: "completed" },
+    }).sort({ created_at: -1 });
+
+    if (!orders.length) {
+      return res
+        .status(404)
+        .json({ message: "No active orders found for this restaurant." });
     }
 
     res.json(orders);
@@ -105,7 +169,7 @@ const getTableOrders = async (req, res) => {
   }
 };
 
-
+// 📌 Update order status
 const updateOrderStatus = async (req, res) => {
   try {
     const { order_id, restaurant_id } = req.params;
@@ -121,20 +185,20 @@ const updateOrderStatus = async (req, res) => {
       { new: true }
     );
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // 🔊 Announce only when served
+    if (status === "completed") {
+      announceToken(order.tokenNumber);
     }
 
     await logActivity(
-      `Order ${status} for table ${order.table_id}`,
+      `Order ${status} for token number ${order.tokenNumber}`,
       restaurant_id,
       "status"
     );
 
-    // Emit real-time order status update
-    if (io) {
-      io.emit("orderStatusUpdated", order);
-    }
+    if (io) io.emit("orderStatusUpdated", order);
 
     res.json({ message: "Order status updated", order });
   } catch (error) {
@@ -142,6 +206,7 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// 📌 Delete order
 const deleteOrder = async (req, res) => {
   try {
     const { order_id, restaurant_id } = req.params;
@@ -156,99 +221,72 @@ const deleteOrder = async (req, res) => {
     }
 
     await logActivity(
-      `Order deleted for table ${order.table_id}`,
+      `Order deleted for token number ${order.tokenNumber}`,
       restaurant_id,
       "delete"
     );
 
-    // Emit real-time order deletion
-    if (io) {
-      io.emit("orderDeleted", { order_id });
-    }
+    if (io) io.emit("orderDeleted", { order_id });
 
     res.json({ message: "Order deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 📌 Mark order as paid
 const markOrderAsPaid = async (req, res) => {
   const { orderId } = req.params;
-  console.log("💡 Received orderId:", orderId);
 
-  // Check if orderId is valid
   if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    console.log("❌ Invalid ObjectId");
     return res.status(400).json({ message: "Invalid order ID" });
   }
 
   try {
     const order = await Order.findById(orderId);
     if (!order) {
-      console.log("❌ Order not found");
       return res.status(404).json({ message: "Order not found" });
     }
 
-    console.log("✅ Order found:", order);
-
-    order.payment_status = 'paid'; // ✅ CORRECT
+    order.payment_status = "paid";
     await order.save();
-    console.log("✅ Order status updated to 'paid'");
-
-    if (order.id && order.restaurant_id) {
-      console.log("ℹ️ Updating associated table:", order.table_id);
-      const result = await Table.findOneAndUpdate(
-        {
-          number: order.table_id,
-          restaurant_id: order.restaurant_id,
-        },
-        { status: "available" }
-      );
-      console.log("✅ Table updated:", result);
-    } else {
-      console.log("⚠️ Skipping table update: missing table_number or restaurant_id");
-    }
 
     return res.status(200).json({ message: "Order marked as paid" });
   } catch (err) {
     console.error("❌ Backend error:", err.message);
-    console.error(err.stack);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-// PATCH /orders/pay-table/:restaurant_id/:table_id
-const payAllTableOrders = async (req, res) => {
+
+// 📌 Mark order as completed
+const markOrderAsCompleted = async (req, res) => {
+  const { restaurantId, tokenNumber } = req.params;
+
   try {
-    const { restaurant_id, table_id } = req.params;
-
-    const result = await Order.updateMany(
-      {
-        restaurant_id,
-        table_id,
-        payment_status: "unpaid"
-      },
-      {
-        $set: { payment_status: "paid" }
-      }
-    );
-
-    res.json({
-      message: "All unpaid orders for this table marked as paid.",
-      updated: result.modifiedCount
+    const order = await Order.findOne({
+      restaurant_id: restaurantId,
+      tokenNumber: tokenNumber,
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    order.status = "completed";
+    await order.save();
+
+    return res.status(200).json({ message: "Order marked as completed" });
+  } catch (err) {
+    console.error("❌ Backend error:", err.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 module.exports = {
   setIO,
   placeOrder,
   getAllOrders,
-  getTableOrders,
+  getTokenOrders,
   updateOrderStatus,
   deleteOrder,
   markOrderAsPaid,
-  payAllTableOrders
+  markOrderAsCompleted,
 };

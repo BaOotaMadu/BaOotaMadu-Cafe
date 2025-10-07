@@ -8,9 +8,16 @@ module.exports = function (io) {
 
   router.post("/:restaurant_id/place", orderController.placeOrder);
   router.get("/:restaurant_id", orderController.getAllOrders);
-  router.put("/:restaurant_id/:order_id/status", orderController.updateOrderStatus);
+  router.put(
+    "/:restaurant_id/:order_id/status",
+    orderController.updateOrderStatus
+  );
   router.delete("/:restaurant_id/:order_id", orderController.deleteOrder);
   router.patch("/:orderId/pay", orderController.markOrderAsPaid);
+  router.patch(
+    "/:restaurantId/:tokenNumber/complete",
+    orderController.markOrderAsCompleted
+  );
 
   return router;
 };

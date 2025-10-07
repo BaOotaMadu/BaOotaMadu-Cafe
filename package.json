@@ -3,6 +3,9 @@
     "@google/model-viewer": "^4.1.0",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
+    "dayjs": "^1.11.18",
+    "google-tts-api": "^2.0.2",
+    "play-sound": "^1.1.6",
     "react-hot-toast": "^2.5.2",
     "socket.io-client": "^4.8.1"
   }

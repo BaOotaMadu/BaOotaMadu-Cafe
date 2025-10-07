@@ -1,81 +1,66 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import TokenCard from '../components/TokenCard';
-import { Clock, CheckCircle2, Coffee } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import TokenCard from "../components/TokenCard";
+import { Clock, CheckCircle2, Coffee } from "lucide-react";
 
 interface Order {
   tokenNumber: number;
   userName: string;
   orderItems: string[];
-  status: 'active' | 'done';
+  status: "active" | "done";
   createdAt: string;
 }
+const restaurantId = "68dbf720876cfd9ab51b9f6b"; // Replace with actual restaurant ID
 
 const Tokens: React.FC = () => {
-  // Sample data - replace with actual data from your backend
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      tokenNumber: 12,
-      userName: "Rahul",
-      orderItems: ["Cappuccino", "Sandwich"],
-      status: "active",
-      createdAt: "2025-09-12T09:20:00Z"
-    },
-    {
-      tokenNumber: 15,
-      userName: "Priya",
-      orderItems: ["Latte", "Croissant", "Muffin"],
-      status: "active",
-      createdAt: "2025-09-12T10:15:00Z"
-    },
-    {
-      tokenNumber: 13,
-      userName: "Arjun",
-      orderItems: ["Espresso", "Cookie"],
-      status: "active",
-      createdAt: "2025-09-12T09:45:00Z"
-    },
-    {
-      tokenNumber: 8,
-      userName: "Sneha",
-      orderItems: ["Latte", "Croissant"],
-      status: "done",
-      createdAt: "2025-09-12T08:30:00Z"
-    },
-    {
-      tokenNumber: 9,
-      userName: "Vikram",
-      orderItems: ["Americano", "Bagel"],
-      status: "done",
-      createdAt: "2025-09-12T08:45:00Z"
-    },
-    {
-      tokenNumber: 10,
-      userName: "Maya",
-      orderItems: ["Mocha", "Danish"],
-      status: "done",
-      createdAt: "2025-09-12T09:00:00Z"
-    },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3001/orders/${restaurantId}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        const data = await response.json();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleMarkAsDone = (tokenNumber: number) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.tokenNumber === tokenNumber
-          ? { ...order, status: 'done' as const }
-          : order
-      )
-    );
+    fetchOrders();
+  }, []);
+  const handleMarkAsDone = async (tokenNumber: number) => {
+    try {
+      await fetch(`/orders/${restaurantId}/${tokenNumber}/complete`, {
+        method: "POST",
+      });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.tokenNumber === tokenNumber
+            ? { ...order, status: "done" as const }
+            : order
+        )
+      );
+    } catch (error) {
+      console.error("Failed to mark order as done:", error);
+    }
   };
 
-  const activeOrders = orders.filter(order => order.status === 'active');
-  const todayOrders = orders.filter(order => {
+  const activeOrders = orders.filter((order) => order.status === "active");
+  const todayOrders = orders.filter((order) => {
     const orderDate = new Date(order.createdAt);
     const today = new Date();
     return (
-      order.status === 'done' &&
+      order.status === "done" &&
       orderDate.toDateString() === today.toDateString()
     );
   });
@@ -95,8 +80,12 @@ const Tokens: React.FC = () => {
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-orange" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Orders</p>
-                <p className="text-2xl font-bold text-navy">{activeOrders.length}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Active Orders
+                </p>
+                <p className="text-2xl font-bold text-navy">
+                  {activeOrders.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -106,8 +95,12 @@ const Tokens: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Completed Today</p>
-                <p className="text-2xl font-bold text-navy">{todayOrders.length}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Completed Today
+                </p>
+                <p className="text-2xl font-bold text-navy">
+                  {todayOrders.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -117,7 +110,9 @@ const Tokens: React.FC = () => {
             <div className="flex items-center gap-2">
               <Coffee className="w-5 h-5 text-navy" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Orders
+                </p>
                 <p className="text-2xl font-bold text-navy">{orders.length}</p>
               </div>
             </div>
@@ -128,26 +123,32 @@ const Tokens: React.FC = () => {
       {/* Main Content - Tabs */}
       <Tabs defaultValue="active" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger 
-            value="active" 
+          <TabsTrigger
+            value="active"
             className="data-[state=active]:bg-orange data-[state=active]:text-white"
           >
             <Clock className="w-4 h-4 mr-2" />
             Active Orders
             {activeOrders.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-white/20 text-white">
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-white/20 text-white"
+              >
                 {activeOrders.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="completed"
             className="data-[state=active]:bg-navy data-[state=active]:text-white"
           >
             <CheckCircle2 className="w-4 h-4 mr-2" />
             Today's Orders
             {todayOrders.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-white/20 text-white">
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-white/20 text-white"
+              >
                 {todayOrders.length}
               </Badge>
             )}
@@ -161,7 +162,10 @@ const Tokens: React.FC = () => {
               <CardTitle className="flex items-center gap-2 text-navy">
                 <Clock className="w-5 h-5 text-orange" />
                 Active Orders
-                <Badge variant="outline" className="bg-orange/10 text-orange border-orange/20">
+                <Badge
+                  variant="outline"
+                  className="bg-orange/10 text-orange border-orange/20"
+                >
                   {activeOrders.length} pending
                 </Badge>
               </CardTitle>
@@ -202,7 +206,10 @@ const Tokens: React.FC = () => {
               <CardTitle className="flex items-center gap-2 text-navy">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
                 Today's Completed Orders
-                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-100 text-green-700 border-green-200"
+                >
                   {todayOrders.length} completed
                 </Badge>
               </CardTitle>
@@ -221,7 +228,11 @@ const Tokens: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {todayOrders
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .sort(
+                      (a, b) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                    )
                     .map((order) => (
                       <TokenCard
                         key={order.tokenNumber}

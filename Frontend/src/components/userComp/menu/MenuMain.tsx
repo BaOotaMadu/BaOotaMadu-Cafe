@@ -41,10 +41,12 @@ interface FoodCategories {
 
 interface MenuMainProps {
   searchTerm?: string;
+  restaurantId?: string;
 }
 
 const MenuMain: React.FC<MenuMainProps> = ({
   searchTerm: externalSearchTerm = "",
+  restaurantId: propRestaurantId = "",
 }) => {
   const [foodItems, setFoodItems] = useState<FoodCategories>({});
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -168,7 +170,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
             price: item.price,
             originalPrice: item.originalPrice,
             // ✅ FIXED: "image" → "image_url"
-            image_url: item.image_url || item.image || "/api/placeholder/300/200",
+            image_url:
+              item.image_url || item.image || "/api/placeholder/300/200",
             description: item.description || "Delicious item",
             rating: item.rating || 4.5,
             reviewCount: item.reviewCount || Math.floor(Math.random() * 300),
@@ -253,22 +256,26 @@ const MenuMain: React.FC<MenuMainProps> = ({
     setIsModalOpen(false);
   };
 
-  const handleQuantityChange = (item: FoodItem, delta: number, e?: React.MouseEvent) => {
-  e?.stopPropagation();
+  const handleQuantityChange = (
+    item: FoodItem,
+    delta: number,
+    e?: React.MouseEvent
+  ) => {
+    e?.stopPropagation();
 
-  const currentQty = quantities[item.id] || 0;
-  const newQty = Math.max(0, currentQty + delta);
+    const currentQty = quantities[item.id] || 0;
+    const newQty = Math.max(0, currentQty + delta);
 
-  // Only update local UI immediately
-  setQuantities((prev) => ({ ...prev, [item.id]: newQty }));
+    // Only update local UI immediately
+    setQuantities((prev) => ({ ...prev, [item.id]: newQty }));
 
-  // Update cart: add or remove one unit
-  if (delta === 1) {
-    addItem({ ...item, quantity: 1 }); // Add one to cart
-  } else if (delta === -1 && currentQty > 0) {
-    removeItem(item.id); // Remove one from cart
-  }
-};
+    // Update cart: add or remove one unit
+    if (delta === 1) {
+      addItem({ ...item, quantity: 1 }); // Add one to cart
+    } else if (delta === -1 && currentQty > 0) {
+      removeItem(item.id); // Remove one from cart
+    }
+  };
 
   // Stars UI
   const renderStars = (rating: number) => {
@@ -531,7 +538,8 @@ const MenuMain: React.FC<MenuMainProps> = ({
                             </div>
                             {item.originalPrice && (
                               <span className="text-xs text-orange-600 font-semibold bg-orange-50 px-1 rounded">
-                                ₹{(item.originalPrice - item.price).toFixed(0)} OFF
+                                ₹{(item.originalPrice - item.price).toFixed(0)}{" "}
+                                OFF
                               </span>
                             )}
                           </div>
@@ -640,8 +648,13 @@ const MenuMain: React.FC<MenuMainProps> = ({
 
             {filteredItems().length === 0 && (
               <div className="text-center py-12">
-                <ShoppingCart size={64} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+                <ShoppingCart
+                  size={64}
+                  className="mx-auto text-gray-400 mb-4"
+                />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No items found
+                </h3>
                 <p className="text-gray-600">
                   {searchTerm
                     ? `No items matching "${searchTerm}" found.`

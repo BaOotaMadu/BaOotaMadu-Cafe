@@ -12,7 +12,6 @@ import { useSearchParams } from "react-router-dom";
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
-  tableNumber: string;
 }
 
 interface CartItemProps {
@@ -104,11 +103,10 @@ const CartItemComponent: React.FC<CartItemProps> = ({ item }) => {
   );
 };
 
-const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
+const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
   const { cartItems, clearCart, cartTotal } = useCart();
   const { placeOrder } = useOrder();
   const urlParams = new URLSearchParams(window.location.search);
-  const paramTableId = urlParams.get("table");
   const restaurantId = urlParams.get("restaurant");
   //const API_URL = "http://localhost:3001";
   const API_URL =
@@ -126,14 +124,16 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
 
       const orderData = {
         restaurant_id: restaurantId,
-        //table_id: tableNumber, // Make sure tableNumber is set correctly!
-        table_id: paramTableId, // Use paramTableId if available
+        tokenNumber: Math.floor(1000 + Math.random() * 9000), // Random 4-digit token number
         customer_name: customerName,
         order_items: cartItems.map((item) => ({
           name: item.name,
           price: item.price,
           quantity: item.quantity,
         })),
+        total_amount: cartTotal,
+        status: "pending",
+        payment_status: "unpaid",
       };
 
       console.log("Order payload", orderData);
@@ -197,9 +197,6 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, tableNumber }) => {
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <ShoppingBag size={18} /> Your Order
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Table {tableNumber}
-                </p>
               </div>
               <Button
                 variant="ghost"
