@@ -3,29 +3,34 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Download, ArrowLeft, Loader2, Printer } from 'lucide-react';
-import { Order } from '@/store/slices/tableSlice';
-import { useState, useEffect } from 'react';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Download, ArrowLeft, Loader2, Printer } from "lucide-react";
+import { Order } from "@/store/slices/tableSlice";
+import { useState, useEffect } from "react";
 
 interface BillComponentProps {
   order: Order;
-  tableNumber: number;
+  tokenNumber: number;
   onClose: () => void;
   onPrint: () => void;
 }
 
-const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentProps) => {
+const BillComponent = ({
+  order,
+  tokenNumber,
+  onClose,
+  onPrint,
+}: BillComponentProps) => {
   const [sending, setSending] = useState(false);
 
   // Test if component is rendering
   useEffect(() => {
     console.log("🚀 BillComponent mounted and rendered!");
     console.log("Order data:", order);
-    console.log("Table number:", tableNumber);
-  }, [order, tableNumber]);
+    console.log("Token number:", tokenNumber);
+  }, [order, tokenNumber]);
 
   // Simple test function
   const testClick = () => {
@@ -36,11 +41,11 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
   const handlePrintAndEmail = () => {
     console.log("🎯 HandlePrintAndEmail called");
     console.log("Order:", order);
-    console.log("Table:", tableNumber);
-    
+    console.log("Token:", tokenNumber);
+
     // Simple alert first to test if function is called
-    alert(`Printing bill for Table ${tableNumber}`);
-    
+    alert(`Printing bill for Token ${tokenNumber}`);
+
     // Try to print
     try {
       console.log("🖨️ Trying to print...");
@@ -49,7 +54,7 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
     } catch (error) {
       console.error("❌ Print error:", error);
     }
-    
+
     // Try to send email after a delay
     setTimeout(() => {
       sendTestEmail();
@@ -59,24 +64,24 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
   const sendTestEmail = () => {
     console.log("📧 Trying to send test email...");
     setSending(true);
-    
+
     // @ts-ignore
-    if (typeof Email === 'undefined') {
+    if (typeof Email === "undefined") {
       console.error("❌ SMTP.js not loaded");
       alert("❌ Email service not available");
       setSending(false);
       return;
     }
-    
+
     // @ts-ignore
     Email.send({
       Host: "smtp.gmail.com",
       Username: "jayanthdn6073@gmail.com",
       Password: "koqcuqdzaofvsmjl",
-      To: 'jayanthoffical18@gmail.com',
+      To: "jayanthoffical18@gmail.com",
       From: "jayanthdn6073@gmail.com",
       Subject: "Test Email",
-      Body: `<h2>Test from Table ${tableNumber}</h2><p>Order ID: ${order.id}</p>`
+      Body: `<h2>Test from Table ${tokenNumber}</h2><p>Order ID: ${order.id}</p>`,
     }).then(
       (message: any) => {
         console.log("✅ Email success:", message);
@@ -104,7 +109,7 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            Bill - Table {tableNumber}
+            Bill - Token {tokenNumber}
           </DialogTitle>
         </DialogHeader>
 
@@ -129,7 +134,7 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Table:</span>
-              <span>{tableNumber}</span>
+              <span>{tokenNumber}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Order ID:</span>
@@ -201,8 +206,12 @@ const BillComponent = ({ order, tableNumber, onClose, onPrint }: BillComponentPr
               onClick={handlePrintAndEmail}
               disabled={sending}
             >
-              {sending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              {sending ? 'Sending...' : 'Print & Email Bill'}
+              {sending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              {sending ? "Sending..." : "Print & Email Bill"}
             </Button>
           </div>
         </div>

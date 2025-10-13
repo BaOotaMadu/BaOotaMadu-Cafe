@@ -7,10 +7,11 @@ const googleTTS = require("google-tts-api");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 
-// ✅ Force VLC in headless mode (Windows path, adjust if needed)
+// ✅ Windows VLC path (escaped) and args for headless mode
 const player = require("play-sound")({
-  player: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
+  player: "C:/Program Files/VideoLAN/VLC/vlc.exe",
 });
 
 let io;
@@ -19,6 +20,7 @@ const setIO = (ioInstance) => {
   io = ioInstance;
 };
 
+// Log activity and emit to frontend
 const logActivity = async (message, restaurant_id, type = "info") => {
   const activity = {
     message,
@@ -27,44 +29,92 @@ const logActivity = async (message, restaurant_id, type = "info") => {
     time: new Date(),
   };
 
-  if (io) {
-    io.emit("updateRecent", activity); // Broadcast activity update
-  }
-
+  if (io) io.emit("updateRecent", activity);
   await Activity.create(activity);
 };
 
-// 🔊 Token announcer
+// 🔁 Fetch TTS audio with retry
+async function fetchAudioWithRetry(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await axios.get(url, { responseType: "arraybuffer" });
+      return response.data;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      console.log(`Retrying TTS fetch... attempt ${i + 1}`);
+      await new Promise((r) => setTimeout(r, 500)); // wait 500ms
+    }
+  }
+}
+
+function playAudioAndDelete(filePath) {
+  player.play(
+    filePath,
+    {
+      args: [
+        "--intf",
+        "dummy", // headless
+        "--play-and-exit",
+        "--no-video", // prevent any video window
+      ],
+    },
+    (err) => {
+      if (err) {
+        console.error("❌ Error playing audio:", err);
+      } else {
+        console.log("🔊 Audio played successfully, deleting file...");
+        fs.unlink(filePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.warn("⚠️ Failed to delete audio file:", unlinkErr);
+          } else {
+            console.log("✅ Audio file deleted");
+          }
+        });
+      }
+    }
+  );
+}
+//bvackground audio play
+function playAudioSilently(filePath) {
+  player.play(
+    filePath,
+    {
+      // VLC arguments for headless mode
+      args: [
+        "--intf",
+        "dummy", // dummy interface, no GUI
+        "--play-and-exit", // exit after playback
+        "--no-video", // don't show video
+        "--quiet", // suppress console messages
+        "--no-qt-name-in-title", // prevent Qt window title
+        "--no-embedded-video", // prevent any embedded window
+        "--no-snapshot-preview", // don't preview video frames
+        "--no-media-library", // disable media library
+        "--no-skins",
+      ],
+    },
+    (err) => {
+      if (err) console.error("❌ Error playing audio:", err);
+    }
+  );
+}
 async function announceToken(tokenNumber) {
   try {
     const text = `Token number ${tokenNumber}, please collect your order`;
-    const url = googleTTS.getAudioUrl(text, {
-      lang: "en",
-      slow: false,
-      host: "https://translate.google.com",
-    });
+    const url = googleTTS.getAudioUrl(text, { lang: "en", slow: false });
 
-    // Save audio file
     const filePath = path.resolve(__dirname, `token-${tokenNumber}.mp3`);
-    const response = await axios.get(url, { responseType: "arraybuffer" });
-    fs.writeFileSync(filePath, response.data);
 
+    const audioData = await fetchAudioWithRetry(url);
+    fs.writeFileSync(filePath, audioData);
     console.log(`✅ Saved audio for token ${tokenNumber} at ${filePath}`);
 
-    // Play silently in background (VLC flags)
-    player.play(
-      filePath,
-      { vlc: ["--intf", "dummy", "--play-and-exit"] },
-      (err) => {
-        if (err) console.error("❌ Error playing audio:", err);
-        else console.log(`🔊 Announced token ${tokenNumber}`);
-      }
-    );
+    // Play via VLC and delete after playback
+    playAudioAndDelete(filePath);
   } catch (err) {
     console.error("❌ announceToken error:", err.message);
   }
 }
-
 // 📌 Place new order
 const placeOrder = async (req, res) => {
   try {
@@ -88,15 +138,16 @@ const placeOrder = async (req, res) => {
     counter.lastToken += 1;
     await counter.save();
 
-    // Step 3: Calculate order total
+    // Step 3: Calculate total
     const total_amount = order_items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) =>
+        sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
       0
     );
 
-    // Step 4: Create order with token
+    // Step 4: Create order
     const newOrder = await Order.create({
-      restaurant_id,
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
       tokenNumber: counter.lastToken,
       customer_name,
       order_items,
@@ -125,8 +176,8 @@ const placeOrder = async (req, res) => {
 // 📌 Fetch all orders
 const getAllOrders = async (req, res) => {
   try {
-    //const { restaurant_id } = req.params;
-    const restaurant_id = "68dbf720876cfd9ab51b9f6b";
+    const { restaurant_id } = req.params;
+
     if (!restaurant_id) {
       return res.status(400).json({ message: "Restaurant ID is required." });
     }
@@ -135,7 +186,7 @@ const getAllOrders = async (req, res) => {
       restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
     })
       .populate("restaurant_id", "name")
-      .sort({ created_at: -1 });
+      .sort({ createdAt: -1 });
 
     if (!orders.length) {
       return res
@@ -145,7 +196,7 @@ const getAllOrders = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("❌ getAllOrders error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -155,10 +206,14 @@ const getTokenOrders = async (req, res) => {
   try {
     const { restaurant_id } = req.params;
 
+    if (!restaurant_id) {
+      return res.status(400).json({ message: "Restaurant ID is required." });
+    }
+
     const orders = await Order.find({
-      restaurant_id,
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
       status: { $ne: "completed" },
-    }).sort({ created_at: -1 });
+    }).sort({ createdAt: -1 });
 
     if (!orders.length) {
       return res
@@ -168,6 +223,7 @@ const getTokenOrders = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
+    console.error("❌ getTokenOrders error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -183,14 +239,17 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findOneAndUpdate(
-      { _id: order_id, restaurant_id },
+      {
+        _id: order_id,
+        restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
+      },
       { status },
       { new: true }
     );
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // 🔊 Announce only when served
+    // 🔊 Announce only when completed
     if (status === "completed") {
       announceToken(order.tokenNumber);
     }
@@ -205,6 +264,7 @@ const updateOrderStatus = async (req, res) => {
 
     res.json({ message: "Order status updated", order });
   } catch (error) {
+    console.error("❌ updateOrderStatus error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -216,7 +276,7 @@ const deleteOrder = async (req, res) => {
 
     const order = await Order.findOneAndDelete({
       _id: order_id,
-      restaurant_id,
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
     });
 
     if (!order) {
@@ -233,42 +293,41 @@ const deleteOrder = async (req, res) => {
 
     res.json({ message: "Order deleted successfully" });
   } catch (error) {
+    console.error("❌ deleteOrder error:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
 // 📌 Mark order as paid
 const markOrderAsPaid = async (req, res) => {
-  const { orderId } = req.params;
+  const { order_id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+  if (!mongoose.Types.ObjectId.isValid(order_id)) {
     return res.status(400).json({ message: "Invalid order ID" });
   }
 
   try {
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    const order = await Order.findById(order_id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
     order.payment_status = "paid";
     await order.save();
 
-    return res.status(200).json({ message: "Order marked as paid" });
+    return res.status(200).json({ message: "Order marked as paid", order });
   } catch (err) {
-    console.error("❌ Backend error:", err.message);
+    console.error("❌ markOrderAsPaid error:", err.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// 📌 Mark order as completed
+// 📌 Mark order as completed (by restaurant ID & token number)
 const markOrderAsCompleted = async (req, res) => {
-  const { restaurantId, tokenNumber } = req.params;
+  const { restaurant_id, tokenNumber } = req.params;
 
   try {
     const order = await Order.findOne({
-      restaurant_id: restaurantId,
-      tokenNumber: tokenNumber,
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
+      tokenNumber: Number(tokenNumber),
     });
 
     if (!order) return res.status(404).json({ message: "Order not found" });
@@ -276,9 +335,14 @@ const markOrderAsCompleted = async (req, res) => {
     order.status = "completed";
     await order.save();
 
-    return res.status(200).json({ message: "Order marked as completed" });
+    // Announce token safely
+    announceToken(order.tokenNumber);
+
+    return res
+      .status(200)
+      .json({ message: "Order marked as completed", order });
   } catch (err) {
-    console.error("❌ Backend error:", err.message);
+    console.error("❌ markOrderAsCompleted error:", err.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
