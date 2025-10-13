@@ -18,13 +18,15 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
       phone,
       name: req.body.name || "",
-        manager: req.body.manager || "",
-        slogan: req.body.slogan || "",
-        address: req.body.address || "",
-        plan: req.body.plan || "Basic",
+      manager: req.body.manager || "",
+      slogan: req.body.slogan || "",
+      address: req.body.address || "",
+      plan: req.body.plan || "Basic",
     });
 
-    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     res.status(201).json({
       token,
@@ -42,7 +44,8 @@ exports.login = async (req, res) => {
 
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      console.log("Restaurant not found for:", email);
+      return res.status(400).json({ message: "Invalid credentials rest" });
     }
 
     const isMatch = await bcrypt.compare(password, restaurant.password);
@@ -50,7 +53,9 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     res.json({
       token,

@@ -125,12 +125,15 @@ const placeOrder = async (req, res) => {
 // 📌 Fetch all orders
 const getAllOrders = async (req, res) => {
   try {
-    const { restaurant_id } = req.params;
+    //const { restaurant_id } = req.params;
+    const restaurant_id = "68dbf720876cfd9ab51b9f6b";
     if (!restaurant_id) {
       return res.status(400).json({ message: "Restaurant ID is required." });
     }
 
-    const orders = await Order.find({ restaurant_id })
+    const orders = await Order.find({
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
+    })
       .populate("restaurant_id", "name")
       .sort({ created_at: -1 });
 

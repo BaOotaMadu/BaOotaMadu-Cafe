@@ -30,9 +30,9 @@ const Dashboard = () => {
   const [totalOrdersToday, setTotalOrdersToday] = useState(0);
   const [totalSalesToday, setTotalSalesToday] = useState(0);
   const [pendingOrders, setPendingOrders] = useState(0);
-  const [activeOrders, setActiveOrders] = useState(0);
-  const [totalTables, setTotalTables] = useState(0);
-  const [activeTables, setActiveTables] = useState(0);
+  const [activeTokens, setActiveTokens] = useState(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [orders, setOrders] = useState<any[]>([]);
   const [recentMessages, setRecentMessages] = useState<
     { message: string; time: string }[]
   >([]);
@@ -44,6 +44,7 @@ const Dashboard = () => {
   //const restaurantId = "681f3a4888df8faae5bbd380"; // Replace with useParams() if dynamic
 
   const restaurantId = localStorage.getItem("restaurantId") || "";
+  //const restaurantId = "68e4b3dac9fbde6f9ae51777";
   console.log("Restaurant ID:", restaurantId);
   // Fetch Dashboard Stats
   useEffect(() => {
@@ -53,8 +54,6 @@ const Dashboard = () => {
         setTotalOrdersToday(data.totalOrdersToday || 0);
         setTotalSalesToday(data.totalSalesToday || 0);
         setPendingOrders(data.pendingOrdersToday || 0);
-        setActiveTables(data.activeTables || 0);
-        setTotalTables(data.totalTables || 0);
         console.log("Dashboard stats:", data);
       })
       .catch((err) => console.error("API Error:", err));
@@ -70,24 +69,26 @@ const Dashboard = () => {
       .catch((err) => console.error("Failed to fetch activities", err));
   }, []);
 
-  // Fetch Active Tables
+  // Fetch Active Tokens
   useEffect(() => {
-    fetch(`${API_URL}/tables/`)
-      .then((res) => res.json())
-      .then((data) => {
-        const activeTablesOnly = data
-          .filter((t: any) => t.status === "occupied" || t.status === "service")
-          .map((t: any) => ({
-            id: t._id,
-            number: t.table_number,
-            status: t.status,
-            items: t.currentItemsCount || 0,
-            time: getElapsedTime(t.created_at),
-          }));
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/orders/${restaurantId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        const data = await response.json();
+        console.log("Fetched orders:", data);
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        setActiveTableList(activeTablesOnly);
-      })
-      .catch((err) => console.error("Failed to fetch tables", err));
+    fetchOrders();
   }, []);
 
   // Listen for activity socket updates
@@ -143,11 +144,6 @@ const Dashboard = () => {
           trend={{ value: "8%", positive: true }}
         />
         <StatCard
-          title="Active Tables"
-          value={`${activeTables}/${totalTables}`}
-          icon={<TableProperties className="text-navy" />}
-        />
-        <StatCard
           title="Pending Orders"
           value={String(pendingOrders)}
           icon={<Clock className="text-navy" />}
@@ -186,7 +182,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Active Tables</h2>
           </div>
@@ -194,8 +190,6 @@ const Dashboard = () => {
             {activeTableList.map((table) => (
               <TableCard
                 key={table.id}
-                tableId={table.id}
-                tableNumber={table.number}
                 status={table.status}
                 orderItems={table.items}
                 timeElapsed={table.time}
@@ -204,7 +198,7 @@ const Dashboard = () => {
               />
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div>
