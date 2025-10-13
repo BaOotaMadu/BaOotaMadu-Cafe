@@ -9,16 +9,14 @@ interface MenuItemCardProps {
   category: string;
   price: number;
   available: boolean;
-  image_url: string ; // 👈 Allow undefined
+  image_url: string;
   className?: string;
   onToggleAvailability: (id: string, available: boolean) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-// ✅ Use a LOCAL placeholder (no external dependency)
-// Save any image as `public/images/placeholder-menu.jpg`
-// OR use this reliable external one as backup:
+// Use a reliable local or public fallback image
 const DEFAULT_IMAGE = "/images/placeholder-menu.jpg";
 
 const MenuItemCard = ({
@@ -33,13 +31,19 @@ const MenuItemCard = ({
   onEdit,
   onDelete,
 }: MenuItemCardProps) => {
-  // ✅ Handle undefined or empty image
-  const safeImage = image_url && image_url.trim() !== "" ? image_url : DEFAULT_IMAGE;
+  // Handle empty, undefined, or invalid image URLs
+  const safeImage = !image_url || 
+                    image_url.trim() === "" || 
+                    image_url === "undefined" ||
+                    image_url.startsWith("http://undefined") ||
+                    image_url.startsWith("https://undefined")
+    ? DEFAULT_IMAGE
+    : image_url;
 
   return (
     <div
       className={cn(
-        "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 animated-card transition-all duration-300",
+        "bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transition-all duration-300",
         !available && "opacity-50 bg-gray-50 border-gray-200",
         className
       )}
@@ -57,7 +61,7 @@ const MenuItemCard = ({
               original: image_url,
               used: safeImage,
             });
-            e.currentTarget.src = DEFAULT_IMAGE; // Double fallback
+            e.currentTarget.src = DEFAULT_IMAGE;
           }}
         />
         {!available && (
@@ -80,23 +84,25 @@ const MenuItemCard = ({
             >
               {name}
             </h3>
-            <span
-              className={`text-xs px-2 py-1 rounded-full ${
-                available
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {available ? "Available" : "Unavailable"}
-            </span>
-            <span
-              className={cn(
-                "text-xs uppercase",
-                available ? "text-gray-500" : "text-gray-400"
-              )}
-            >
-              {category}
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  available
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {available ? "Available" : "Unavailable"}
+              </span>
+              <span
+                className={cn(
+                  "text-xs uppercase",
+                  available ? "text-gray-500" : "text-gray-400"
+                )}
+              >
+                {category}
+              </span>
+            </div>
           </div>
           <span
             className={cn(

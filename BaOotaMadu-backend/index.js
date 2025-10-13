@@ -5,6 +5,8 @@ const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const connectdb = require("./config/dbConnection.js");
+const paymentRoute = require("./routes/paymentRoutes"); // adjust path if needed
+
 
 // Cloudinary + Multer
 const { v2: cloudinary } = require("cloudinary");
@@ -40,6 +42,7 @@ const port = process.env.PORT || 3001;
 // Routes
 app.use(express.json());
 app.use(cors());
+app.use("/api/payment", paymentRoute);
 
 app.use("/send-bill-email", require("./routes/sendBill"));
 app.use("/api/reports", require("./routes/reportRoutes"));
