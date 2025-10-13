@@ -390,7 +390,6 @@
 //   <CreditCard className="mr-2 h-4 w-4" /> Place Order
 // </Button>
 
-
 //                   <p className="text-center text-xs text-muted-foreground mt-3">
 //                     By placing your order, you agree to our Terms of Service and
 //                     Privacy Policy
@@ -406,7 +405,6 @@
 // };
 
 // export default Cart;
-
 
 import React, { useState } from "react";
 import { X, ShoppingBag, Trash2, CreditCard } from "lucide-react";
@@ -513,8 +511,10 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
+  //const restaurantId = urlParams.get("restaurant");
   const restaurantId = urlParams.get("restaurant");
-  const API_URL = import.meta.env.VITE_API_BASE?.trim() || "https://baootamadu.onrender.com";
+  const API_URL =
+    import.meta.env.VITE_API_BASE?.trim() || "https://baootamadu.onrender.com";
   const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
   // Total with tax/charges (currently 0%)
@@ -530,19 +530,22 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
 
     try {
       // 1️⃣ Create Razorpay order on backend
-      const { data: orderData } = await axios.post(`${API_URL}/api/payment/create-order`, {
-        amount: Math.round(totalWithTax * 100), // in paise
-        currency: "INR",
-        receipt: `order_${Date.now()}`,
-        notes: {
-          restaurant_id: restaurantId,
-          items: cartItems.map((item) => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-          })),
-        },
-      });
+      const { data: orderData } = await axios.post(
+        `${API_URL}/api/payment/create-order`,
+        {
+          amount: Math.round(totalWithTax * 100), // in paise
+          currency: "INR",
+          receipt: `order_${Date.now()}`,
+          notes: {
+            restaurant_id: restaurantId,
+            items: cartItems.map((item) => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          },
+        }
+      );
 
       // 2️⃣ Load Razorpay if not already loaded
       if (!window.Razorpay) {
@@ -566,22 +569,51 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
         name: "BaootaMadu",
         description: "Order Payment",
         order_id: orderData.id,
+
         handler: async (response: any) => {
           try {
             // 4️⃣ Verify payment
-            const verifyRes = await axios.post(`${API_URL}/api/payment/verify-payment`, {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              restaurantId,
-              totalAmount: totalWithTax,
-            });
+            const verifyRes = await axios.post(
+              `${API_URL}/api/payment/verify-payment`,
+              {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                restaurantId,
+                totalAmount: totalWithTax,
+              }
+            );
 
             if (verifyRes.data.success) {
-              alert("✅ Payment successful! Order confirmed.");
-              window.dispatchEvent(new Event("orderPlaced"));
-              clearCart();
-              onClose();
+              // ✅ Payment successful, now place the order
+              try {
+                const orderRes = await axios.post(
+                  `${API_URL}/orders/${restaurantId}/place`,
+                  {
+                    restaurant_id: restaurantId,
+                    customer_name: "Customer", // Replace with actual customer name if available
+                    order_items: cartItems.map((item) => ({
+                      name: item.name,
+                      price: item.price,
+                      quantity: item.quantity,
+                    })),
+                  }
+                );
+
+                if (orderRes.status === 201) {
+                  alert(
+                    `✅ Payment and order successful! Token: ${orderRes.data.order.tokenNumber}`
+                  );
+                  window.dispatchEvent(new Event("orderPlaced"));
+                  clearCart();
+                  onClose();
+                } else {
+                  alert("❌ Payment succeeded but order placement failed.");
+                }
+              } catch (orderErr) {
+                console.error("Order placement error:", orderErr);
+                alert("❌ Failed to place order after payment.");
+              }
             } else {
               alert("❌ Payment verification failed.");
             }
@@ -611,7 +643,10 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
       rzp.open();
     } catch (error: any) {
       console.error("Payment initiation failed:", error);
-      alert(error.response?.data?.message || "Failed to start payment. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Failed to start payment. Please try again."
+      );
       setIsProcessing(false);
     }
   };
@@ -641,7 +676,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <ShoppingBag size={18} /> Your Order
               </h2>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="rounded-full"
+              >
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -656,7 +696,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                       className="h-64 flex flex-col items-center justify-center text-center p-4"
                     >
                       <div className="text-6xl mb-4">🍽️</div>
-                      <h3 className="text-xl font-medium mb-2">Your cart is empty</h3>
+                      <h3 className="text-xl font-medium mb-2">
+                        Your cart is empty
+                      </h3>
                       <p className="text-muted-foreground mb-4">
                         Add some delicious items from the menu to get started.
                       </p>
@@ -670,7 +712,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                         <Badge variant="outline" className="px-2 py-1">
                           {itemCount} {itemCount === 1 ? "item" : "items"}
                         </Badge>
-                        <Button variant="ghost" size="sm" className="text-xs h-8" onClick={clearCart}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-8"
+                          onClick={clearCart}
+                        >
                           Clear all
                         </Button>
                       </div>
@@ -700,7 +747,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                     <Separator />
                     <div className="flex justify-between pt-2 font-medium">
                       <span>Total</span>
-                      <span className="text-lg">₹{totalWithTax.toFixed(2)}</span>
+                      <span className="text-lg">
+                        ₹{totalWithTax.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -721,7 +770,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                     )}
                   </Button>
                   <p className="text-center text-xs text-muted-foreground mt-3">
-                    By placing your order, you agree to our Terms of Service and Privacy Policy
+                    By placing your order, you agree to our Terms of Service and
+                    Privacy Policy
                   </p>
                 </div>
               </div>
