@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import TableCard from "@/components/TokenCard";
-import OrderDetailsDialog from "@/components/OrderDetailsDialog";
+import OrderDetailsDialog from "@/components/BillComp";
 import { useToast } from "@/hooks/use-toast";
 
 //const API_URL = "http://localhost:3001";
