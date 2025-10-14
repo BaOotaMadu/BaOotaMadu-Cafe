@@ -9,11 +9,11 @@ interface Order {
   tokenNumber: number;
   userName: string;
   orderItems: string[];
-  status: "active" | "done";
+  status: "completed" | "pending";
   createdAt: string;
 }
-const restaurantId = "68dbf720876cfd9ab51b9f6b"; // Replace with actual restaurant ID
-
+//const restaurantId = "68dbf720876cfd9ab51b9f6b"; // Replace with actual restaurant ID
+const restaurantId = localStorage.getItem("restaurantId") || "";
 const Tokens: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,7 +55,7 @@ const Tokens: React.FC = () => {
     }
   };
 
-  const activeOrders = orders.filter((order) => order.status === "active");
+  const activeOrders = orders.filter((order) => order.status === "completed");
   const todayOrders = orders.filter((order) => {
     const orderDate = new Date(order.createdAt);
     const today = new Date();
