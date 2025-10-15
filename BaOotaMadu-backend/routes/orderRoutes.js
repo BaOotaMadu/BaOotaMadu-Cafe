@@ -20,6 +20,7 @@ module.exports = function (io) {
     "/:restaurantId/:tokenNumber/complete",
     orderController.markOrderAsCompleted
   );
+  router.get("/audio/:tokenNumber", orderController.serveTokenAudio);
   // Add this new route
   router.get("/:restaurant_id/token/:tokenNumber", async (req, res) => {
     try {

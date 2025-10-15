@@ -346,7 +346,21 @@ const markOrderAsCompleted = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
+const serveTokenAudio = async (req, res) => {
+  const { tokenNumber } = req.params;
+  try {
+    const text = `Token number ${tokenNumber}, please collect your order`;
+    const url = googleTTS.getAudioUrl(text, { lang: "en", slow: false });
+    const audioData = await fetchAudioWithRetry(url);
+    
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Disposition', `inline; filename="token-${tokenNumber}.mp3"`);
+    res.send(Buffer.from(audioData));
+  } catch (err) {
+    console.error("❌ serveTokenAudio error:", err.message);
+    res.status(500).json({ error: "Failed to generate audio" });
+  }
+};
 module.exports = {
   setIO,
   placeOrder,
@@ -355,5 +369,6 @@ module.exports = {
   updateOrderStatus,
   deleteOrder,
   markOrderAsPaid,
+  serveTokenAudio,
   markOrderAsCompleted,
 };

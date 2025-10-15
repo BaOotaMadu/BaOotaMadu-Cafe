@@ -46,7 +46,7 @@ const Tokens: React.FC = () => {
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.tokenNumber === tokenNumber
-            ? { ...order, status: "done" as const }
+            ? { ...order, status: "completed" as const }
             : order
         )
       );

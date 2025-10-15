@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, FileText,Megaphone } from 'lucide-react';
+import { CheckCircle, Clock, FileText, Megaphone } from 'lucide-react';
 import BillComp from './BillComp';
 import Announce from './Announce';
-
+const API_URL = "http://localhost:3001";
+const restaurantId = localStorage.getItem("restaurantId");
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 interface Order {
   tokenNumber: number;
   tableNumber: string;
@@ -19,14 +22,17 @@ interface TokenCardProps {
   order?: Order;
   onMarkAsDone?: (tokenNumber: number) => void;
   showAction?: boolean;
+  token: number; // 👈 This is required
 }
 
-const TokenCard: React.FC<TokenCardProps> = ({
-  order,
-  onMarkAsDone,
-  showAction = false,
-}) => {
-  const [isBillOpen, setIsBillOpen] = useState(false); // ✅ Local state for bill
+// ✅ Proper component definition — no broken default
+const TokenCard = ({ 
+  order, 
+  onMarkAsDone, 
+  showAction = false, 
+  token // ✅ Now correctly destructured
+}: TokenCardProps) => {
+  const [isBillOpen, setIsBillOpen] = useState(false);
 
   if (!order) {
     return (
@@ -48,14 +54,27 @@ const TokenCard: React.FC<TokenCardProps> = ({
     setIsBillOpen(true); 
   };
 
-  const handleAnnounce = () => {
-  };
+ // Add this function inside TokenCard
+const handleAnnounce = async () => {
+  if (!order) return;
+
+  try {
+    // Call your backend to mark as completed (which triggers announcement)
+    await axios.put(`${API_URL}/orders/${restaurantId}/${order._id}/status`, {
+      status: "completed",
+    });
+    toast.success(`Announced token ${order.tokenNumber}`);
+    onMarkAsDone?.(order.tokenNumber); // Optional: update local state
+  } catch (err) {
+    toast.error("Failed to announce order");
+    console.error(err);
+  }
+};
 
   const items = Array.isArray(order.orderItems) ? order.orderItems : [];
 
   return (
     <>
-      {/* Bill Dialog rendered alongside the card */}
       <BillComp
         open={isBillOpen}
         onClose={() => setIsBillOpen(false)}
@@ -93,16 +112,17 @@ const TokenCard: React.FC<TokenCardProps> = ({
             >
               <FileText className="h-4 w-4" />
             </Button>
-            {/* Announce Icon */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleAnnounce}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
-              aria-label="Announce order"
-              >
-                <Megaphone className="h-4 w-4" />
-              </Button>
+
+            {/* Announce Button */}
+           <Button
+  variant="ghost"
+  size="icon"
+  onClick={handleAnnounce}
+  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
+  aria-label="Announce order"
+>
+  <Megaphone className="h-4 w-4" />
+</Button>
           </div>
 
           <div className="mb-3">
