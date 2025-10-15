@@ -51,8 +51,11 @@ const BillComp = ({ open, onClose, tokenNumber }: BillCompProps) => {
   const API_URL = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
   useEffect(() => {
-    if (!open || !restaurantId) return;
-
+if (!open || !restaurantId || !tokenNumber || isNaN(tokenNumber)) {
+    setOrderData(null);
+    setLoading(false);
+    return;
+  }
     setLoading(true);
     setOrderData(null);
 

@@ -59,7 +59,7 @@ const TokenCard: React.FC<TokenCardProps> = ({
       <BillComp
         open={isBillOpen}
         onClose={() => setIsBillOpen(false)}
-        tableNumber={order.tableNumber}
+        tokenNumber={order.tokenNumber}
       />
 
       <Card className="w-full hover:shadow-md transition-shadow duration-200 border border-border bg-card">
