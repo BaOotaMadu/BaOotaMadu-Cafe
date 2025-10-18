@@ -9,25 +9,58 @@ interface Order {
   tokenNumber: number;
   userName: string;
   orderItems: string[];
+  totalAmount: number;
+  paymentStatus: string;
   status: "completed" | "pending";
   createdAt: string;
 }
+
 //const restaurantId = "68dbf720876cfd9ab51b9f6b"; // Replace with actual restaurant ID
 const restaurantId = localStorage.getItem("restaurantId") || "";
 const Tokens: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
+    // const fetchOrders = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const response = await fetch(
+    //       `http://localhost:3001/orders/${restaurantId}`
+    //     );
+    //     if (!response.ok) {
+    //       throw new Error("Failed to fetch orders");
+    //     }
+    //     const data = await response.json();
+    //     setOrders(data);
+    //   } catch (error) {
+    //     console.error("Error fetching orders:", error);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
     const fetchOrders = async () => {
       setLoading(true);
       try {
         const response = await fetch(
           `http://localhost:3001/orders/${restaurantId}`
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch orders");
-        }
-        const data = await response.json();
+        if (!response.ok) throw new Error("Failed to fetch orders");
+
+        const rawData = await response.json();
+
+        const data = rawData.map((order: any) => ({
+          tokenNumber: order.tokenNumber,
+          userName: order.customer_name || "Unknown",
+          orderItems:
+            order.order_items?.map(
+              (item: any) => `${item.name} x${item.quantity} (${item.price}₹)`
+            ) || [],
+          totalAmount: order.total_amount || 0,
+          status: order.status,
+          createdAt: order.created_at,
+          paymentStatus: order.payment_status,
+        }));
+
         setOrders(data);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -55,15 +88,19 @@ const Tokens: React.FC = () => {
     }
   };
 
-  const activeOrders = orders.filter((order) => order.status === "completed");
+  const activeOrders = orders.filter((order) => order.status === "pending");
   const todayOrders = orders.filter((order) => {
     const orderDate = new Date(order.createdAt);
     const today = new Date();
     return (
-      order.status === "done" &&
+      order.status === "completed" &&
       orderDate.toDateString() === today.toDateString()
     );
   });
+  const completedOrders = orders.filter(
+    (order) => order.status === "completed"
+  );
+  console.log("completedOrders:", completedOrders);
 
   return (
     <div className="container mx-auto p-6 space-y-6 bg-background min-h-screen">

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const getInsights = async (req, res) => {
   try {
     const restaurantId = req.params.restaurantId;
+    //const restaurantId = "68dbf720876cfd9ab51b9f6b"; // from auth middleware
     const restaurantObjectId = new mongoose.Types.ObjectId(restaurantId);
 
     // Start of today

@@ -42,7 +42,7 @@ const getSalesReportData = async (req, res) => {
         $match: {
           restaurant_id: restaurantObjectId,
           created_at: { $gte: startDate },
-          payment_status: "paid",
+          payment_status: "unpaid",
         },
       },
       {
@@ -60,8 +60,18 @@ const getSalesReportData = async (req, res) => {
     // Format dates like "Mon, Mar 10"
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     const salesData = salesAggregation.map((item) => {

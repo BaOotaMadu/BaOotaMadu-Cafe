@@ -63,8 +63,8 @@ const Reports = () => {
   });
   const [loading, setLoading] = useState<boolean>(true);
 
-  const restaurantId = "68dbf720876cfd9ab51b9f6b";
-
+  //const restaurantId = "68dbf720876cfd9ab51b9f6b";
+  const restaurantId = localStorage.getItem("restaurantId");
   useEffect(() => {
     if (!restaurantId) {
       toast({

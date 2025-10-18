@@ -1,7 +1,7 @@
 const express = require("express");
 const orderController = require("../controller/orderController");
-const Order = require('../models/orderModel'); 
-const mongoose = require("mongoose"); 
+const Order = require("../models/orderModel");
+const mongoose = require("mongoose");
 
 module.exports = function (io) {
   const router = express.Router();
@@ -10,6 +10,7 @@ module.exports = function (io) {
 
   router.post("/:restaurant_id/place", orderController.placeOrder);
   router.get("/:restaurant_id", orderController.getAllOrders);
+  router.get("/active/:restaurant_id", orderController.getActiveOrders);
   router.put(
     "/:restaurant_id/:order_id/status",
     orderController.updateOrderStatus

@@ -153,7 +153,7 @@ const placeOrder = async (req, res) => {
       order_items,
       total_amount,
       status: "pending",
-      payment_status: "unpaid",
+      payment_status: "paid",
     });
 
     await logActivity(
@@ -201,6 +201,33 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+const getActiveOrders = async (req, res) => {
+  try {
+    const { restaurant_id } = req.params;
+
+    if (!restaurant_id) {
+      return res.status(400).json({ message: "Restaurant ID is required." });
+    }
+
+    const orders = await Order.find({
+      restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
+      status: { $ne: "completed" },
+    })
+      .populate("restaurant_id", "name")
+      .sort({ createdAt: -1 });
+
+    if (!orders.length) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this restaurant." });
+    }
+
+    res.json(orders);
+  } catch (error) {
+    console.error("❌ getActiveOrders error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 // 📌 Get active token orders
 const getTokenOrders = async (req, res) => {
   try {
@@ -352,9 +379,12 @@ const serveTokenAudio = async (req, res) => {
     const text = `Token number ${tokenNumber}, please collect your order`;
     const url = googleTTS.getAudioUrl(text, { lang: "en", slow: false });
     const audioData = await fetchAudioWithRetry(url);
-    
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Disposition', `inline; filename="token-${tokenNumber}.mp3"`);
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="token-${tokenNumber}.mp3"`
+    );
     res.send(Buffer.from(audioData));
   } catch (err) {
     console.error("❌ serveTokenAudio error:", err.message);
@@ -365,6 +395,7 @@ module.exports = {
   setIO,
   placeOrder,
   getAllOrders,
+  getActiveOrders,
   getTokenOrders,
   updateOrderStatus,
   deleteOrder,
