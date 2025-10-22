@@ -1,0 +1,48 @@
+services:
+  # Service 1: MongoDB Database
+  mongo:
+    image: mongo:latest
+    container_name: baootamadu-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
+  # Service 2: Express Backend
+  backend:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    image: jayan12/bom-backend:latest  # ✅ --- ADD THIS LINE ---
+    container_name: baootamadu-backend
+    ports:
+      - '3001:3001' 
+    environment:
+      # --- ADD ALL YOUR .env VARIABLES FOR THE BACKEND ---
+      PORT: 3001
+      MONGO_URI: mongodb://admin:password123@mongo:27017/baootamadu-db?authSource=admin
+      CLOUDINARY_CLOUD_NAME: "YOUR_CLOUD_NAME_HERE"
+      CLOUDINARY_API_KEY: "YOUR_API_KEY_HERE"
+      CLOUDINARY_API_SECRET: "YOUR_SECRET_HERE"
+      # ...add any other secrets like JWT_SECRET
+    depends_on:
+      - mongo
+
+  # Service 3: Vite Frontend (served with 'serve')
+  frontend:
+    build:
+      context: ../Frontend 
+      dockerfile: Dockerfile
+    image: jayan12/bom-frontend:latest # ✅ --- ADD THIS LINE ---
+    container_name: baootamadu-frontend
+    ports:
+      # We map the container's port 3000 to the host's port 3000
+      - '3000:3000' 
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
