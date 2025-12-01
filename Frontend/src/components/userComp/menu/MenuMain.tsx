@@ -13,16 +13,16 @@ import {
   X,
   CheckCircle,
 } from "lucide-react";
-import Cart from "../cart/Cart"; // ✅ Use the real Cart component
-import { useCart } from "@/hooks/useCart"; // ✅ Must support addItem, removeItem
+import Cart from "../cart/Cart";
+import { useCart } from "@/hooks/useCart";
+import { v4 as uuidv4 } from "uuid";
 
-// ✅ UPDATED: Renamed "image" → "image_url" to match backend
 interface FoodItem {
   id: string;
   name: string;
   price: number;
   originalPrice?: number;
-  image_url: string; // ✅ Changed from "image"
+  image_url: string;
   description: string;
   rating: number;
   reviewCount: number;
@@ -85,14 +85,26 @@ const MenuMain: React.FC<MenuMainProps> = ({
     setQuantities(cartQuantities);
   }, [cartItems]);
 
-  // ✅ Listen for order placed event
+  //Store session reference
+  useEffect(() => {
+    let sessionRef = localStorage.getItem("sessionRef");
+
+    if (!sessionRef) {
+      sessionRef = uuidv4(); // create a random unique reference
+      localStorage.setItem("sessionRef", sessionRef);
+    }
+
+    console.log("SessionRef for this device:", sessionRef);
+  }, []);
+
+  // ✅ On order placed — record start time and show status
   useEffect(() => {
     const handleOrderPlaced = () => {
+      const now = new Date().getTime();
+      localStorage.setItem("orderStartTime", now.toString());
       setShowOrderStatus(true);
-      setOrderProgress(0);
-      const now = new Date();
       setOrderTime(
-        now.toLocaleTimeString("en-US", {
+        new Date(now).toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
@@ -104,16 +116,36 @@ const MenuMain: React.FC<MenuMainProps> = ({
     return () => window.removeEventListener("orderPlaced", handleOrderPlaced);
   }, []);
 
-  // ✅ Progress animation
+  // ✅ Continuously calculate real progress
   useEffect(() => {
-    if (showOrderStatus && orderProgress < 100) {
-      const timer = setTimeout(() => {
-        setOrderProgress((prev) => Math.min(prev + 1, 100));
-      }, (estimatedTime * 60 * 1000) / 100);
+    let interval: NodeJS.Timeout | null = null;
 
-      return () => clearTimeout(timer);
+    if (showOrderStatus) {
+      interval = setInterval(() => {
+        const startTimeStr = localStorage.getItem("orderStartTime");
+        if (!startTimeStr) return;
+
+        const startTime = parseInt(startTimeStr, 10);
+        const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes passed
+        const progress = Math.min((elapsed / estimatedTime) * 100, 100);
+
+        setOrderProgress(progress);
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            setShowOrderStatus(false);
+            setOrderProgress(0);
+            localStorage.removeItem("orderStartTime");
+          }, 5000);
+        }
+      }, 1000); // update every second
     }
-  }, [showOrderStatus, orderProgress, estimatedTime]);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showOrderStatus, estimatedTime]);
 
   // ✅ Auto hide after completion
   useEffect(() => {

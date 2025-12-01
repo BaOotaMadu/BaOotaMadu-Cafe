@@ -108,7 +108,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const restaurantId = urlParams.get("restaurant");
-  const API_URL = (import.meta.env.VITE_API_BASE?.trim() || "https://baootamadu.onrender.com");
+  const API_URL =
+    import.meta.env.VITE_API_BASE?.trim() || "https://baootamadu.onrender.com";
   const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
   const taxAmount = cartTotal * 0;
@@ -171,13 +172,14 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                 totalAmount: totalWithTax,
               }
             );
-
+            const sessionRef = localStorage.getItem("sessionRef");
             if (verifyRes.data.success) {
               const orderRes = await axios.post(
                 `${API_URL}/orders/${restaurantId}/place`,
                 {
                   restaurant_id: restaurantId,
                   customer_name: "Customer",
+                  sessionRef,
                   order_items: cartItems.map((item) => ({
                     name: item.name,
                     price: item.price,
@@ -224,7 +226,6 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
         },
       };
 
-      // @ts-ignore
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error: any) {
@@ -366,8 +367,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                       )}
                     </Button>
                     <p className="text-center text-xs text-muted-foreground mt-3">
-                      By placing your order, you agree to our Terms of Service and
-                      Privacy Policy
+                      By placing your order, you agree to our Terms of Service
+                      and Privacy Policy
                     </p>
                   </div>
                 </div>

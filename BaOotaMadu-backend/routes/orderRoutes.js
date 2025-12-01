@@ -22,7 +22,8 @@ module.exports = function (io) {
     orderController.markOrderAsCompleted
   );
   router.get("/audio/:tokenNumber", orderController.serveTokenAudio);
-  // Add this new route
+  router.put("/:restaurant_id/:order_id/eta", orderController.setEstimatedTime);
+  // to get token order details
   router.get("/:restaurant_id/token/:tokenNumber", async (req, res) => {
     try {
       const { restaurant_id, tokenNumber } = req.params;
@@ -37,6 +38,7 @@ module.exports = function (io) {
       res.status(500).json({ error: "Failed to fetch order" });
     }
   });
+  router.get("/status/:sessionRef", orderController.getOrderStatusBySession);
 
   return router;
 };

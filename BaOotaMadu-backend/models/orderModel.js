@@ -7,6 +7,7 @@ const OrderSchema = new mongoose.Schema({
     required: true,
   },
   tokenNumber: { type: Number, required: true },
+  sessionRef: String,
   customer_name: { type: String },
   order_items: [
     {
@@ -22,6 +23,7 @@ const OrderSchema = new mongoose.Schema({
     default: "pending",
   },
   payment_status: { type: String, enum: ["paid", "unpaid"], default: "unpaid" },
+  estimatedTime: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
 });
 

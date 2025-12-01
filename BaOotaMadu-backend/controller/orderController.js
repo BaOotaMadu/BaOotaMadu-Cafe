@@ -118,7 +118,7 @@ async function announceToken(tokenNumber) {
 // 📌 Place new order
 const placeOrder = async (req, res) => {
   try {
-    const { restaurant_id, customer_name, order_items } = req.body;
+    const { restaurant_id, customer_name, sessionRef, order_items } = req.body;
 
     if (!order_items?.length) {
       return res
@@ -150,6 +150,7 @@ const placeOrder = async (req, res) => {
       restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
       tokenNumber: counter.lastToken,
       customer_name,
+      sessionRef,
       order_items,
       total_amount,
       status: "pending",
@@ -296,6 +297,49 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// Set estimated time for an order
+//router.put("/:restaurantId/:orderId/time",
+// ✅ Set estimated time for an order
+const setEstimatedTime = async (req, res) => {
+  try {
+    const { restaurant_id, order_id } = req.params;
+    const { estimatedTime } = req.body;
+
+    if (!estimatedTime) {
+      return res.status(400).json({ message: "Estimated time is required" });
+    }
+
+    // Update order
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: order_id,
+        restaurant_id: new mongoose.Types.ObjectId(restaurant_id),
+      },
+      { estimatedTime },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Log activity
+    await logActivity(
+      `Set estimated time (${estimatedTime} min) for token number ${order.tokenNumber}`,
+      restaurant_id,
+      "estimatedTime"
+    );
+
+    // Broadcast update
+    if (io) io.emit("orderTimeUpdated", order);
+
+    res.json({ message: "Estimated time updated successfully", order });
+  } catch (error) {
+    console.error("❌ setEstimatedTime error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // 📌 Delete order
 const deleteOrder = async (req, res) => {
   try {
@@ -391,6 +435,31 @@ const serveTokenAudio = async (req, res) => {
     res.status(500).json({ error: "Failed to generate audio" });
   }
 };
+// Get order status and estimated time by sessionRef
+const getOrderStatusBySession = async (req, res) => {
+  const { sessionRef } = req.params;
+
+  try {
+    const order = await Order.findOne({ sessionRef }).sort({ created_at: -1 });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this session" });
+    }
+
+    res.status(200).json({
+      tokenNumber: order.tokenNumber,
+      estimatedTime: order.estimatedTime || null,
+      status: order.status,
+      created_at: order.created_at,
+    });
+  } catch (error) {
+    console.error("Error fetching order status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   setIO,
   placeOrder,
@@ -402,4 +471,6 @@ module.exports = {
   markOrderAsPaid,
   serveTokenAudio,
   markOrderAsCompleted,
+  setEstimatedTime,
+  getOrderStatusBySession,
 };
